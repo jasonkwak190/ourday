@@ -54,7 +54,11 @@ export default function DashboardPage() {
         .eq('id', session.user.id)
         .single();
 
-      if (!user?.couple_id) { router.push('/connect'); return; }
+      if (!user?.couple_id) {
+        // 커플 미연동 상태 - 대시보드는 그냥 보여줌
+        setLoading(false);
+        return;
+      }
 
       const cId = user.couple_id;
 
@@ -107,22 +111,69 @@ export default function DashboardPage() {
   }
 
   const dday = calcDday(couple?.wedding_date);
-  const doneCount = items.filter((i) => i.is_done).length;
+  const thisMonthItems = getCurrentMonthItems(items, couple?.wedding_date);
+  const monthDoneCount = thisMonthItems.filter((i) => i.is_done).length;
+  const monthTotalCount = thisMonthItems.length;
+
+  const totalDoneCount = items.filter((i) => i.is_done).length;
   const totalCount = items.length;
-  const progress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
+  const progress = totalCount > 0 ? Math.round((totalDoneCount / totalCount) * 100) : 0;
   const undecidedCount = decisions.filter((d) => d.status !== 'decided').length;
 
   const totalBudget = couple?.total_budget || 0;
   const totalSpent = budgetItems.reduce((s, b) => s + (b.actual_amount || 0), 0);
   const budgetPct = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
 
-  const thisMonthItems = getCurrentMonthItems(items, couple?.wedding_date);
-
   const weddingDateFormatted = couple?.wedding_date
     ? new Date(couple.wedding_date).toLocaleDateString('ko-KR', {
         year: 'numeric', month: 'long', day: 'numeric',
       })
     : null;
+
+  // 커플 미연동 상태 - 설정 안내 화면
+  if (!couple) {
+    return (
+      <div className="page-wrapper flex flex-col">
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={() => router.push('/settings')}
+            className="text-xl"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            aria-label="설정"
+          >
+            ⚙️
+          </button>
+        </div>
+
+        <div className="text-center mt-12 mb-8">
+          <div className="text-5xl mb-4">💍</div>
+          <h1 className="text-xl font-semibold mb-2" style={{ color: 'var(--ink)' }}>
+            결혼 준비를 시작해볼까요?
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--ink-soft)' }}>
+            정보를 설정하면 더 많은 기능을 쓸 수 있어요
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button
+            className="btn-rose w-full"
+            onClick={() => router.push('/setup')}
+          >
+            결혼 정보 설정하기
+          </button>
+          <button
+            className="btn-outline w-full"
+            onClick={() => router.push('/connect')}
+          >
+            커플 연동하기 💑
+          </button>
+        </div>
+
+        <BottomNav active="home" />
+      </div>
+    );
+  }
 
   return (
     <div className="page-wrapper">
@@ -175,9 +226,9 @@ export default function DashboardPage() {
             className="text-2xl font-bold"
             style={{ color: 'var(--ink)', fontFamily: 'var(--font-dm-serif)' }}
           >
-            {doneCount}<span className="text-base font-normal" style={{ color: 'var(--stone)' }}>/{totalCount}</span>
+            {monthDoneCount}<span className="text-base font-normal" style={{ color: 'var(--stone)' }}>/{monthTotalCount}</span>
           </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--stone)' }}>완료 항목</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--stone)' }}>이번달 완료</p>
         </div>
         <div className="card text-center py-4">
           <p

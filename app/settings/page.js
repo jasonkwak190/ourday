@@ -43,7 +43,16 @@ export default function SettingsPage() {
 
   async function handleCopy() {
     if (!couple?.invite_code) return;
-    await navigator.clipboard.writeText(couple.invite_code);
+    try {
+      await navigator.clipboard.writeText(couple.invite_code);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = couple.invite_code;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -122,9 +131,18 @@ export default function SettingsPage() {
       </div>
 
       {/* 결혼 정보 */}
-      {couple?.wedding_date && (
-        <div className="card mb-4">
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--stone)' }}>결혼 정보</p>
+      <div className="card mb-4">
+        <div className="flex justify-between items-center mb-3">
+          <p className="text-xs font-semibold" style={{ color: 'var(--stone)' }}>결혼 정보</p>
+          <button
+            onClick={() => router.push('/setup')}
+            className="text-xs font-medium"
+            style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            {couple?.wedding_date ? '수정 →' : '설정하기 →'}
+          </button>
+        </div>
+        {couple?.wedding_date ? (
           <div className="flex flex-col gap-2">
             <div className="flex justify-between">
               <span className="text-sm" style={{ color: 'var(--ink-soft)' }}>결혼식 날짜</span>
@@ -147,8 +165,10 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--stone)' }}>아직 결혼 정보가 없어요</p>
+        )}
+      </div>
 
       {/* 로그아웃 */}
       <button

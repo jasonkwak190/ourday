@@ -8,12 +8,12 @@ import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 
 const CATEGORIES = [
-  { value: 'hall',     label: '웨딩홀',   icon: '🏛' },
-  { value: 'dress',    label: '스드메',   icon: '👗' },
-  { value: 'travel',   label: '신혼여행', icon: '✈️' },
-  { value: 'hanbok',   label: '한복',     icon: '👘' },
-  { value: 'invite',   label: '청첩장',   icon: '💌' },
-  { value: 'other',    label: '기타',     icon: '💼' },
+  { value: 'hall',   label: '웨딩홀',   icon: '🏛' },
+  { value: 'dress',  label: '스드메',   icon: '👗' },
+  { value: 'travel', label: '신혼여행', icon: '✈️' },
+  { value: 'hanbok', label: '한복',     icon: '👘' },
+  { value: 'invite', label: '청첩장',   icon: '💌' },
+  { value: 'other',  label: '기타',     icon: '💼' },
 ];
 
 function getStatusTag(est, act) {
@@ -26,22 +26,29 @@ function getCategoryInfo(value) {
   return CATEGORIES.find((c) => c.value === value) || { label: '기타', icon: '💼' };
 }
 
+const EMPTY_FORM = { category: 'hall', name: '', estimated_amount: '', actual_amount: '', memo: '' };
+
 export default function BudgetPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [totalBudget, setTotalBudget] = useState(0);
   const [coupleId, setCoupleId] = useState(null);
+
+  // 추가 폼
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({
-    category: 'hall',
-    name: '',
-    estimated_amount: '',
-    actual_amount: '',
-    memo: '',
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  // 총 예산 수정
+  const [editingBudget, setEditingBudget] = useState(false);
+  const [budgetInput, setBudgetInput] = useState('');
+
+  // 수정/삭제
+  const [menuId, setMenuId] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState(EMPTY_FORM);
 
   useEffect(() => {
     const load = async () => {
@@ -49,12 +56,9 @@ export default function BudgetPage() {
       if (!session) { router.push('/'); return; }
 
       const { data: user } = await supabase
-        .from('users')
-        .select('couple_id')
-        .eq('id', session.user.id)
-        .single();
+        .from('users').select('couple_id').eq('id', session.user.id).single();
 
-      if (!user?.couple_id) { router.push('/connect'); return; }
+      if (!user?.couple_id) { router.push('/setup'); return; }
       const cId = user.couple_id;
       setCoupleId(cId);
 
@@ -69,6 +73,40 @@ export default function BudgetPage() {
     };
     load();
   }, [router]);
+
+  // Realtime 구독
+  useEffect(() => {
+    if (!coupleId) return;
+    const channel = supabase
+      .channel(`budget-${coupleId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'budget_items',
+        filter: `couple_id=eq.${coupleId}`,
+      }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setItems((prev) => {
+            if (prev.find((i) => i.id === payload.new.id)) return prev;
+            return [...prev, payload.new];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setItems((prev) => prev.map((i) => i.id === payload.new.id ? payload.new : i));
+        } else if (payload.eventType === 'DELETE') {
+          setItems((prev) => prev.filter((i) => i.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [coupleId]);
+
+  async function saveTotalBudget() {
+    const val = parseInt(budgetInput, 10);
+    if (isNaN(val) || val < 0) return;
+    await supabase.from('couples').update({ total_budget: val }).eq('id', coupleId);
+    setTotalBudget(val);
+    setEditingBudget(false);
+  }
 
   async function handleAdd() {
     setError('');
@@ -86,14 +124,55 @@ export default function BudgetPage() {
         actual_amount: form.actual_amount ? parseInt(form.actual_amount, 10) : null,
         memo: form.memo.trim() || null,
       })
-      .select()
-      .single();
+      .select().single();
 
     if (insertError) { setError('추가에 실패했어요.'); setSaving(false); return; }
     setItems((prev) => [...prev, data]);
-    setForm({ category: 'hall', name: '', estimated_amount: '', actual_amount: '', memo: '' });
+    setForm(EMPTY_FORM);
     setShowForm(false);
     setSaving(false);
+  }
+
+  function startEdit(item) {
+    setEditingId(item.id);
+    setEditForm({
+      category: item.category,
+      name: item.name,
+      estimated_amount: String(item.estimated_amount ?? ''),
+      actual_amount: String(item.actual_amount ?? ''),
+      memo: item.memo ?? '',
+    });
+    setMenuId(null);
+  }
+
+  async function handleEdit() {
+    setError('');
+    if (!editForm.name.trim()) { setError('이름을 입력해주세요.'); return; }
+    if (!editForm.estimated_amount) { setError('예상 금액을 입력해주세요.'); return; }
+    setSaving(true);
+
+    const updates = {
+      category: editForm.category,
+      name: editForm.name.trim(),
+      estimated_amount: parseInt(editForm.estimated_amount, 10),
+      actual_amount: editForm.actual_amount ? parseInt(editForm.actual_amount, 10) : null,
+      memo: editForm.memo.trim() || null,
+    };
+
+    const { error: updateError } = await supabase
+      .from('budget_items').update(updates).eq('id', editingId);
+
+    if (!updateError) {
+      setItems((prev) => prev.map((it) => it.id === editingId ? { ...it, ...updates } : it));
+    }
+    setEditingId(null);
+    setSaving(false);
+  }
+
+  async function deleteItem(id) {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+    await supabase.from('budget_items').delete().eq('id', id);
+    setMenuId(null);
   }
 
   if (loading) {
@@ -109,7 +188,7 @@ export default function BudgetPage() {
   const remaining = totalBudget - totalSpent;
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper" onClick={() => setMenuId(null)}>
       <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
         💰 예산 관리
       </h1>
@@ -119,9 +198,35 @@ export default function BudgetPage() {
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <p className="text-xs" style={{ color: 'var(--stone)' }}>총 예산</p>
-            <p className="text-lg font-semibold mt-0.5" style={{ color: 'var(--ink)' }}>
-              {totalBudget.toLocaleString()}만원
-            </p>
+            {editingBudget ? (
+              <div className="flex items-center gap-1 mt-0.5">
+                <input
+                  className="input-field text-sm py-1 px-2"
+                  style={{ width: '90px' }}
+                  type="number"
+                  value={budgetInput}
+                  onChange={(e) => setBudgetInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && saveTotalBudget()}
+                  autoFocus
+                />
+                <span className="text-sm" style={{ color: 'var(--stone)' }}>만원</span>
+                <button onClick={saveTotalBudget} className="text-xs font-medium" style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}>저장</button>
+                <button onClick={() => setEditingBudget(false)} className="text-xs" style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}>취소</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>
+                  {totalBudget.toLocaleString()}만원
+                </p>
+                <button
+                  onClick={() => { setBudgetInput(String(totalBudget)); setEditingBudget(true); }}
+                  className="text-xs"
+                  style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
+                >
+                  ✏️
+                </button>
+              </div>
+            )}
           </div>
           <div>
             <p className="text-xs" style={{ color: 'var(--stone)' }}>실제 지출</p>
@@ -131,7 +236,7 @@ export default function BudgetPage() {
           </div>
           <div>
             <p className="text-xs" style={{ color: 'var(--stone)' }}>사용률</p>
-            <p className="text-lg font-semibold mt-0.5" style={{ color: budgetPct > 100 ? 'var(--rose)' : 'var(--ink)' }}>
+            <p className="text-lg font-semibold mt-0.5" style={{ color: budgetPct >= 100 ? 'var(--rose)' : 'var(--ink)' }}>
               {budgetPct}%
             </p>
           </div>
@@ -143,13 +248,7 @@ export default function BudgetPage() {
           </div>
         </div>
         <div className="progress-bar">
-          <div
-            className="progress-fill"
-            style={{
-              width: `${budgetPct}%`,
-              backgroundColor: budgetPct > 100 ? 'var(--rose)' : 'var(--rose)',
-            }}
-          />
+          <div className="progress-fill" style={{ width: `${budgetPct}%` }} />
         </div>
       </div>
 
@@ -164,24 +263,95 @@ export default function BudgetPage() {
           items.map((item) => {
             const cat = getCategoryInfo(item.category);
             const status = getStatusTag(item.estimated_amount, item.actual_amount);
+            const isEditing = editingId === item.id;
+            const isMenuOpen = menuId === item.id;
+
+            if (isEditing) {
+              return (
+                <div key={item.id} className="card flex flex-col gap-3">
+                  <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>항목 수정</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {CATEGORIES.map((c) => (
+                      <button
+                        key={c.value}
+                        onClick={() => setEditForm((f) => ({ ...f, category: c.value }))}
+                        className="py-2 rounded-xl text-xs font-medium flex flex-col items-center gap-1"
+                        style={{
+                          backgroundColor: editForm.category === c.value ? 'var(--rose-light)' : 'var(--beige)',
+                          color: editForm.category === c.value ? 'var(--rose)' : 'var(--stone)',
+                          border: `1.5px solid ${editForm.category === c.value ? 'var(--rose)' : 'transparent'}`,
+                        }}
+                      >
+                        <span>{c.icon}</span>{c.label}
+                      </button>
+                    ))}
+                  </div>
+                  <input className="input-field" placeholder="항목 이름" value={editForm.name}
+                    onChange={(e) => setEditForm((f) => ({ ...f, name: e.target.value }))} />
+                  <div className="flex gap-2">
+                    <input className="input-field" type="number" placeholder="예상 금액 (만원)"
+                      value={editForm.estimated_amount}
+                      onChange={(e) => setEditForm((f) => ({ ...f, estimated_amount: e.target.value }))} />
+                    <input className="input-field" type="number" placeholder="실제 금액 (선택)"
+                      value={editForm.actual_amount}
+                      onChange={(e) => setEditForm((f) => ({ ...f, actual_amount: e.target.value }))} />
+                  </div>
+                  <input className="input-field" placeholder="메모 (선택)" value={editForm.memo}
+                    onChange={(e) => setEditForm((f) => ({ ...f, memo: e.target.value }))} />
+                  {error && <p className="text-xs" style={{ color: 'var(--rose)' }}>{error}</p>}
+                  <div className="flex gap-2">
+                    <button className="btn-outline flex-1" onClick={() => { setEditingId(null); setError(''); }}>취소</button>
+                    <button className="btn-rose flex-1" onClick={handleEdit} disabled={saving}>
+                      {saving ? '저장 중...' : '저장'}
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
             return (
-              <div key={item.id} className="card flex items-center gap-3">
+              <div key={item.id} className="card flex items-center gap-3 relative" onClick={(e) => e.stopPropagation()}>
                 <span className="text-2xl">{cat.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate" style={{ color: 'var(--ink)' }}>
-                    {item.name}
-                  </p>
+                  <p className="text-sm font-medium truncate" style={{ color: 'var(--ink)' }}>{item.name}</p>
                   <p className="text-xs mt-0.5" style={{ color: 'var(--stone)' }}>
                     예상 {item.estimated_amount?.toLocaleString()}만원
                     {item.actual_amount != null && ` · 실제 ${item.actual_amount.toLocaleString()}만원`}
                   </p>
-                  {item.memo && (
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--stone-light)' }}>
-                      {item.memo}
-                    </p>
-                  )}
+                  {item.memo && <p className="text-xs mt-0.5" style={{ color: 'var(--stone-light)' }}>{item.memo}</p>}
                 </div>
                 <span className={`tag ${status.cls} flex-shrink-0`}>{status.label}</span>
+                <button
+                  onClick={(e) => { e.stopPropagation(); setMenuId(isMenuOpen ? null : item.id); }}
+                  className="text-lg flex-shrink-0"
+                  style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
+                >
+                  ···
+                </button>
+
+                {isMenuOpen && (
+                  <div
+                    className="absolute right-0 z-10 rounded-xl shadow-lg overflow-hidden"
+                    style={{ top: '100%', backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: '100px' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="w-full text-left px-4 py-3 text-sm font-medium"
+                      style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => startEdit(item)}
+                    >
+                      ✏️ 수정
+                    </button>
+                    <div style={{ height: '1px', backgroundColor: 'var(--beige)' }} />
+                    <button
+                      className="w-full text-left px-4 py-3 text-sm font-medium"
+                      style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => deleteItem(item.id)}
+                    >
+                      🗑 삭제
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })
@@ -192,8 +362,6 @@ export default function BudgetPage() {
       {showForm ? (
         <div className="card flex flex-col gap-3 mb-4">
           <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>항목 추가</p>
-
-          {/* 카테고리 */}
           <div className="grid grid-cols-3 gap-2">
             {CATEGORIES.map((c) => (
               <button
@@ -206,47 +374,25 @@ export default function BudgetPage() {
                   border: `1.5px solid ${form.category === c.value ? 'var(--rose)' : 'transparent'}`,
                 }}
               >
-                <span>{c.icon}</span>
-                {c.label}
+                <span>{c.icon}</span>{c.label}
               </button>
             ))}
           </div>
-
-          <input
-            className="input-field"
-            placeholder="항목 이름"
-            value={form.name}
-            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-          />
+          <input className="input-field" placeholder="항목 이름" value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
           <div className="flex gap-2">
-            <input
-              className="input-field"
-              type="number"
-              placeholder="예상 금액 (만원)"
+            <input className="input-field" type="number" placeholder="예상 금액 (만원)"
               value={form.estimated_amount}
-              onChange={(e) => setForm((f) => ({ ...f, estimated_amount: e.target.value }))}
-            />
-            <input
-              className="input-field"
-              type="number"
-              placeholder="실제 금액 (선택)"
+              onChange={(e) => setForm((f) => ({ ...f, estimated_amount: e.target.value }))} />
+            <input className="input-field" type="number" placeholder="실제 금액 (선택)"
               value={form.actual_amount}
-              onChange={(e) => setForm((f) => ({ ...f, actual_amount: e.target.value }))}
-            />
+              onChange={(e) => setForm((f) => ({ ...f, actual_amount: e.target.value }))} />
           </div>
-          <input
-            className="input-field"
-            placeholder="메모 (선택)"
-            value={form.memo}
-            onChange={(e) => setForm((f) => ({ ...f, memo: e.target.value }))}
-          />
-
+          <input className="input-field" placeholder="메모 (선택)" value={form.memo}
+            onChange={(e) => setForm((f) => ({ ...f, memo: e.target.value }))} />
           {error && <p className="text-xs" style={{ color: 'var(--rose)' }}>{error}</p>}
-
           <div className="flex gap-2">
-            <button className="btn-outline flex-1" onClick={() => { setShowForm(false); setError(''); }}>
-              취소
-            </button>
+            <button className="btn-outline flex-1" onClick={() => { setShowForm(false); setError(''); setForm(EMPTY_FORM); }}>취소</button>
             <button className="btn-rose flex-1" onClick={handleAdd} disabled={saving}>
               {saving ? '추가 중...' : '추가'}
             </button>

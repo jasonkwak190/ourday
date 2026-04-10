@@ -64,7 +64,8 @@ export default function ConnectPage() {
         .single();
 
       if (coupleError) {
-        setError('코드 생성에 실패했어요. 새로고침 해주세요.');
+        console.error('couples insert error:', coupleError);
+        setError(`코드 생성에 실패했어요. (${coupleError.message})`);
         setLoading(false);
         return;
       }
@@ -82,7 +83,16 @@ export default function ConnectPage() {
   }, [router]);
 
   async function handleCopy() {
-    await navigator.clipboard.writeText(myCode);
+    try {
+      await navigator.clipboard.writeText(myCode);
+    } catch {
+      const el = document.createElement('textarea');
+      el.value = myCode;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }

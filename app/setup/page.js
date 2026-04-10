@@ -14,22 +14,71 @@ const WEDDING_TYPES = [
 ];
 
 const DEFAULT_CHECKLIST = [
-  { title: '예산 전체 설정',        due_months_before: 12,   assigned_to: 'both' },
-  { title: '웨딩홀 투어 리스트업',  due_months_before: 12,   assigned_to: 'bride' },
-  { title: '스드메 업체 조사',      due_months_before: 12,   assigned_to: 'bride' },
-  { title: '웨딩홀 투어 실시',      due_months_before: 12,   assigned_to: 'both' },
-  { title: '스드메 후보 3곳 선정',  due_months_before: 12,   assigned_to: 'bride' },
-  { title: '웨딩홀 계약',           due_months_before: 10,   assigned_to: 'both' },
-  { title: '스드메 업체 최종 선정', due_months_before: 10,   assigned_to: 'bride' },
-  { title: '청첩장 디자인 시작',    due_months_before: 8,    assigned_to: 'both' },
-  { title: '스드메 계약',           due_months_before: 8,    assigned_to: 'bride' },
-  { title: '신혼여행 예약',         due_months_before: 6,    assigned_to: 'both' },
-  { title: '한복 맞춤',             due_months_before: 6,    assigned_to: 'bride' },
-  { title: '청첩장 발송',           due_months_before: 3,    assigned_to: 'both' },
-  { title: '예단/예물 준비',        due_months_before: 3,    assigned_to: 'both' },
-  { title: '최종 드레스 피팅',      due_months_before: 1,    assigned_to: 'bride' },
-  { title: '좌석 배치 확정',        due_months_before: 1,    assigned_to: 'both' },
-  { title: '업체 최종 확인',        due_months_before: 0.25, assigned_to: 'both' },
+  // 12개월 전
+  { title: '결혼 날짜 확정',               due_months_before: 12,   assigned_to: 'both' },
+  { title: '예산 계획 수립',               due_months_before: 12,   assigned_to: 'both' },
+  { title: '웨딩홀 리스트업 및 투어',      due_months_before: 12,   assigned_to: 'both' },
+  { title: '웨딩홀 계약',                  due_months_before: 12,   assigned_to: 'both' },
+  { title: '스드메 업체 조사',             due_months_before: 12,   assigned_to: 'bride' },
+  { title: '스드메 투어',                  due_months_before: 12,   assigned_to: 'bride' },
+  { title: '플래너 상담',                  due_months_before: 12,   assigned_to: 'both' },
+  { title: '신혼여행 후보지 조사',         due_months_before: 12,   assigned_to: 'both' },
+  // 10개월 전
+  { title: '스드메 계약',                  due_months_before: 10,   assigned_to: 'bride' },
+  { title: '본식스냅 & DVD 계약',          due_months_before: 10,   assigned_to: 'both' },
+  { title: '예복 서치 및 업체 선정',       due_months_before: 10,   assigned_to: 'groom' },
+  { title: '예물 / 예단 상의',             due_months_before: 10,   assigned_to: 'both' },
+  { title: '혼수 리스트 작성',             due_months_before: 10,   assigned_to: 'both' },
+  { title: '신혼여행 견적 요청',           due_months_before: 10,   assigned_to: 'both' },
+  // 8개월 전
+  { title: '드레스샵 투어',                due_months_before: 8,    assigned_to: 'bride' },
+  { title: '예복 투어 및 계약',            due_months_before: 8,    assigned_to: 'groom' },
+  { title: '웨딩 밴드 계약',               due_months_before: 8,    assigned_to: 'both' },
+  { title: '신혼집 지역 선정',             due_months_before: 8,    assigned_to: 'both' },
+  { title: '혼수 구입 시작 (가전·가구)',   due_months_before: 8,    assigned_to: 'both' },
+  { title: '신혼여행 박람회 및 계약',      due_months_before: 8,    assigned_to: 'both' },
+  // 6개월 전
+  { title: '스튜디오 촬영 (웨딩 촬영)',    due_months_before: 6,    assigned_to: 'bride' },
+  { title: '신혼집 결정 및 가계약',        due_months_before: 6,    assigned_to: 'both' },
+  { title: '한복 상담 및 예약',            due_months_before: 6,    assigned_to: 'both' },
+  { title: '청첩장 디자인 선정',           due_months_before: 6,    assigned_to: 'both' },
+  { title: '신혼여행 항공편·숙소 예약',   due_months_before: 6,    assigned_to: 'both' },
+  // 4개월 전
+  { title: '청첩장 주문',                  due_months_before: 4,    assigned_to: 'both' },
+  { title: '하객 명단 정리',               due_months_before: 4,    assigned_to: 'both' },
+  { title: '사회자 / 축가 섭외',           due_months_before: 4,    assigned_to: 'both' },
+  { title: '드레스 본식 피팅',             due_months_before: 4,    assigned_to: 'bride' },
+  { title: '가전·가구 최종 계약',          due_months_before: 4,    assigned_to: 'both' },
+  // 3개월 전
+  { title: '청첩장 발송 (인쇄·모바일)',   due_months_before: 3,    assigned_to: 'both' },
+  { title: '상견례 준비 및 진행',          due_months_before: 3,    assigned_to: 'both' },
+  { title: '본식 메이크업 리허설',         due_months_before: 3,    assigned_to: 'bride' },
+  { title: '혼주 한복 계약',               due_months_before: 3,    assigned_to: 'both' },
+  { title: '예물 수령',                    due_months_before: 3,    assigned_to: 'both' },
+  { title: '신혼집 이사',                  due_months_before: 3,    assigned_to: 'both' },
+  { title: '예단 준비',                    due_months_before: 3,    assigned_to: 'both' },
+  // 2개월 전
+  { title: '예상 하객 리스트 최종 정리',   due_months_before: 2,    assigned_to: 'both' },
+  { title: '웨딩홀 최종 미팅 (시식 포함)', due_months_before: 2,    assigned_to: 'both' },
+  { title: '식순 구성 및 사회자 미팅',     due_months_before: 2,    assigned_to: 'both' },
+  { title: '신혼여행 준비 (환전·비상약)', due_months_before: 2,    assigned_to: 'both' },
+  // 1개월 전
+  { title: '최종 드레스 피팅',             due_months_before: 1,    assigned_to: 'bride' },
+  { title: '좌석 배치 확정',               due_months_before: 1,    assigned_to: 'both' },
+  { title: '신부 케어 관리 (네일·피부)',   due_months_before: 1,    assigned_to: 'bride' },
+  { title: '혼인신고 서류 준비',           due_months_before: 1,    assigned_to: 'both' },
+  { title: '웨딩카 예약',                  due_months_before: 1,    assigned_to: 'both' },
+  { title: '결혼식 음원 선정',             due_months_before: 1,    assigned_to: 'both' },
+  { title: '식전 영상 제작',               due_months_before: 1,    assigned_to: 'both' },
+  // D-2주
+  { title: '웨딩홀 최종 점검',             due_months_before: 0.5,  assigned_to: 'both' },
+  { title: '업체 최종 확인 (부케·헬퍼·촬영·사회자)', due_months_before: 0.5, assigned_to: 'both' },
+  { title: '사례비 준비',                  due_months_before: 0.5,  assigned_to: 'both' },
+  { title: '어린이 식권·답례봉투 준비',   due_months_before: 0.5,  assigned_to: 'both' },
+  // D-1주
+  { title: '결혼식 준비사항 최종 점검',   due_months_before: 0.25, assigned_to: 'both' },
+  { title: '신혼여행 짐 싸기',             due_months_before: 0.25, assigned_to: 'both' },
+  { title: '본식 리허설',                  due_months_before: 0.25, assigned_to: 'both' },
 ];
 
 const DEFAULT_DECISIONS = [

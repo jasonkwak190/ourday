@@ -26,11 +26,24 @@ export default function DecisionsPage() {
   const [filter, setFilter] = useState('all');
   const [myRole, setMyRole] = useState(null);
   const [coupleId, setCoupleId] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  // 의견 편집
   const [editingOpinion, setEditingOpinion] = useState(null);
   const [opinionText, setOpinionText] = useState('');
+
+  // 최종 결정 편집
   const [editingFinal, setEditingFinal] = useState(null);
   const [finalText, setFinalText] = useState('');
-  const [saving, setSaving] = useState(false);
+
+  // 항목 추가
+  const [adding, setAdding] = useState(false);
+  const [newTitle, setNewTitle] = useState('');
+
+  // 수정/삭제 메뉴
+  const [menuId, setMenuId] = useState(null);
+  const [editingTitle, setEditingTitle] = useState(null);
+  const [editTitleText, setEditTitleText] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -38,20 +51,14 @@ export default function DecisionsPage() {
       if (!session) { router.push('/'); return; }
 
       const { data: user } = await supabase
-        .from('users')
-        .select('couple_id, role')
-        .eq('id', session.user.id)
-        .single();
+        .from('users').select('couple_id, role').eq('id', session.user.id).single();
 
-      if (!user?.couple_id) { router.push('/connect'); return; }
+      if (!user?.couple_id) { router.push('/setup'); return; }
       setCoupleId(user.couple_id);
       setMyRole(user.role);
 
       const { data } = await supabase
-        .from('decisions')
-        .select('*')
-        .eq('couple_id', user.couple_id)
-        .order('created_at');
+        .from('decisions').select('*').eq('couple_id', user.couple_id).order('created_at');
 
       setDecisions(data || []);
       setLoading(false);
@@ -59,23 +66,69 @@ export default function DecisionsPage() {
     load();
   }, [router]);
 
+  // Realtime 구독
+  useEffect(() => {
+    if (!coupleId) return;
+    const channel = supabase
+      .channel(`decisions-${coupleId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'decisions',
+        filter: `couple_id=eq.${coupleId}`,
+      }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          setDecisions((prev) => {
+            if (prev.find((d) => d.id === payload.new.id)) return prev;
+            return [...prev, payload.new];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setDecisions((prev) => prev.map((d) => d.id === payload.new.id ? payload.new : d));
+        } else if (payload.eventType === 'DELETE') {
+          setDecisions((prev) => prev.filter((d) => d.id !== payload.old.id));
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [coupleId]);
+
+  async function addDecision() {
+    if (!newTitle.trim() || !coupleId) return;
+    setSaving(true);
+    const { data, error } = await supabase
+      .from('decisions')
+      .insert({ couple_id: coupleId, title: newTitle.trim(), status: 'undiscussed' })
+      .select().single();
+    if (!error && data) setDecisions((prev) => [...prev, data]);
+    setNewTitle('');
+    setAdding(false);
+    setSaving(false);
+  }
+
+  async function deleteDecision(id) {
+    setDecisions((prev) => prev.filter((d) => d.id !== id));
+    await supabase.from('decisions').delete().eq('id', id);
+    setMenuId(null);
+  }
+
+  async function saveTitle(id) {
+    if (!editTitleText.trim()) return;
+    await supabase.from('decisions').update({ title: editTitleText.trim() }).eq('id', id);
+    setDecisions((prev) => prev.map((d) => d.id === id ? { ...d, title: editTitleText.trim() } : d));
+    setEditingTitle(null);
+    setMenuId(null);
+  }
+
   async function saveOpinion(decisionId) {
     if (!opinionText.trim()) return;
     setSaving(true);
     const field = myRole === 'groom' ? 'groom_opinion' : 'bride_opinion';
     const { error } = await supabase
-      .from('decisions')
-      .update({ [field]: opinionText.trim(), status: 'discussing' })
-      .eq('id', decisionId);
-
+      .from('decisions').update({ [field]: opinionText.trim(), status: 'discussing' }).eq('id', decisionId);
     if (!error) {
-      setDecisions((prev) =>
-        prev.map((d) =>
-          d.id === decisionId
-            ? { ...d, [field]: opinionText.trim(), status: 'discussing' }
-            : d
-        )
-      );
+      setDecisions((prev) => prev.map((d) =>
+        d.id === decisionId ? { ...d, [field]: opinionText.trim(), status: 'discussing' } : d
+      ));
     }
     setEditingOpinion(null);
     setOpinionText('');
@@ -86,23 +139,26 @@ export default function DecisionsPage() {
     if (!finalText.trim()) return;
     setSaving(true);
     const { error } = await supabase
-      .from('decisions')
-      .update({ final_decision: finalText.trim(), status: 'decided' })
-      .eq('id', decisionId);
-
+      .from('decisions').update({ final_decision: finalText.trim(), status: 'decided' }).eq('id', decisionId);
     if (!error) {
-      setDecisions((prev) =>
-        prev.map((d) =>
-          d.id === decisionId
-            ? { ...d, final_decision: finalText.trim(), status: 'decided' }
-            : d
-        )
-      );
+      setDecisions((prev) => prev.map((d) =>
+        d.id === decisionId ? { ...d, final_decision: finalText.trim(), status: 'decided' } : d
+      ));
     }
     setEditingFinal(null);
     setFinalText('');
     setSaving(false);
   }
+
+  async function clearFinal(decisionId) {
+    await supabase.from('decisions')
+      .update({ final_decision: null, status: 'discussing' }).eq('id', decisionId);
+    setDecisions((prev) => prev.map((d) =>
+      d.id === decisionId ? { ...d, final_decision: null, status: 'discussing' } : d
+    ));
+  }
+
+  const myOpinionField = myRole === 'groom' ? 'groom_opinion' : 'bride_opinion';
 
   const filtered = decisions.filter((d) => {
     if (filter === 'all') return true;
@@ -120,7 +176,7 @@ export default function DecisionsPage() {
   }
 
   return (
-    <div className="page-wrapper">
+    <div className="page-wrapper" onClick={() => setMenuId(null)}>
       <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
         💬 의사결정 보드
       </h1>
@@ -144,7 +200,7 @@ export default function DecisionsPage() {
       </div>
 
       {/* 결정 카드 목록 */}
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 mb-4">
         {filtered.length === 0 ? (
           <div className="card text-center py-8" style={{ color: 'var(--stone)' }}>
             <p className="text-2xl mb-2">🤝</p>
@@ -155,36 +211,89 @@ export default function DecisionsPage() {
             const st = STATUS_TAGS[d.status] || STATUS_TAGS.undiscussed;
             const isEditingOp = editingOpinion === d.id;
             const isEditingFin = editingFinal === d.id;
+            const isEditingTit = editingTitle === d.id;
+            const isMenuOpen = menuId === d.id;
+            const myOpinion = d[myOpinionField];
 
             return (
-              <div key={d.id} className="card">
-                {/* 제목 + 상태 */}
+              <div key={d.id} className="card relative" onClick={(e) => e.stopPropagation()}>
+                {/* 제목 + 상태 + 메뉴 */}
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
-                    {d.title}
-                  </p>
-                  <span className={`tag ${st.cls}`}>{st.label}</span>
+                  {isEditingTit ? (
+                    <div className="flex gap-2 flex-1 mr-2">
+                      <input
+                        className="input-field text-sm flex-1"
+                        value={editTitleText}
+                        onChange={(e) => setEditTitleText(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && saveTitle(d.id)}
+                        autoFocus
+                      />
+                      <button className="btn-rose text-xs px-3 py-1" onClick={() => saveTitle(d.id)}>저장</button>
+                      <button className="btn-outline text-xs px-3 py-1" onClick={() => setEditingTitle(null)}>취소</button>
+                    </div>
+                  ) : (
+                    <p className="text-sm font-semibold flex-1" style={{ color: 'var(--ink)' }}>{d.title}</p>
+                  )}
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className={`tag ${st.cls}`}>{st.label}</span>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setMenuId(isMenuOpen ? null : d.id); }}
+                      className="text-lg"
+                      style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
+                    >
+                      ···
+                    </button>
+                  </div>
                 </div>
 
-                {/* 의견 박스 2개 */}
+                {/* 드롭다운 메뉴 */}
+                {isMenuOpen && (
+                  <div
+                    className="absolute right-4 z-10 rounded-xl shadow-lg overflow-hidden"
+                    style={{ top: '48px', backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: '100px' }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      className="w-full text-left px-4 py-3 text-sm font-medium"
+                      style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => { setEditingTitle(d.id); setEditTitleText(d.title); setMenuId(null); }}
+                    >
+                      ✏️ 제목 수정
+                    </button>
+                    <div style={{ height: '1px', backgroundColor: 'var(--beige)' }} />
+                    <button
+                      className="w-full text-left px-4 py-3 text-sm font-medium"
+                      style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
+                      onClick={() => deleteDecision(d.id)}
+                    >
+                      🗑 삭제
+                    </button>
+                  </div>
+                )}
+
+                {/* 의견 박스 */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   {/* 신랑 */}
-                  <div
-                    className="rounded-xl p-3"
-                    style={{ backgroundColor: 'var(--beige)' }}
-                  >
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>
-                      신랑 🤵
-                    </p>
+                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--beige)' }}>
+                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신랑 🤵</p>
                     {d.groom_opinion ? (
-                      <p className="text-xs" style={{ color: 'var(--ink)' }}>
-                        {d.groom_opinion}
-                      </p>
+                      <div>
+                        <p className="text-xs" style={{ color: 'var(--ink)' }}>{d.groom_opinion}</p>
+                        {myRole === 'groom' && !isEditingOp && (
+                          <button
+                            onClick={() => { setEditingOpinion(d.id); setOpinionText(d.groom_opinion); }}
+                            className="text-xs mt-1"
+                            style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
+                          >
+                            수정
+                          </button>
+                        )}
+                      </div>
                     ) : myRole === 'groom' && !isEditingOp ? (
                       <button
                         onClick={() => { setEditingOpinion(d.id); setOpinionText(''); }}
                         className="text-xs"
-                        style={{ color: 'var(--rose)' }}
+                        style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
                       >
                         의견 남기기
                       </button>
@@ -194,22 +303,26 @@ export default function DecisionsPage() {
                   </div>
 
                   {/* 신부 */}
-                  <div
-                    className="rounded-xl p-3"
-                    style={{ backgroundColor: 'var(--rose-light)' }}
-                  >
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>
-                      신부 👰
-                    </p>
+                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--rose-light)' }}>
+                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신부 👰</p>
                     {d.bride_opinion ? (
-                      <p className="text-xs" style={{ color: 'var(--ink)' }}>
-                        {d.bride_opinion}
-                      </p>
+                      <div>
+                        <p className="text-xs" style={{ color: 'var(--ink)' }}>{d.bride_opinion}</p>
+                        {myRole === 'bride' && !isEditingOp && (
+                          <button
+                            onClick={() => { setEditingOpinion(d.id); setOpinionText(d.bride_opinion); }}
+                            className="text-xs mt-1"
+                            style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
+                          >
+                            수정
+                          </button>
+                        )}
+                      </div>
                     ) : myRole === 'bride' && !isEditingOp ? (
                       <button
                         onClick={() => { setEditingOpinion(d.id); setOpinionText(''); }}
                         className="text-xs"
-                        style={{ color: 'var(--rose)' }}
+                        style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
                       >
                         의견 남기기
                       </button>
@@ -231,35 +344,35 @@ export default function DecisionsPage() {
                       autoFocus
                     />
                     <div className="flex gap-2">
-                      <button
-                        className="btn-outline flex-1 text-sm py-2"
-                        onClick={() => setEditingOpinion(null)}
-                      >
-                        취소
-                      </button>
-                      <button
-                        className="btn-rose flex-1 text-sm py-2"
-                        onClick={() => saveOpinion(d.id)}
-                        disabled={saving}
-                      >
-                        저장
-                      </button>
+                      <button className="btn-outline flex-1 text-sm py-2" onClick={() => setEditingOpinion(null)}>취소</button>
+                      <button className="btn-rose flex-1 text-sm py-2" onClick={() => saveOpinion(d.id)} disabled={saving}>저장</button>
                     </div>
                   </div>
                 )}
 
                 {/* 최종 결정 */}
                 {d.final_decision ? (
-                  <div
-                    className="rounded-xl p-3"
-                    style={{ backgroundColor: 'var(--green-light)' }}
-                  >
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--green)' }}>
-                      ✅ 최종 결정
-                    </p>
-                    <p className="text-sm" style={{ color: 'var(--ink)' }}>
-                      {d.final_decision}
-                    </p>
+                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--green-light)' }}>
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-xs font-medium" style={{ color: 'var(--green)' }}>✅ 최종 결정</p>
+                      <div className="flex gap-2">
+                        <button
+                          className="text-xs"
+                          style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
+                          onClick={() => { setEditingFinal(d.id); setFinalText(d.final_decision); }}
+                        >
+                          수정
+                        </button>
+                        <button
+                          className="text-xs"
+                          style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
+                          onClick={() => clearFinal(d.id)}
+                        >
+                          취소
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-sm" style={{ color: 'var(--ink)' }}>{d.final_decision}</p>
                   </div>
                 ) : isEditingFin ? (
                   <div className="flex flex-col gap-2">
@@ -272,28 +385,14 @@ export default function DecisionsPage() {
                       autoFocus
                     />
                     <div className="flex gap-2">
-                      <button
-                        className="btn-outline flex-1 text-sm py-2"
-                        onClick={() => setEditingFinal(null)}
-                      >
-                        취소
-                      </button>
-                      <button
-                        className="btn-rose flex-1 text-sm py-2"
-                        onClick={() => saveFinal(d.id)}
-                        disabled={saving}
-                      >
-                        저장
-                      </button>
+                      <button className="btn-outline flex-1 text-sm py-2" onClick={() => setEditingFinal(null)}>취소</button>
+                      <button className="btn-rose flex-1 text-sm py-2" onClick={() => saveFinal(d.id)} disabled={saving}>저장</button>
                     </div>
                   </div>
                 ) : (
                   <button
                     className="w-full py-2 rounded-xl text-xs font-medium mt-1"
-                    style={{
-                      backgroundColor: 'var(--beige)',
-                      color: 'var(--stone)',
-                    }}
+                    style={{ backgroundColor: 'var(--beige)', color: 'var(--stone)' }}
                     onClick={() => { setEditingFinal(d.id); setFinalText(''); }}
                   >
                     최종 결정 입력하기
@@ -304,6 +403,30 @@ export default function DecisionsPage() {
           })
         )}
       </div>
+
+      {/* 항목 추가 */}
+      {adding ? (
+        <div className="card flex flex-col gap-3 mb-4">
+          <input
+            className="input-field"
+            placeholder="결정해야 할 주제 (예: 신혼여행지)"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            autoFocus
+            onKeyDown={(e) => e.key === 'Enter' && addDecision()}
+          />
+          <div className="flex gap-2">
+            <button className="btn-outline flex-1" onClick={() => { setAdding(false); setNewTitle(''); }}>취소</button>
+            <button className="btn-rose flex-1" onClick={addDecision} disabled={saving || !newTitle.trim()}>
+              {saving ? '추가 중...' : '추가'}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button className="btn-outline w-full" onClick={() => setAdding(true)}>
+          + 결정 항목 추가
+        </button>
+      )}
 
       <BottomNav active="decisions" />
     </div>
