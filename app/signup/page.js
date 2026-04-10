@@ -38,7 +38,7 @@ export default function SignupPage() {
         .insert({ id: userId, name: name.trim(), role });
 
       if (insertError) {
-        setError('프로필 저장에 실패했어요. 다시 시도해주세요.');
+        setError(`프로필 저장 실패: ${insertError.message}`);
         setLoading(false);
         return;
       }

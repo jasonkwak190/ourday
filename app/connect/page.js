@@ -18,61 +18,82 @@ function generateInviteCode() {
 
 export default function ConnectPage() {
   const router = useRouter();
-  const [tab, setTab] = useState('create');
-  const [inviteCode, setInviteCode] = useState('');
+  const [myCode, setMyCode] = useState('');
   const [inputCode, setInputCode] = useState('');
   const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [joining, setJoining] = useState(false);
   const [error, setError] = useState('');
   const [userId, setUserId] = useState(null);
 
+  // 진입 시 자동으로 couple row 생성 or 기존 코드 로드
   useEffect(() => {
-    const getUser = async () => {
+    const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) setUserId(session.user.id);
-    };
-    getUser();
-  }, []);
+      if (!session) { router.push('/'); return; }
 
-  async function handleCreateCode() {
-    setError('');
-    setLoading(true);
-    const code = generateInviteCode();
+      const uid = session.user.id;
+      setUserId(uid);
 
-    const { data: couple, error: coupleError } = await supabase
-      .from('couples')
-      .insert({ invite_code: code })
-      .select()
-      .single();
+      // 이미 couple_id가 있으면 기존 코드 표시
+      const { data: user } = await supabase
+        .from('users')
+        .select('couple_id')
+        .eq('id', uid)
+        .single();
 
-    if (coupleError) {
-      setError('코드 생성에 실패했어요. 다시 시도해주세요.');
+      if (user?.couple_id) {
+        const { data: couple } = await supabase
+          .from('couples')
+          .select('invite_code')
+          .eq('id', user.couple_id)
+          .single();
+        if (couple?.invite_code) {
+          setMyCode(couple.invite_code);
+          setLoading(false);
+          return;
+        }
+      }
+
+      // 없으면 새로 생성
+      const code = generateInviteCode();
+      const { data: couple, error: coupleError } = await supabase
+        .from('couples')
+        .insert({ invite_code: code })
+        .select()
+        .single();
+
+      if (coupleError) {
+        setError('코드 생성에 실패했어요. 새로고침 해주세요.');
+        setLoading(false);
+        return;
+      }
+
+      await supabase
+        .from('users')
+        .update({ couple_id: couple.id })
+        .eq('id', uid);
+
+      setMyCode(code);
       setLoading(false);
-      return;
-    }
+    };
 
-    await supabase
-      .from('users')
-      .update({ couple_id: couple.id })
-      .eq('id', userId);
+    init();
+  }, [router]);
 
-    setInviteCode(code);
-    setLoading(false);
-  }
-
-  async function handleCopyCode() {
-    await navigator.clipboard.writeText(inviteCode);
+  async function handleCopy() {
+    await navigator.clipboard.writeText(myCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function handleJoinCode() {
+  async function handleJoin() {
     setError('');
     if (inputCode.trim().length !== 6) {
       setError('6자리 코드를 입력해주세요.');
       return;
     }
-    setLoading(true);
+    setJoining(true);
 
     const { data: couple, error: findError } = await supabase
       .from('couples')
@@ -82,7 +103,7 @@ export default function ConnectPage() {
 
     if (findError || !couple) {
       setError('코드를 찾을 수 없어요. 다시 확인해주세요.');
-      setLoading(false);
+      setJoining(false);
       return;
     }
 
@@ -93,21 +114,29 @@ export default function ConnectPage() {
 
     if (updateError) {
       setError('연동에 실패했어요. 다시 시도해주세요.');
-      setLoading(false);
+      setJoining(false);
       return;
     }
 
-    setLoading(false);
+    setJoining(false);
     router.push('/setup');
+  }
+
+  if (loading) {
+    return (
+      <div className="page-wrapper flex items-center justify-center">
+        <div className="text-center" style={{ color: 'var(--stone)' }}>
+          <div className="text-3xl mb-2 animate-pulse">💑</div>
+          <p className="text-sm">준비 중...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="page-wrapper flex flex-col">
       <div className="text-center mb-8">
-        <h1
-          className="text-2xl font-semibold"
-          style={{ color: 'var(--ink)' }}
-        >
+        <h1 className="text-2xl font-semibold" style={{ color: 'var(--ink)' }}>
           커플 연동하기 💑
         </h1>
         <p className="mt-2 text-sm" style={{ color: 'var(--ink-soft)' }}>
@@ -115,102 +144,73 @@ export default function ConnectPage() {
         </p>
       </div>
 
-      {/* 탭 */}
-      <div
-        className="flex rounded-xl p-1 mb-6"
-        style={{ backgroundColor: 'var(--beige)' }}
-      >
-        {[
-          { key: 'create', label: '코드 생성' },
-          { key: 'join', label: '코드 입력' },
-        ].map((t) => (
-          <button
-            key={t.key}
-            onClick={() => { setTab(t.key); setError(''); }}
-            className="flex-1 py-2 rounded-lg text-sm font-medium transition-all"
-            style={{
-              backgroundColor: tab === t.key ? 'white' : 'transparent',
-              color: tab === t.key ? 'var(--ink)' : 'var(--stone)',
-              boxShadow: tab === t.key ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
-            }}
+      {/* 내 초대 코드 */}
+      <div className="card mb-4">
+        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--ink)' }}>
+          내 초대 코드
+        </p>
+        <div
+          className="w-full py-5 rounded-2xl text-center mb-3"
+          style={{ backgroundColor: 'var(--rose-light)' }}
+        >
+          <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>
+            상대방에게 이 코드를 공유하세요
+          </p>
+          <p
+            className="text-4xl font-bold tracking-widest"
+            style={{ color: 'var(--rose)', fontFamily: 'monospace' }}
           >
-            {t.label}
-          </button>
-        ))}
+            {myCode}
+          </p>
+        </div>
+        <button className="btn-outline w-full" onClick={handleCopy}>
+          {copied ? '✅ 복사됨!' : '📋 코드 복사하기'}
+        </button>
       </div>
 
-      {/* 코드 생성 */}
-      {tab === 'create' && (
-        <div className="card flex flex-col items-center gap-5">
-          <p className="text-sm text-center" style={{ color: 'var(--ink-soft)' }}>
-            초대 코드를 생성하고 상대방에게 공유하세요.
-          </p>
-
-          {!inviteCode ? (
-            <button
-              className="btn-rose w-full"
-              onClick={handleCreateCode}
-              disabled={loading || !userId}
-            >
-              {loading ? '생성 중...' : '초대 코드 생성하기'}
-            </button>
-          ) : (
-            <>
-              <div
-                className="w-full py-5 rounded-2xl text-center"
-                style={{ backgroundColor: 'var(--rose-light)' }}
-              >
-                <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>초대 코드</p>
-                <p
-                  className="text-4xl font-bold tracking-widest"
-                  style={{ color: 'var(--rose)', fontFamily: 'monospace' }}
-                >
-                  {inviteCode}
-                </p>
-              </div>
-              <button className="btn-outline w-full" onClick={handleCopyCode}>
-                {copied ? '✅ 복사됨!' : '📋 코드 복사하기'}
-              </button>
-              <button
-                className="btn-rose w-full"
-                onClick={() => router.push('/setup')}
-              >
-                다음으로 →
-              </button>
-            </>
-          )}
-        </div>
-      )}
+      {/* 구분선 */}
+      <div className="flex items-center gap-3 my-2">
+        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--stone-light)' }} />
+        <span className="text-xs" style={{ color: 'var(--stone)' }}>상대방 코드가 있으면</span>
+        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--stone-light)' }} />
+      </div>
 
       {/* 코드 입력 */}
-      {tab === 'join' && (
-        <div className="card flex flex-col gap-4">
-          <p className="text-sm" style={{ color: 'var(--ink-soft)' }}>
-            상대방이 공유한 6자리 코드를 입력해주세요.
-          </p>
-          <input
-            className="input-field text-center text-2xl tracking-widest font-bold"
-            type="text"
-            placeholder="XXXXXX"
-            maxLength={6}
-            value={inputCode}
-            onChange={(e) => setInputCode(e.target.value.toUpperCase())}
-          />
-          <button
-            className="btn-rose w-full"
-            onClick={handleJoinCode}
-            disabled={loading || !userId}
-          >
-            {loading ? '연동 중...' : '연동하기'}
-          </button>
-        </div>
-      )}
+      <div className="card mt-2 flex flex-col gap-3">
+        <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
+          상대방 코드 입력
+        </p>
+        <input
+          className="input-field text-center text-2xl tracking-widest font-bold"
+          type="text"
+          placeholder="XXXXXX"
+          maxLength={6}
+          value={inputCode}
+          onChange={(e) => setInputCode(e.target.value.toUpperCase())}
+        />
+        <button
+          className="btn-rose w-full"
+          onClick={handleJoin}
+          disabled={joining}
+        >
+          {joining ? '연동 중...' : '연동하기'}
+        </button>
+      </div>
 
       {error && (
         <p className="text-sm text-center mt-4" style={{ color: 'var(--rose)' }}>
           {error}
         </p>
       )}
+
+      {/* 나중에 설정하기 */}
+      <button
+        className="mt-6 text-sm text-center"
+        style={{ color: 'var(--stone)', background: 'none', border: 'none' }}
+        onClick={() => router.push('/setup')}
+      >
+        나중에 연동할게요 →
+      </button>
     </div>
   );
 }

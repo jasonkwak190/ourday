@@ -126,6 +126,18 @@ export default function DashboardPage() {
 
   return (
     <div className="page-wrapper">
+      {/* 상단 설정 버튼 */}
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={() => router.push('/settings')}
+          className="text-xl"
+          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          aria-label="설정"
+        >
+          ⚙️
+        </button>
+      </div>
+
       {/* D-day 헤더 */}
       <div className="text-center mb-6">
         <p className="text-sm mb-1" style={{ color: 'var(--stone)' }}>

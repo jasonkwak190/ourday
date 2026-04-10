@@ -9,6 +9,7 @@ const PROTECTED_ROUTES = [
   '/guide',
   '/connect',
   '/setup',
+  '/settings',
 ];
 
 export async function middleware(request) {
@@ -60,5 +61,6 @@ export const config = {
     '/guide/:path*',
     '/connect/:path*',
     '/setup/:path*',
+    '/settings/:path*',
   ],
 };
