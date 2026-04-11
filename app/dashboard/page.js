@@ -285,9 +285,9 @@ export default function DashboardPage() {
                 <li key={item.id} className="flex items-center gap-3">
                   <button
                     onClick={() => toggleItem(item.id, item.is_done)}
-                    className="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
+                    className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all"
                     style={{
-                      borderColor: item.is_done ? 'var(--rose)' : 'var(--stone-light)',
+                      border: `2px solid ${item.is_done ? 'var(--rose)' : 'var(--stone-light)'}`,
                       backgroundColor: item.is_done ? 'var(--rose)' : 'transparent',
                     }}
                   >
