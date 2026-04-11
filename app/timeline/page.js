@@ -178,7 +178,7 @@ export default function TimelinePage() {
   const displayed = filterItems();
   const doneCount = displayed.filter((i) => i.is_done).length;
 
-  function renderItem(item) {
+  function renderItem(item, isLast = false) {
     const tag = ASSIGNED_LABELS[item.assigned_to] || ASSIGNED_LABELS.both;
     const isEditing = editingId === item.id;
     const isMenuOpen = menuId === item.id;
@@ -186,7 +186,7 @@ export default function TimelinePage() {
 
     if (isEditing) {
       return (
-        <div key={item.id} className="py-3 flex flex-col gap-2 border-b" style={{ borderColor: 'var(--beige)' }}>
+        <div key={item.id} className="py-3 flex flex-col gap-2" style={{ borderBottom: isLast ? 'none' : '1px solid var(--beige)' }}>
           <input className="input-field text-sm" value={editTitle}
             onChange={(e) => setEditTitle(e.target.value)} autoFocus
             onKeyDown={(e) => e.key === 'Enter' && saveEdit(item.id)} />
@@ -211,11 +211,11 @@ export default function TimelinePage() {
     }
 
     return (
-      <li key={item.id} className="py-3 relative border-b last:border-0" style={{ borderColor: 'var(--beige)' }}>
+      <li key={item.id} className="py-3 relative" style={{ borderBottom: isLast ? 'none' : '1px solid var(--beige)' }}>
         <div className="flex items-center gap-3">
           <button onClick={() => toggleItem(item.id, item.is_done)}
-            className="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
-            style={{ borderColor: item.is_done ? 'var(--rose)' : 'var(--stone-light)', backgroundColor: item.is_done ? 'var(--rose)' : 'transparent' }}>
+            className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all"
+            style={{ border: `2px solid ${item.is_done ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: item.is_done ? 'var(--rose)' : 'transparent' }}>
             {item.is_done && <span className="text-white text-xs">✓</span>}
           </button>
           <div className="flex-1 min-w-0">
@@ -314,8 +314,8 @@ export default function TimelinePage() {
                   return (
                     <div key={item} className="flex items-start gap-2 py-1 cursor-pointer"
                       onClick={() => setVenueChecked((p) => ({ ...p, [key]: !p[key] }))}>
-                      <div className="flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center mt-0.5 transition-all"
-                        style={{ borderColor: isChecked ? 'var(--rose)' : 'var(--stone-light)', backgroundColor: isChecked ? 'var(--rose)' : 'white' }}>
+                      <div className="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center mt-0.5 transition-all"
+                        style={{ border: `2px solid ${isChecked ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: isChecked ? 'var(--rose)' : 'white' }}>
                         {isChecked && <span className="text-white" style={{ fontSize: '9px' }}>✓</span>}
                       </div>
                       <span className="text-xs flex-1" style={{ color: isChecked ? 'var(--stone)' : 'var(--ink)', textDecoration: isChecked ? 'line-through' : 'none' }}>
@@ -360,7 +360,7 @@ export default function TimelinePage() {
                   <p className="text-xs" style={{ color: 'var(--stone)' }}>{doneCnt}/{periodItems.length}</p>
                 </div>
                 <div className="card p-0">
-                  <ul>{periodItems.map((item) => renderItem(item))}</ul>
+                  <ul>{periodItems.map((item, idx) => renderItem(item, idx === periodItems.length - 1))}</ul>
                 </div>
               </div>
             );
@@ -380,7 +380,7 @@ export default function TimelinePage() {
             {displayed.length === 0 ? (
               <p className="text-sm text-center py-8" style={{ color: 'var(--stone)' }}>항목이 없어요</p>
             ) : (
-              <ul className="px-4">{displayed.map((item) => renderItem(item))}</ul>
+              <ul className="px-4">{displayed.map((item, idx) => renderItem(item, idx === displayed.length - 1))}</ul>
             )}
           </div>
         </>

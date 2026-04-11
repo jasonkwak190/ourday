@@ -117,6 +117,31 @@ export default function ConnectPage() {
       return;
     }
 
+    // 자기 코드 입력 방지
+    const { data: myUser } = await supabase
+      .from('users')
+      .select('couple_id')
+      .eq('id', userId)
+      .single();
+
+    if (myUser?.couple_id === couple.id) {
+      setError('내 코드는 입력할 수 없어요.');
+      setJoining(false);
+      return;
+    }
+
+    // 이미 2명이 연동된 커플인지 확인
+    const { count } = await supabase
+      .from('users')
+      .select('id', { count: 'exact', head: true })
+      .eq('couple_id', couple.id);
+
+    if (count >= 2) {
+      setError('이미 연동된 커플이에요. 코드를 다시 확인해주세요.');
+      setJoining(false);
+      return;
+    }
+
     const { error: updateError } = await supabase
       .from('users')
       .update({ couple_id: couple.id })
