@@ -86,3 +86,39 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 - **아이콘** — `lucide-react`만 사용, `strokeWidth={2}` 기본값
 - **디자인 수정 시** — Supabase 쿼리/상태관리 로직 절대 건드리지 않음
 - **TDS 전환 진행 상황** — `TDS_MIGRATION.md` 참조
+
+## 폰트 스택 규칙 (절대 바꾸지 말 것)
+
+```
+font-family: 'Tossface', 'Pretendard Variable', 'Pretendard', -apple-system, ...
+```
+
+- **Tossface 반드시 맨 앞** — 이모지 유니코드(U+1F000~)만 담당하는 폰트. 텍스트·숫자 글리프가 없으므로 앞에 둬도 Pretendard 렌더링에 전혀 영향 없음. 이모지가 시스템 기본(노란 Apple 이모지) 대신 Toss 디자인으로 표시되어 "인앱 느낌" 제공
+- **Pretendard Variable → Pretendard** — 한/영/숫자 전담
+- **이모지를 코드에서 제거하지 말 것** — 기존 🎁🎉💌 등 이모지 문자는 그대로 유지. Tossface가 자동으로 Toss 스타일로 렌더링함
+- **monospace 폰트 절대 사용 금지** — 초대 코드 등 고정폭이 필요한 경우 `font-variant-numeric: tabular-nums` 사용
+- **숫자 폰트** — `font-feature-settings: "tnum" 1` 전역 적용 (globals.css body). 별도 설정 불필요
+
+## 8pt Grid 여백 규칙 (Toss Slash 기준)
+
+모든 여백/크기는 **8의 배수**를 사용:
+
+| 용도 | 값 | 비고 |
+|------|----|------|
+| 버튼·인풋 높이 | 56px (8×7) | |
+| 카드 패딩 | 24px (8×3) | |
+| 버튼 좌우 패딩 | 24px (8×3) | |
+| 인풋 좌우 패딩 | 16px (8×2) | |
+| 카드 radius | 24px (8×3) | |
+| 버튼·인풋 radius | 16px (8×2) | |
+| 페이지 상단 패딩 | 24px (8×3) | |
+| 페이지 좌우 패딩 | 20px | Toss 표준 좌우 여백 |
+| 섹션 간격 | 16px / 24px / 32px | 8의 배수 선택 |
+| 아이템 내부 gap | 8px / 12px / 16px | 8의 배수 선택 |
+
+- `gap-2(8px)`, `gap-3(12px)`, `gap-4(16px)`, `gap-6(24px)` Tailwind 클래스 활용
+- `@toss/emotion-utils` — 미사용 (Tailwind v4 스택과 충돌, emotion 불필요)
+
+## SKILLS.md 참조
+
+디자인·에러 가이드라인 전체 → `SKILLS.md`

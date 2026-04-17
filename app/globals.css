@@ -43,88 +43,106 @@
 body {
   background-color: var(--toss-bg);
   color: var(--toss-text-primary);
-  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
-    'Apple SD Gothic Neo', sans-serif;
+  /*
+   * 폰트 스택 규칙:
+   * 1) Tossface — 이모지 코드포인트(U+1F000~)만 담당. 텍스트·숫자 글리프 없으므로
+   *    앞에 두어도 Pretendard 렌더링에 영향 없음. 이모지가 시스템 이모지 대신
+   *    Toss 디자인으로 표시되어 "인앱 느낌" 제공.
+   * 2) Pretendard Variable → Pretendard — 한/영/숫자 전담
+   * 3) 시스템 폰트 — Pretendard 미로드 시 fallback
+   */
+  font-family: 'Tossface', 'Pretendard Variable', 'Pretendard',
+    -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 숫자 글자폭 통일 — 금액·D-day 숫자가 흔들리지 않게 */
+  /* tabular-nums: 금액·D-day 숫자 글자폭 통일 (0이 흔들리지 않게) */
   font-feature-settings: "tnum" 1;
 }
 
-/* ─── 버튼 ─── */
+/*
+ * ─── 버튼 ───
+ * 8pt grid: height 56px(8×7), padding 0 24px(8×3), radius 16px(8×2)
+ * Toss Slash 기준 Primary 버튼 높이는 52~56px 사이 — 56px 채택 (더 시원한 느낌)
+ */
 .btn-rose {
   background-color: var(--toss-blue);
   color: white;
-  border-radius: 16px;
-  padding: 0 24px;   /* 8pt grid: 24 = 8×3 */
-  height: 52px;
+  border-radius: 16px;        /* 8×2 */
+  padding: 0 24px;            /* 8×3 */
+  height: 56px;               /* 8×7 */
   font-weight: 700;
   font-size: 1rem;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;                   /* 8×1 */
   cursor: pointer;
   border: none;
   transition: background-color 0.15s, transform 0.1s;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   width: 100%;
 }
 .btn-rose:hover  { background-color: var(--toss-blue-dark); }
-.btn-rose:active { transform: scale(0.96); }
+.btn-rose:active { transform: scale(0.97); }
 .btn-rose:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 .btn-outline {
   background-color: var(--toss-card);
   color: var(--toss-text-primary);
   border: 1.5px solid var(--toss-border);
-  border-radius: 16px;
-  padding: 0 24px;   /* 8pt grid: 24 = 8×3 */
-  height: 52px;
+  border-radius: 16px;        /* 8×2 */
+  padding: 0 24px;            /* 8×3 */
+  height: 56px;               /* 8×7 */
   font-weight: 700;
   font-size: 1rem;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;                   /* 8×1 */
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
   width: 100%;
 }
 .btn-outline:hover  { background-color: var(--toss-bg); }
-.btn-outline:active { transform: scale(0.96); }
+.btn-outline:active { transform: scale(0.97); }
 .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 .btn-ghost {
   background-color: var(--toss-bg);
   color: var(--toss-text-secondary);
   border: none;
-  border-radius: 16px;
-  padding: 0 24px;   /* 8pt grid: 24 = 8×3 */
-  height: 52px;
+  border-radius: 16px;        /* 8×2 */
+  padding: 0 24px;            /* 8×3 */
+  height: 56px;               /* 8×7 */
   font-weight: 600;
   font-size: 1rem;
   font-family: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;                   /* 8×1 */
   cursor: pointer;
   transition: background-color 0.15s, transform 0.1s;
   width: 100%;
 }
 .btn-ghost:hover  { background-color: var(--toss-border); }
-.btn-ghost:active { transform: scale(0.96); }
+.btn-ghost:active { transform: scale(0.97); }
 
-/* ─── 인풋 ─── */
+/*
+ * ─── 인풋 ───
+ * 8pt grid: height 56px(8×7), padding 0 16px(8×2), radius 12px(8×1.5)
+ */
 .input-field {
   width: 100%;
   border: 1.5px solid transparent;
-  border-radius: 12px;
-  padding: 0 16px;
-  height: 52px;
+  border-radius: 12px;        /* 8×1.5 */
+  padding: 0 16px;            /* 8×2 */
+  height: 56px;               /* 8×7 — 버튼과 높이 통일 */
   font-size: 1rem;
   font-family: inherit;
   font-weight: 500;
@@ -143,12 +161,15 @@ body {
   font-weight: 400;
 }
 
-/* ─── 카드 ─── */
+/*
+ * ─── 카드 ───
+ * 8pt grid: padding 24px(8×3), radius 24px(8×3)
+ */
 .card {
   background-color: var(--toss-card);
-  border-radius: 18px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-  padding: 24px;
+  border-radius: 24px;        /* 8×3 — 더 둥글게, 앱스럽게 */
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
+  padding: 24px;              /* 8×3 */
 }
 
 /* ─── 태그 ─── */
@@ -200,12 +221,15 @@ body {
   transition: width 0.4s ease;
 }
 
-/* ─── 페이지 래퍼 ─── */
+/*
+ * ─── 페이지 래퍼 ───
+ * 8pt grid: top 24px(8×3), horizontal 20px(Toss 표준 좌우 여백), bottom 96px(하단 네비 80+16)
+ */
 .page-wrapper {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 24px 20px 96px;
+  padding: 24px 20px 96px;   /* top: 8×3 | side: Toss 표준 20 | bottom: 네비 80 + 여유 16 */
   background-color: var(--toss-bg);
 }
 

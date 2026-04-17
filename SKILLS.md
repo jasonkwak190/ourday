@@ -234,3 +234,87 @@ PostCSS(Tailwind v4)는 `@import "tailwindcss"` 처리 시 @font-face 등을 인
 - [ ] `var(--toss-*)` 변수를 사용했는가? (컬러 하드코딩 금지)
 - [ ] `npm run build`로 빌드 에러 없음을 확인했는가?
 - [ ] 프리뷰에서 Supabase CRUD가 정상 동작하는가?
+
+---
+
+## DESIGN-001 · 폰트 스택 — Tossface + Pretendard
+
+**원칙**
+
+이 프로젝트는 두 폰트를 함께 사용한다:
+- **Tossface** — Toss 공식 이모지 폰트. 이모지 유니코드 범위(U+1F000~)만 커버
+- **Pretendard Variable** — 한/영/숫자 전담 텍스트 폰트
+
+**올바른 font-family 선언 (globals.css body)**
+
+```css
+/* ✅ Tossface를 반드시 첫 번째로 */
+font-family: 'Tossface', 'Pretendard Variable', 'Pretendard',
+  -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+```
+
+**왜 Tossface를 맨 앞에 두는가?**
+
+브라우저 폰트 폴백은 **글리프(글자) 단위**로 동작한다.
+- Tossface는 이모지 코드포인트만 가지고, 한/영/숫자 글리프가 없음
+- 따라서 "안녕 🎁" 렌더링 시: '안녕 '은 Pretendard, '🎁'만 Tossface 사용
+- 결과: 이모지가 노란 Apple/Google 이모지 대신 Toss 인앱 스타일로 표시
+
+**절대 하지 말 것**
+
+```css
+/* ❌ Tossface 제거 — 이모지가 시스템 기본(노란 이모지)으로 돌아감 */
+font-family: 'Pretendard Variable', 'Pretendard', ...;
+
+/* ❌ monospace 사용 — 시스템 Courier New로 렌더링되어 브랜드 일관성 깨짐 */
+style={{ fontFamily: 'monospace' }}
+
+/* ✅ 고정폭 숫자가 필요하면 tabular-nums 사용 */
+style={{ fontVariantNumeric: 'tabular-nums' }}
+/* 또는 Tailwind: className="tabular-nums" */
+```
+
+**이모지 코드는 유지할 것**
+
+기존 JSX의 🎁🎉💌📅 등 이모지 문자를 지우지 말 것.
+Tossface가 자동으로 Toss 스타일로 렌더링한다.
+"AI가 만든 느낌"이 나는 원인은 이모지 자체가 아니라 시스템 이모지 렌더링이었음.
+
+---
+
+## DESIGN-002 · 8pt Grid 여백 시스템 (Toss Slash 기준)
+
+**원칙**: 모든 여백·크기는 **8의 배수**
+
+| 토큰 | 값 | Tailwind |
+|------|-----|---------|
+| xs   | 4px  | `p-1`, `gap-1`  |
+| sm   | 8px  | `p-2`, `gap-2`  |
+| md   | 16px | `p-4`, `gap-4`  |
+| lg   | 24px | `p-6`, `gap-6`  |
+| xl   | 32px | `p-8`, `gap-8`  |
+| 2xl  | 40px | `p-10`, `gap-10` |
+| 3xl  | 48px | `p-12`, `gap-12` |
+
+**컴포넌트 기준값**
+
+| 컴포넌트 | 높이 | 좌우 패딩 | radius |
+|----------|------|----------|--------|
+| 버튼 (`.btn-*`) | 56px (8×7) | 24px (8×3) | 16px (8×2) |
+| 인풋 (`.input-field`) | 56px (8×7) | 16px (8×2) | 12px |
+| 카드 (`.card`) | — | 24px (8×3) | 24px (8×3) |
+
+**@toss/emotion-utils 미사용**
+
+Toss Slash의 `@toss/emotion-utils`는 emotion CSS-in-JS 전용 유틸이다.
+이 프로젝트는 **Tailwind CSS v4** 스택이므로 emotion과 충돌하여 사용 불가.
+대신 위 표의 Tailwind 클래스로 동일한 8pt grid를 구현한다.
+
+---
+
+## DESIGN-003 · 이모지 사용 원칙
+
+- JSX에서 이모지를 직접 사용해도 됨 — Tossface가 스타일링
+- `lucide-react` 아이콘: UI 액션(버튼, 네비)에 사용
+- 이모지: 섹션 타이틀, 카드 아이콘, 상태 표시에 사용
+- 둘을 혼용하지 말 것 (한 섹션은 아이콘 또는 이모지 중 하나로 통일)
