@@ -22,19 +22,20 @@ const FEATURES = [
 
 async function getCoupleCount() {
   try {
+    // service role key → RLS 우회해서 전체 count 조회
+    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     const res = await fetch(
       `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/couples?select=id`,
       {
         headers: {
-          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          apikey: key,
+          Authorization: `Bearer ${key}`,
           Prefer: 'count=exact',
           Range: '0-0',
         },
         cache: 'no-store',
       }
     );
-    // Content-Range: 0-0/N 헤더에서 N 파싱
     const cr = res.headers.get('content-range') || '';
     const match = cr.match(/\/(\d+)/);
     return match ? parseInt(match[1], 10) : 0;
@@ -91,14 +92,12 @@ export default async function LandingPage() {
       </section>
 
       {/* 소셜 프루프 — 실제 커플 수 */}
-      {coupleCount > 0 && (
-        <p
-          className="text-center text-sm my-4"
-          style={{ color: 'var(--stone)' }}
-        >
-          💍 현재 <strong style={{ color: 'var(--rose)' }}>{coupleCount.toLocaleString('ko-KR')}쌍</strong>의 커플이 함께하고 있어요
-        </p>
-      )}
+      <p
+        className="text-center text-sm my-4"
+        style={{ color: 'var(--stone)' }}
+      >
+        💍 현재 <strong style={{ color: 'var(--rose)' }}>{coupleCount.toLocaleString('ko-KR')}쌍</strong>의 커플이 함께하고 있어요
+      </p>
 
       {/* CTA 버튼 */}
       <div className="flex flex-col gap-3 mt-auto pt-4">
