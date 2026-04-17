@@ -5,12 +5,13 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { QrCode, Copy, Check, Image as ImageIcon, Users, Trash2, RefreshCw, Download, MonitorPlay } from 'lucide-react';
+import QRCodeSVG from 'react-qr-code';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 
 export default function GalleryPage() {
-  const router = useRouter();
-  const canvasRef = useRef(null);
+  const router  = useRouter();
+  const qrRef   = useRef(null);
 
   const [loading,    setLoading]    = useState(true);
   const [event,      setEvent]      = useState(null);
@@ -19,25 +20,33 @@ export default function GalleryPage() {
   const [selected,   setSelected]   = useState(null);
   const [deleting,   setDeleting]   = useState(null);
   const [refreshing, setRefreshing] = useState(false);
-  const [qrDataUrl,  setQrDataUrl]  = useState('');
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
-  // QR 코드 생성 — dynamic import로 클라이언트에서만 실행 (SSR 방지)
-  const generateQR = useCallback(async (url) => {
-    try {
-      const QRCode = (await import('qrcode')).default;
-      const dataUrl = await QRCode.toDataURL(url, {
-        width: 200,
-        margin: 2,
-        color: { dark: '#191f28', light: '#ffffff' },
-        errorCorrectionLevel: 'M',
-      });
-      setQrDataUrl(dataUrl);
-    } catch (err) {
-      console.error('QR 생성 실패:', err);
-    }
-  }, []);
+  // QR SVG → PNG blob 다운로드
+  function downloadQR() {
+    if (!qrRef.current || !event) return;
+    const svg = qrRef.current.querySelector('svg');
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas  = document.createElement('canvas');
+    const size    = 200;
+    canvas.width  = size;
+    canvas.height = size;
+    const ctx     = canvas.getContext('2d');
+    const img     = new Image();
+    img.onload = () => {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      const a    = document.createElement('a');
+      a.href     = canvas.toDataURL('image/png');
+      a.download = `ourday-qr-${event.event_code}.png`;
+      a.click();
+    };
+    img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgData)))}`;
+  }
 
   const loadGallery = useCallback(async (eventId) => {
     setRefreshing(true);
@@ -63,13 +72,6 @@ export default function GalleryPage() {
     init();
   }, [router, loadGallery]);
 
-  // event_code 확정되면 QR 생성
-  useEffect(() => {
-    if (!event?.event_code || !origin) return;
-    const guestUrl = `${origin}/guest/${event.event_code}`;
-    generateQR(guestUrl);
-  }, [event, origin, generateQR]);
-
   const guestUrl = event ? `${origin}/guest/${event.event_code}` : '';
   const liveUrl  = event ? `${origin}/live/${event.event_code}`  : '';
 
@@ -77,15 +79,6 @@ export default function GalleryPage() {
     await navigator.clipboard.writeText(guestUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }
-
-  // QR 이미지 다운로드
-  function downloadQR() {
-    if (!qrDataUrl || !event) return;
-    const a = document.createElement('a');
-    a.href = qrDataUrl;
-    a.download = `ourday-qr-${event.event_code}.png`;
-    a.click();
   }
 
   async function deletePhoto(photo) {
@@ -130,14 +123,19 @@ export default function GalleryPage() {
           </div>
         </div>
 
-        {/* QR 이미지 */}
-        <div className="flex flex-col items-center mb-4">
+        {/* QR 이미지 (react-qr-code — pure SVG, Canvas 불필요) */}
+        <div className="flex flex-col items-center mb-4" ref={qrRef}>
           <div className="rounded-2xl p-4 mb-3"
             style={{ backgroundColor: 'white', border: '1px solid var(--toss-border)', display: 'inline-block' }}>
-            {qrDataUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={qrDataUrl} alt="QR 코드" width={180} height={180}
-                style={{ display: 'block', borderRadius: 4 }} ref={canvasRef} />
+            {guestUrl ? (
+              <QRCodeSVG
+                value={guestUrl}
+                size={180}
+                fgColor="#191f28"
+                bgColor="#ffffff"
+                level="M"
+                style={{ display: 'block', borderRadius: 4 }}
+              />
             ) : (
               <div style={{ width: 180, height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
                 backgroundColor: 'var(--toss-bg)', borderRadius: 4 }}>
@@ -167,10 +165,10 @@ export default function GalleryPage() {
             {copied ? <Check size={15} /> : <Copy size={15} />}
             {copied ? '복사됨!' : '링크 복사'}
           </button>
-          <button onClick={downloadQR} disabled={!qrDataUrl}
+          <button onClick={downloadQR} disabled={!guestUrl}
             className="flex items-center justify-center gap-1.5"
             style={{
-              flex: 1, height: 44, borderRadius: 12, cursor: qrDataUrl ? 'pointer' : 'not-allowed',
+              flex: 1, height: 44, borderRadius: 12, cursor: guestUrl ? 'pointer' : 'not-allowed',
               backgroundColor: 'var(--toss-bg)',
               color: 'var(--toss-text-secondary)',
               border: '1px solid var(--toss-border)', fontWeight: 600, fontSize: 13,
