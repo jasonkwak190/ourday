@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { QrCode, Copy, Check, Image as ImageIcon, Users, Trash2, RefreshCw, Download, MonitorPlay } from 'lucide-react';
-import QRCode from 'qrcode';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 
@@ -24,9 +23,10 @@ export default function GalleryPage() {
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
-  // QR 코드 생성 (로컬, 외부 API 불필요)
+  // QR 코드 생성 — dynamic import로 클라이언트에서만 실행 (SSR 방지)
   const generateQR = useCallback(async (url) => {
     try {
+      const QRCode = (await import('qrcode')).default;
       const dataUrl = await QRCode.toDataURL(url, {
         width: 200,
         margin: 2,
