@@ -54,6 +54,8 @@ export default function InvitationPage() {
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
   });
   const [coupleId, setCoupleId] = useState(null);
+  // 계정에서 가져온 원본 이름 (되돌리기용)
+  const [accountNames, setAccountNames] = useState({ groom: '', bride: '' });
 
   const origin  = typeof window !== 'undefined' ? window.location.origin : '';
   const shareUrl = inv ? `${origin}/i/${inv.slug}` : '';
@@ -82,13 +84,16 @@ export default function InvitationPage() {
       const brideName = members.find(m => m.role === 'bride')?.name  || '';
       const existing  = existingRes.data;
 
+      // 계정 이름 저장 (되돌리기용)
+      setAccountNames({ groom: groomName, bride: brideName });
+
       if (existing) {
         setInv(existing);
         setForm({
           template:      existing.template      || 'minimal',
-          // 이름이 비어있으면 users 테이블에서 자동 매핑
-          groom_name:    existing.groom_name    || groomName,
-          bride_name:    existing.bride_name    || brideName,
+          // 계정 이름을 항상 우선 — 계정에 이름 없으면 저장값 사용
+          groom_name:    groomName || existing.groom_name    || '',
+          bride_name:    brideName || existing.bride_name    || '',
           wedding_date:  existing.wedding_date  || coupleRes.data?.wedding_date || '',
           wedding_time:  existing.wedding_time  || '',
           venue_name:    existing.venue_name    || '',
@@ -195,32 +200,58 @@ export default function InvitationPage() {
         <div key={section} className="card mb-4">
           <p className="text-sm font-bold mb-3" style={{ color: 'var(--toss-text-primary)' }}>{section}</p>
           <div className="flex flex-col gap-3">
-            {fields.map(({ key, label, type, placeholder }) => (
-              <div key={key}>
-                <label className="text-xs font-semibold mb-1 block"
-                  style={{ color: 'var(--toss-text-secondary)' }}>
-                  {label}
-                </label>
-                {type === 'textarea' ? (
-                  <textarea
-                    value={form[key]}
-                    onChange={e => update(key, e.target.value)}
-                    placeholder={placeholder}
-                    rows={3}
-                    className="input-field"
-                    style={{ resize: 'none', lineHeight: 1.6 }}
-                  />
-                ) : (
-                  <input
-                    type={type || 'text'}
-                    value={form[key]}
-                    onChange={e => update(key, e.target.value)}
-                    placeholder={placeholder}
-                    className="input-field"
-                  />
-                )}
-              </div>
-            ))}
+            {fields.map(({ key, label, type, placeholder }) => {
+              // 신랑·신부 이름 필드는 계정 연동 뱃지 표시
+              const accountVal = key === 'groom_name' ? accountNames.groom
+                               : key === 'bride_name' ? accountNames.bride
+                               : null;
+              const isNameChanged = accountVal && form[key] !== accountVal;
+
+              return (
+                <div key={key}>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold"
+                      style={{ color: 'var(--toss-text-secondary)' }}>
+                      {label}
+                    </label>
+                    {accountVal && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs px-2 py-0.5 rounded-full"
+                          style={{ backgroundColor: 'var(--toss-blue-light)', color: 'var(--toss-blue)' }}>
+                          계정: {accountVal}
+                        </span>
+                        {isNameChanged && (
+                          <button
+                            onClick={() => update(key, accountVal)}
+                            className="text-xs"
+                            style={{ color: 'var(--toss-text-tertiary)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                            되돌리기
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  {type === 'textarea' ? (
+                    <textarea
+                      value={form[key]}
+                      onChange={e => update(key, e.target.value)}
+                      placeholder={placeholder}
+                      rows={3}
+                      className="input-field"
+                      style={{ resize: 'none', lineHeight: 1.6 }}
+                    />
+                  ) : (
+                    <input
+                      type={type || 'text'}
+                      value={form[key]}
+                      onChange={e => update(key, e.target.value)}
+                      placeholder={placeholder}
+                      className="input-field"
+                    />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
