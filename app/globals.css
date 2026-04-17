@@ -57,9 +57,10 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* tabular-nums: 금액·D-day 숫자 글자폭 통일 (0이 흔들리지 않게) */
-  font-feature-settings: "tnum" 1;
 }
+
+/* tabular-nums: 금액·날짜처럼 숫자가 나란히 있을 때만 선택 적용 */
+.tabular-nums { font-feature-settings: "tnum" 1; font-variant-numeric: tabular-nums; }
 
 /*
  * ─── 버튼 ───

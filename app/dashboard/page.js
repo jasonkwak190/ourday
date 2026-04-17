@@ -203,7 +203,7 @@ export default function DashboardPage() {
               {dday > 0 ? `D-${dday}` : dday === 0 ? 'D-Day' : `D+${Math.abs(dday)}`}
             </span>
             <p
-              className="text-7xl font-extrabold mt-2 leading-none tracking-tight"
+              className="text-7xl font-extrabold mt-2 leading-none tracking-tight tabular-nums"
               style={{ color: 'var(--toss-blue)' }}
             >
               {dday > 0 ? dday : dday === 0 ? '🎊' : Math.abs(dday)}

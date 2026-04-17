@@ -215,7 +215,7 @@ export default function BudgetPage() {
               </div>
             ) : (
               <div className="flex items-center gap-2 mt-0.5">
-                <p className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>
+                <p className="text-lg font-semibold tabular-nums" style={{ color: 'var(--ink)' }}>
                   {totalBudget.toLocaleString()}만원
                 </p>
                 <button
@@ -230,19 +230,19 @@ export default function BudgetPage() {
           </div>
           <div>
             <p className="text-xs" style={{ color: 'var(--stone)' }}>실제 지출</p>
-            <p className="text-lg font-semibold mt-0.5" style={{ color: 'var(--rose)' }}>
+            <p className="text-lg font-semibold mt-0.5 tabular-nums" style={{ color: 'var(--rose)' }}>
               {totalSpent.toLocaleString()}만원
             </p>
           </div>
           <div>
             <p className="text-xs" style={{ color: 'var(--stone)' }}>사용률</p>
-            <p className="text-lg font-semibold mt-0.5" style={{ color: budgetPct >= 100 ? 'var(--rose)' : 'var(--ink)' }}>
+            <p className="text-lg font-semibold mt-0.5 tabular-nums" style={{ color: budgetPct >= 100 ? 'var(--rose)' : 'var(--ink)' }}>
               {budgetPct}%
             </p>
           </div>
           <div>
             <p className="text-xs" style={{ color: 'var(--stone)' }}>남은 예산</p>
-            <p className="text-lg font-semibold mt-0.5" style={{ color: remaining < 0 ? 'var(--rose)' : 'var(--green)' }}>
+            <p className="text-lg font-semibold mt-0.5 tabular-nums" style={{ color: remaining < 0 ? 'var(--rose)' : 'var(--green)' }}>
               {remaining.toLocaleString()}만원
             </p>
           </div>
