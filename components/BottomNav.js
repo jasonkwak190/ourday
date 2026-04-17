@@ -6,8 +6,8 @@ const NAV_ITEMS = [
   { key: 'home',      label: '홈',   icon: '🏠', href: '/dashboard' },
   { key: 'timeline',  label: '일정', icon: '📅', href: '/timeline' },
   { key: 'budget',    label: '예산', icon: '💰', href: '/budget' },
+  { key: 'guests',    label: '하객', icon: '🎊', href: '/guests' },
   { key: 'decisions', label: '결정', icon: '💬', href: '/decisions' },
-  { key: 'guide',     label: '정보', icon: '📖', href: '/guide' },
 ];
 
 export default function BottomNav({ active }) {
