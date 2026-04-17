@@ -43,13 +43,14 @@
 body {
   background-color: var(--toss-bg);
   color: var(--toss-text-primary);
-  /* Tossface를 앞에 두면 이모지 코드포인트는 Tossface로, 텍스트는 Pretendard로 자동 분기 */
-  font-family: 'Tossface', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
     'Apple SD Gothic Neo', sans-serif;
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 숫자 글자폭 통일 — 금액·D-day 숫자가 흔들리지 않게 */
+  font-feature-settings: "tnum" 1;
 }
 
 /* ─── 버튼 ─── */

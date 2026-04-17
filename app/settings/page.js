@@ -110,8 +110,8 @@ export default function SettingsPage() {
             >
               <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>이 코드를 상대방에게 공유하세요</p>
               <p
-                className="text-3xl font-bold tracking-widest"
-                style={{ color: 'var(--rose)', fontFamily: 'monospace' }}
+                className="text-3xl font-bold tracking-[0.25em]"
+                style={{ color: 'var(--rose)', fontVariantNumeric: 'tabular-nums' }}
               >
                 {couple.invite_code}
               </p>

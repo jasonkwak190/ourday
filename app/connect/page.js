@@ -192,8 +192,8 @@ export default function ConnectPage() {
             상대방에게 이 코드를 공유하세요
           </p>
           <p
-            className="text-4xl font-bold tracking-widest"
-            style={{ color: 'var(--rose)', fontFamily: 'monospace' }}
+            className="text-4xl font-bold tracking-[0.25em]"
+            style={{ color: 'var(--rose)', fontVariantNumeric: 'tabular-nums' }}
           >
             {myCode}
           </p>
