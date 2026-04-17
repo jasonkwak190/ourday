@@ -14,6 +14,7 @@ export default function GalleryPage() {
   const qrRef   = useRef(null);
 
   const [loading,    setLoading]    = useState(true);
+  const [apiError,   setApiError]   = useState('');
   const [event,      setEvent]      = useState(null);
   const [photos,     setPhotos]     = useState([]);
   const [copied,     setCopied]     = useState(false);
@@ -66,6 +67,9 @@ export default function GalleryPage() {
       if (data.event) {
         setEvent(data.event);
         await loadGallery(data.event.id);
+      } else {
+        // 어떤 에러인지 화면에 표시 (디버깅용)
+        setApiError(data.error || `HTTP ${res.status}: event 없음`);
       }
       setLoading(false);
     };
@@ -137,9 +141,19 @@ export default function GalleryPage() {
                 style={{ display: 'block', borderRadius: 4 }}
               />
             ) : (
-              <div style={{ width: 180, height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: 'var(--toss-bg)', borderRadius: 4 }}>
-                <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>QR 생성 중...</p>
+              <div style={{ width: 180, height: 180, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 8,
+                backgroundColor: 'var(--toss-bg)', borderRadius: 4, padding: 12 }}>
+                {apiError ? (
+                  <>
+                    <p className="text-xs font-bold" style={{ color: 'var(--toss-red)' }}>오류 발생</p>
+                    <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)', textAlign: 'center', wordBreak: 'break-all' }}>
+                      {apiError}
+                    </p>
+                  </>
+                ) : (
+                  <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>QR 생성 중...</p>
+                )}
               </div>
             )}
           </div>
