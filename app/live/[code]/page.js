@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, use } from 'react';
 import { Heart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 const SLIDE_INTERVAL = 4000; // 4초
 
 export default function LiveSlideshowPage({ params }) {
-  const { code } = params;
+  const { code } = use(params);
 
   const [photos, setPhotos]     = useState([]);
   const [event, setEvent]       = useState(null);

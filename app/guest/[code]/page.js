@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, use } from 'react';
 import { Camera, Upload, Check, X, ImagePlus, Loader2 } from 'lucide-react';
 
 export default function GuestUploadPage({ params }) {
-  const { code } = params;
+  const { code } = use(params);
 
   const [name, setName]           = useState('');
   const [files, setFiles]         = useState([]);   // { file, preview, status: 'pending'|'uploading'|'done'|'error', error }
