@@ -43,7 +43,8 @@
 body {
   background-color: var(--toss-bg);
   color: var(--toss-text-primary);
-  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+  /* Tossface를 앞에 두면 이모지 코드포인트는 Tossface로, 텍스트는 Pretendard로 자동 분기 */
+  font-family: 'Tossface', 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
     'Apple SD Gothic Neo', sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -55,8 +56,8 @@ body {
 .btn-rose {
   background-color: var(--toss-blue);
   color: white;
-  border-radius: 18px;
-  padding: 0 20px;
+  border-radius: 16px;
+  padding: 0 24px;   /* 8pt grid: 24 = 8×3 */
   height: 52px;
   font-weight: 700;
   font-size: 1rem;
@@ -78,8 +79,8 @@ body {
   background-color: var(--toss-card);
   color: var(--toss-text-primary);
   border: 1.5px solid var(--toss-border);
-  border-radius: 18px;
-  padding: 0 20px;
+  border-radius: 16px;
+  padding: 0 24px;   /* 8pt grid: 24 = 8×3 */
   height: 52px;
   font-weight: 700;
   font-size: 1rem;
@@ -100,8 +101,8 @@ body {
   background-color: var(--toss-bg);
   color: var(--toss-text-secondary);
   border: none;
-  border-radius: 18px;
-  padding: 0 20px;
+  border-radius: 16px;
+  padding: 0 24px;   /* 8pt grid: 24 = 8×3 */
   height: 52px;
   font-weight: 600;
   font-size: 1rem;

@@ -15,6 +15,12 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
+        {/* Tossface — 이모지 폰트 (이모지 우선 렌더링) */}
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/toss/tossface/dist/tossface.css"
+        />
+        {/* Pretendard — 텍스트 폰트 */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
