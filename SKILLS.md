@@ -237,48 +237,72 @@ PostCSS(Tailwind v4)는 `@import "tailwindcss"` 처리 시 @font-face 등을 인
 
 ---
 
-## DESIGN-001 · 폰트 스택 — Tossface + Pretendard
+## ERR-010 · Tossface font-family 추가 시 숫자·기호 렌더링 완전 파괴
 
-**원칙**
+**증상**
+```
+날짜, D-day, 금액, 퍼센트 등 숫자가 전부 "2 0 2 7년", "3 5 8", "0 / 5" 처럼
+글자 사이에 공백이 생긴 것처럼 엄청 넓게 렌더링됨
+```
 
-이 프로젝트는 두 폰트를 함께 사용한다:
-- **Tossface** — Toss 공식 이모지 폰트. 이모지 유니코드 범위(U+1F000~)만 커버
-- **Pretendard Variable** — 한/영/숫자 전담 텍스트 폰트
+**원인**
+`font-family`에 `'Tossface'`를 첫 번째로 추가하면, Tossface의 `@font-face`에
+`unicode-range`가 선언되어 있어도 **실제 브라우저(Chrome/Safari)에서는
+숫자(0-9), 기호(/, %, -) 등 ASCII 문자 글리프까지 가로채서 렌더링**함.
+Tossface의 숫자 글리프는 sidebearing(글자 간격)이 매우 넓어서
+모든 숫자가 공백이 생긴 것처럼 보임.
 
-**올바른 font-family 선언 (globals.css body)**
+spec(unicode-range)대로면 텍스트 문자를 건드리면 안 되지만,
+브라우저 구현 차이로 실제로는 오동작함. CDN 로드 타이밍 이슈도 복합적으로 작용.
+
+**해결**
+```css
+/* ❌ 절대 하지 말 것 */
+font-family: 'Tossface', 'Pretendard Variable', 'Pretendard', ...;
+
+/* ✅ Pretendard만 사용 */
+font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...;
+```
+- `app/globals.css` body font-family에서 Tossface 제거
+- `app/layout.js`에서 Tossface CDN `<link>` 태그 제거
+- 이모지는 OS 시스템 이모지로 렌더링 (충분히 깔끔함)
+
+**재발 방지 규칙**
+- **Tossface를 font-family에 추가하는 것은 영구 금지**
+- 이모지 스타일 개선 요청이 와도 font-family 수정으로 해결하지 말 것
+- 폰트 관련 수정 후에는 반드시 로그인 → 대시보드에서 날짜/숫자 직접 확인
+- 숫자 고정폭이 필요하면 `font-family` 수정 대신 `.tabular-nums` CSS 클래스 사용
+
+---
+
+## DESIGN-001 · 폰트 스택 — Pretendard (Tossface 사용 금지)
+
+**유일하게 허용되는 font-family 선언 (globals.css body)**
 
 ```css
-/* ✅ Tossface를 반드시 첫 번째로 */
-font-family: 'Tossface', 'Pretendard Variable', 'Pretendard',
+/* ✅ */
+font-family: 'Pretendard Variable', 'Pretendard',
   -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
 ```
 
-**왜 Tossface를 맨 앞에 두는가?**
-
-브라우저 폰트 폴백은 **글리프(글자) 단위**로 동작한다.
-- Tossface는 이모지 코드포인트만 가지고, 한/영/숫자 글리프가 없음
-- 따라서 "안녕 🎁" 렌더링 시: '안녕 '은 Pretendard, '🎁'만 Tossface 사용
-- 결과: 이모지가 노란 Apple/Google 이모지 대신 Toss 인앱 스타일로 표시
+**Tossface 사용 금지** → ERR-010 참조. unicode-range 선언과 무관하게 숫자 렌더링을 완전히 파괴함.
 
 **절대 하지 말 것**
 
 ```css
-/* ❌ Tossface 제거 — 이모지가 시스템 기본(노란 이모지)으로 돌아감 */
-font-family: 'Pretendard Variable', 'Pretendard', ...;
+/* ❌ Tossface — ERR-010으로 영구 금지 */
+font-family: 'Tossface', ...;
 
-/* ❌ monospace 사용 — 시스템 Courier New로 렌더링되어 브랜드 일관성 깨짐 */
+/* ❌ monospace — 시스템 Courier New로 렌더링됨 */
 style={{ fontFamily: 'monospace' }}
 
-/* ✅ 고정폭 숫자가 필요하면 tabular-nums 사용 */
-style={{ fontVariantNumeric: 'tabular-nums' }}
-/* 또는 Tailwind: className="tabular-nums" */
+/* ✅ 고정폭 숫자가 필요하면 */
+className="tabular-nums"
 ```
 
-**이모지 코드는 유지할 것**
+**이모지는 OS 시스템 이모지 사용**
 
-기존 JSX의 🎁🎉💌📅 등 이모지 문자를 지우지 말 것.
-Tossface가 자동으로 Toss 스타일로 렌더링한다.
-"AI가 만든 느낌"이 나는 원인은 이모지 자체가 아니라 시스템 이모지 렌더링이었음.
+🎁🎉💌📅 등 기존 이모지 코드는 그대로 유지. OS 기본 이모지로 충분히 깔끔하게 렌더링됨.
 
 ---
 
