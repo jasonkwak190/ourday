@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, CalendarDays, Wallet, Users, Building2, MoreHorizontal, MessageSquare, BookOpen, Settings } from 'lucide-react';
+import { Home, CalendarDays, Wallet, Users, Building2, MoreHorizontal, MessageSquare, BookOpen, Settings, CalendarRange } from 'lucide-react';
 
 const NAV_ITEMS = [
   { key: 'home',     label: '홈',   Icon: Home,         href: '/dashboard' },
@@ -13,8 +13,9 @@ const NAV_ITEMS = [
 ];
 
 const MORE_ITEMS = [
+  { key: 'calendar',  label: '캘린더',    Icon: CalendarRange, href: '/calendar',  desc: '체크리스트·잔금 일정 한눈에' },
   { key: 'decisions', label: '의사결정',  Icon: MessageSquare, href: '/decisions', desc: '신랑·신부 의견 조율' },
-  { key: 'guide',     label: '예식 가이드', Icon: BookOpen,     href: '/guide',     desc: '폐백·청첩장·예단 정보' },
+  { key: 'guide',     label: '예식 가이드', Icon: BookOpen,    href: '/guide',     desc: '폐백·청첩장·예단 정보' },
   { key: 'settings',  label: '설정',      Icon: Settings,      href: '/settings',  desc: '프로필·결혼정보 수정' },
 ];
 
