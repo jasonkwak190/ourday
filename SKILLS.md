@@ -140,6 +140,84 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-anon-key
 
 ---
 
+## ERR-007 · lucide-react를 Server Component에서 import 시 에러
+
+**증상**
+```
+Error: React.createContext is not a function
+```
+
+**원인**
+lucide-react는 내부적으로 React Context를 사용하므로 Server Component에서 직접 import 불가.
+
+**해결**
+```js
+// ❌ Server Component에서 직접 사용 금지
+import { Home } from 'lucide-react';
+
+// ✅ 'use client' 컴포넌트에서만 사용
+'use client';
+import { Home } from 'lucide-react';
+```
+
+**재발 방지 규칙**
+- lucide-react 아이콘은 반드시 `'use client'` 컴포넌트에서만 사용
+- BottomNav, 각종 카드 컴포넌트는 이미 `'use client'`이므로 OK
+
+---
+
+## ERR-008 · TDS 전환 시 Supabase 로직 손상 패턴
+
+**증상**
+디자인 수정 중 onSubmit 핸들러 또는 useEffect 데이터 페칭이 사라짐
+
+**원인**
+JSX 대규모 리팩토링 시 이벤트 핸들러나 상태 바인딩을 함께 삭제
+
+**해결 / 재발 방지 규칙**
+- 디자인 수정 시 className/style 속성만 변경
+- onClick/onChange/onSubmit/value 등 **로직 속성은 절대 건드리지 않음**
+- 수정 전 반드시 해당 파일을 Read로 전체 확인 후 Edit 사용
+- 대규모 Write는 금지 — 반드시 Edit(부분 수정)으로만 진행
+
+---
+
+## ERR-009 · globals.css에서 @import 순서 에러 (PostCSS)
+
+**증상**
+```
+Parsing CSS source code failed
+@import rules must precede all other rules aside from @charset and @layer
+```
+
+**원인**
+PostCSS(Tailwind v4)는 `@import "tailwindcss"` 처리 시 @font-face 등을 인라인으로 생성한다.
+그 뒤에 외부 `@import url(...)` 가 오면 "@import는 다른 규칙보다 먼저 와야 한다" 에러 발생.
+
+**해결**
+```css
+/* ❌ 잘못된 방식 — @font-face 뒤에 @import */
+@import "tailwindcss";
+@font-face { ... }
+@import url('https://cdn.example.com/font.css');
+
+/* ✅ 올바른 방식 — 외부 폰트는 layout.js <link> 태그로 로드 */
+/* globals.css */
+@import "tailwindcss";
+/* (외부 폰트 @import 제거) */
+
+/* layout.js */
+<head>
+  <link rel="stylesheet" href="https://cdn.example.com/font.css" />
+</head>
+```
+
+**재발 방지 규칙**
+- CDN 폰트는 `globals.css @import url(...)` 대신 `layout.js <link>` 태그 사용
+- `@import "tailwindcss"` 이전에 외부 @import가 필요하면 첫 줄에만 배치
+
+---
+
 ## 체크리스트 — 새 기능 추가 시
 
 - [ ] `'use client'` 필요한 컴포넌트에 추가했는가?
@@ -148,3 +226,11 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder-anon-key
 - [ ] 로딩·에러 상태 처리가 있는가?
 - [ ] couple_id 없는 사용자도 진입 가능한가? (점진적 온보딩)
 - [ ] `createBrowserClient` 사용하고 있는가? (`createClient` 아님)
+
+## 체크리스트 — 디자인 수정 시 (TDS 전환 포함)
+
+- [ ] className/style만 변경했는가? (로직 속성 무수정)
+- [ ] lucide-react 아이콘을 `'use client'` 컴포넌트에서만 사용했는가?
+- [ ] `var(--toss-*)` 변수를 사용했는가? (컬러 하드코딩 금지)
+- [ ] `npm run build`로 빌드 에러 없음을 확인했는가?
+- [ ] 프리뷰에서 Supabase CRUD가 정상 동작하는가?

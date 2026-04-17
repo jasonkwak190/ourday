@@ -1,103 +1,172 @@
 @import "tailwindcss";
 
 :root {
-  --cream: #FAF7F2;
-  --beige: #F2EBE0;
-  --rose: #C9897A;
-  --rose-light: #F0DDD8;
-  --stone: #8C7B6E;
-  --stone-light: #D6CFC8;
-  --ink: #2C2420;
-  --ink-soft: #6B5C52;
-  --green: #7A9E7E;
-  --green-light: #E8F0E9;
-  --amber: #C4934A;
-  --amber-light: #F5EDD8;
-  --purple: #8B7BAE;
-  --purple-light: #EDE9F5;
+  /* ── Toss 컬러 토큰 ── */
+  --toss-bg:             #F2F4F6;
+  --toss-card:           #FFFFFF;
+  --toss-blue:           #3182F6;
+  --toss-blue-light:     #EBF3FE;
+  --toss-blue-dark:      #1B64DA;
+  --toss-text-primary:   #191F28;
+  --toss-text-secondary: #4E5968;
+  --toss-text-tertiary:  #8B95A1;
+  --toss-border:         #E5E8EB;
+  --toss-red:            #F04452;
+  --toss-red-light:      #FFF0F1;
+  --toss-green:          #00B493;
+  --toss-green-light:    #E6FAF6;
+  --toss-yellow:         #F8B300;
+  --toss-yellow-light:   #FFFAE6;
+  --toss-purple:         #7B61FF;
+  --toss-purple-light:   #F0EEFF;
+
+  /* ── 결혼 테마 → Toss 시맨틱 매핑 (하위호환) ── */
+  --cream:        var(--toss-bg);
+  --beige:        #EAECEF;
+  --rose:         var(--toss-blue);
+  --rose-light:   var(--toss-blue-light);
+  --stone:        var(--toss-text-secondary);
+  --stone-light:  var(--toss-border);
+  --ink:          var(--toss-text-primary);
+  --ink-soft:     var(--toss-text-secondary);
+  --green:        var(--toss-green);
+  --green-light:  var(--toss-green-light);
+  --amber:        var(--toss-yellow);
+  --amber-light:  var(--toss-yellow-light);
+  --purple:       var(--toss-purple);
+  --purple-light: var(--toss-purple-light);
 }
+
+/* ─── Base ─── */
+* { box-sizing: border-box; }
 
 body {
-  background-color: var(--cream);
-  color: var(--ink);
-  font-family: 'DM Sans', sans-serif;
+  background-color: var(--toss-bg);
+  color: var(--toss-text-primary);
+  font-family: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont,
+    'Apple SD Gothic Neo', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* 버튼 */
+/* ─── 버튼 ─── */
 .btn-rose {
-  background-color: var(--rose);
+  background-color: var(--toss-blue);
   color: white;
-  border-radius: 9999px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-size: 0.95rem;
+  border-radius: 18px;
+  padding: 0 20px;
+  height: 52px;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: opacity 0.15s;
   border: none;
+  transition: background-color 0.15s, transform 0.1s;
+  letter-spacing: -0.01em;
+  width: 100%;
 }
-.btn-rose:hover { opacity: 0.88; }
-.btn-rose:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-rose:hover  { background-color: var(--toss-blue-dark); }
+.btn-rose:active { transform: scale(0.96); }
+.btn-rose:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 .btn-outline {
-  background-color: transparent;
-  color: var(--rose);
-  border: 1.5px solid var(--rose);
-  border-radius: 9999px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 500;
-  font-size: 0.95rem;
+  background-color: var(--toss-card);
+  color: var(--toss-text-primary);
+  border: 1.5px solid var(--toss-border);
+  border-radius: 18px;
+  padding: 0 20px;
+  height: 52px;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: inherit;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.15s;
+  transition: background-color 0.15s, transform 0.1s;
+  letter-spacing: -0.01em;
+  width: 100%;
 }
-.btn-outline:hover { background-color: var(--rose-light); }
+.btn-outline:hover  { background-color: var(--toss-bg); }
+.btn-outline:active { transform: scale(0.96); }
+.btn-outline:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-/* 인풋 */
+.btn-ghost {
+  background-color: var(--toss-bg);
+  color: var(--toss-text-secondary);
+  border: none;
+  border-radius: 18px;
+  padding: 0 20px;
+  height: 52px;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+  width: 100%;
+}
+.btn-ghost:hover  { background-color: var(--toss-border); }
+.btn-ghost:active { transform: scale(0.96); }
+
+/* ─── 인풋 ─── */
 .input-field {
   width: 100%;
-  border: 1.5px solid var(--stone-light);
-  border-radius: 0.75rem;
-  padding: 0.75rem 1rem;
-  font-size: 0.95rem;
-  background-color: white;
-  color: var(--ink);
+  border: 1.5px solid transparent;
+  border-radius: 12px;
+  padding: 0 16px;
+  height: 52px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 500;
+  background-color: var(--toss-bg);
+  color: var(--toss-text-primary);
   outline: none;
-  transition: border-color 0.15s;
-  font-family: 'DM Sans', sans-serif;
+  transition: border-color 0.15s, background-color 0.15s;
+  letter-spacing: -0.01em;
 }
-.input-field:focus { border-color: var(--rose); }
-.input-field::placeholder { color: var(--stone-light); }
+.input-field:focus {
+  border-color: var(--toss-blue);
+  background-color: var(--toss-card);
+}
+.input-field::placeholder {
+  color: var(--toss-text-tertiary);
+  font-weight: 400;
+}
 
-/* 카드 */
+/* ─── 카드 ─── */
 .card {
-  background-color: white;
-  border-radius: 1.25rem;
-  box-shadow: 0 1px 4px rgba(44, 36, 32, 0.07);
-  padding: 1.25rem;
+  background-color: var(--toss-card);
+  border-radius: 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 24px;
 }
 
-/* 태그 */
+/* ─── 태그 ─── */
 .tag {
   display: inline-flex;
   align-items: center;
-  border-radius: 9999px;
-  padding: 0.2rem 0.65rem;
+  border-radius: 8px;
+  padding: 0.2rem 0.6rem;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
-.tag-rose   { background-color: var(--rose-light);   color: var(--rose); }
-.tag-green  { background-color: var(--green-light);  color: var(--green); }
-.tag-amber  { background-color: var(--amber-light);  color: var(--amber); }
-.tag-purple { background-color: var(--purple-light); color: var(--purple); }
-.tag-stone  { background-color: #EEEBE8;             color: var(--stone); }
+.tag-rose   { background-color: var(--toss-blue-light);   color: var(--toss-blue); }
+.tag-green  { background-color: var(--toss-green-light);  color: var(--toss-green); }
+.tag-amber  { background-color: var(--toss-yellow-light); color: var(--toss-yellow); }
+.tag-purple { background-color: var(--toss-purple-light); color: var(--toss-purple); }
+.tag-stone  { background-color: var(--toss-bg);           color: var(--toss-text-secondary); }
+.tag-red    { background-color: var(--toss-red-light);    color: var(--toss-red); }
 
-/* 하단 네비게이션 */
+/* ─── 하단 네비게이션 ─── */
 .nav-bottom {
   position: fixed;
   bottom: 0;
@@ -105,34 +174,42 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  background-color: white;
-  border-top: 1px solid var(--stone-light);
+  background-color: var(--toss-card);
+  box-shadow: 0 -1px 0 var(--toss-border);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
   z-index: 50;
 }
 
-/* 프로그레스 바 */
+/* ─── 프로그레스 바 ─── */
 .progress-bar {
   width: 100%;
-  height: 8px;
-  background-color: var(--beige);
-  border-radius: 9999px;
+  height: 6px;
+  background-color: var(--toss-bg);
+  border-radius: 99px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background-color: var(--rose);
-  border-radius: 9999px;
+  background-color: var(--toss-blue);
+  border-radius: 99px;
   transition: width 0.4s ease;
 }
 
-/* 페이지 공통 래퍼 */
+/* ─── 페이지 래퍼 ─── */
 .page-wrapper {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 1.5rem 1.25rem 6rem;
+  padding: 24px 20px 96px;
+  background-color: var(--toss-bg);
+}
+
+/* ─── 구분선 ─── */
+.divider {
+  height: 1px;
+  background-color: var(--toss-border);
+  margin: 0;
 }

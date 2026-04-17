@@ -30,21 +30,17 @@ export default function LandingPage() {
           우리의 날
         </p>
         <h1
-          className="text-5xl"
-          style={{
-            fontFamily: 'var(--font-dm-serif)',
-            fontStyle: 'italic',
-            color: 'var(--rose)',
-          }}
+          className="text-5xl font-extrabold tracking-tight"
+          style={{ color: 'var(--toss-blue)' }}
         >
           Ourday
         </h1>
         <p
           className="mt-4 text-base leading-relaxed"
-          style={{ color: 'var(--ink-soft)' }}
+          style={{ color: 'var(--toss-text-secondary)' }}
         >
           결혼 준비, 둘이 함께라면<br />
-          <span style={{ fontFamily: 'var(--font-dm-serif)', fontStyle: 'italic' }}>
+          <span className="font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
             더 쉽고 행복하게
           </span>
         </p>

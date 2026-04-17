@@ -36,8 +36,8 @@ export default function LoginPage() {
       {/* 헤더 */}
       <div className="text-center mb-10">
         <h2
-          className="text-3xl"
-          style={{ fontFamily: 'var(--font-dm-serif)', fontStyle: 'italic', color: 'var(--rose)' }}
+          className="text-3xl font-extrabold tracking-tight"
+          style={{ color: 'var(--toss-blue)' }}
         >
           Ourday
         </h2>

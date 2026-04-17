@@ -203,12 +203,8 @@ export default function DashboardPage() {
               {dday > 0 ? `D-${dday}` : dday === 0 ? 'D-Day' : `D+${Math.abs(dday)}`}
             </span>
             <p
-              className="text-7xl font-bold mt-2 leading-none"
-              style={{
-                fontFamily: 'var(--font-dm-serif)',
-                fontStyle: 'italic',
-                color: 'var(--rose)',
-              }}
+              className="text-7xl font-extrabold mt-2 leading-none tracking-tight"
+              style={{ color: 'var(--toss-blue)' }}
             >
               {dday > 0 ? dday : dday === 0 ? '🎊' : Math.abs(dday)}
             </p>
@@ -224,7 +220,7 @@ export default function DashboardPage() {
         <div className="card text-center py-4">
           <p
             className="text-2xl font-bold"
-            style={{ color: 'var(--ink)', fontFamily: 'var(--font-dm-serif)' }}
+            style={{ color: 'var(--toss-text-primary)' }}
           >
             {monthDoneCount}<span className="text-base font-normal" style={{ color: 'var(--stone)' }}>/{monthTotalCount}</span>
           </p>
@@ -233,7 +229,7 @@ export default function DashboardPage() {
         <div className="card text-center py-4">
           <p
             className="text-2xl font-bold"
-            style={{ color: budgetPct > 100 ? 'var(--rose)' : 'var(--ink)', fontFamily: 'var(--font-dm-serif)' }}
+            style={{ color: budgetPct > 100 ? 'var(--toss-red)' : 'var(--toss-text-primary)' }}
           >
             {budgetPct}<span className="text-base font-normal" style={{ color: 'var(--stone)' }}>%</span>
           </p>
@@ -242,7 +238,7 @@ export default function DashboardPage() {
         <div className="card text-center py-4">
           <p
             className="text-2xl font-bold"
-            style={{ color: 'var(--amber)', fontFamily: 'var(--font-dm-serif)' }}
+            style={{ color: 'var(--toss-yellow)' }}
           >
             {undecidedCount}
           </p>
