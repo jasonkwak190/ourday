@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "ourday-dev",
-      "runtimeExecutable": "/opt/homebrew/bin/npm",
+      "runtimeExecutable": "/Users/jaehyeok/.nvm/versions/node/v20.19.3/bin/npm",
       "runtimeArgs": ["run", "dev"],
       "port": 3000
     }

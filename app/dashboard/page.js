@@ -261,34 +261,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 바로가기 */}
-      <div className="grid grid-cols-2 gap-2 mb-5">
-        <button
-          onClick={() => router.push('/decisions')}
-          className="card text-left py-3 px-4 flex items-center gap-3"
-          style={{ cursor: 'pointer', border: 'none' }}
-        >
-          <span className="text-xl">💬</span>
-          <div>
-            <p className="text-xs font-semibold" style={{ color: 'var(--ink)' }}>의사결정</p>
-            <p className="text-xs" style={{ color: undecidedCount > 0 ? 'var(--amber)' : 'var(--stone)' }}>
-              {undecidedCount > 0 ? `미결정 ${undecidedCount}개` : '모두 완료 ✅'}
-            </p>
-          </div>
-        </button>
-        <button
-          onClick={() => router.push('/guide')}
-          className="card text-left py-3 px-4 flex items-center gap-3"
-          style={{ cursor: 'pointer', border: 'none' }}
-        >
-          <span className="text-xl">📖</span>
-          <div>
-            <p className="text-xs font-semibold" style={{ color: 'var(--ink)' }}>가이드</p>
-            <p className="text-xs" style={{ color: 'var(--stone)' }}>예식 정보 보기</p>
-          </div>
-        </button>
-      </div>
-
       {/* 이번 달 할 일 */}
       <div className="card">
         <p className="text-sm font-semibold mb-3" style={{ color: 'var(--ink)' }}>
