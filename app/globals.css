@@ -51,7 +51,7 @@ body {
    * 2) Pretendard Variable → Pretendard — 한/영/숫자 전담
    * 3) 시스템 폰트 — Pretendard 미로드 시 fallback
    */
-  font-family: 'Tossface', 'Pretendard Variable', 'Pretendard',
+  font-family: 'Pretendard Variable', 'Pretendard',
     -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
   font-size: 16px;
   line-height: 1.5;

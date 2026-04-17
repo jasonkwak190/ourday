@@ -90,14 +90,14 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ## 폰트 스택 규칙 (절대 바꾸지 말 것)
 
 ```
-font-family: 'Tossface', 'Pretendard Variable', 'Pretendard', -apple-system, ...
+font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 ```
 
-- **Tossface 반드시 맨 앞** — 이모지 유니코드(U+1F000~)만 담당하는 폰트. 텍스트·숫자 글리프가 없으므로 앞에 둬도 Pretendard 렌더링에 전혀 영향 없음. 이모지가 시스템 기본(노란 Apple 이모지) 대신 Toss 디자인으로 표시되어 "인앱 느낌" 제공
+- **Tossface 사용 금지** — unicode-range 선언이 있어도 실제 브라우저에서 숫자·기호 글자를 가로채 렌더링이 완전히 깨짐. 절대 font-family에 추가하지 말 것
 - **Pretendard Variable → Pretendard** — 한/영/숫자 전담
-- **이모지를 코드에서 제거하지 말 것** — 기존 🎁🎉💌 등 이모지 문자는 그대로 유지. Tossface가 자동으로 Toss 스타일로 렌더링함
-- **monospace 폰트 절대 사용 금지** — 초대 코드 등 고정폭이 필요한 경우 `font-variant-numeric: tabular-nums` 사용
-- **숫자 폰트** — `font-feature-settings: "tnum" 1` 전역 적용 (globals.css body). 별도 설정 불필요
+- **이모지는 시스템 이모지 사용** — 🎁🎉💌 등 이모지 문자는 그대로 유지, OS 기본 이모지로 렌더링
+- **monospace 폰트 절대 사용 금지** — 고정폭이 필요한 경우 `font-variant-numeric: tabular-nums` 사용
+- **tnum 전역 적용 금지** — `font-feature-settings: "tnum"` 을 body에 넣으면 모든 숫자가 깨짐. `.tabular-nums` 클래스로 필요한 곳에만 선택 적용
 
 ## 8pt Grid 여백 규칙 (Toss Slash 기준)
 
