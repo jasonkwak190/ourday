@@ -69,22 +69,27 @@ export default function InvitationPage() {
 
       setCoupleId(userData.couple_id);
 
-      // 기존 청첩장 조회
-      const { data: existing } = await supabase
-        .from('invitations')
-        .select('*')
-        .eq('couple_id', userData.couple_id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single();
+      // 커플 멤버 이름 조회 (신랑/신부 자동 매핑)
+      const [membersRes, coupleRes, existingRes] = await Promise.all([
+        supabase.from('users').select('name, role').eq('couple_id', userData.couple_id),
+        supabase.from('couples').select('wedding_date').eq('id', userData.couple_id).single(),
+        supabase.from('invitations').select('*').eq('couple_id', userData.couple_id)
+          .order('created_at', { ascending: false }).limit(1).single(),
+      ]);
+
+      const members   = membersRes.data || [];
+      const groomName = members.find(m => m.role === 'groom')?.name || '';
+      const brideName = members.find(m => m.role === 'bride')?.name  || '';
+      const existing  = existingRes.data;
 
       if (existing) {
         setInv(existing);
         setForm({
           template:      existing.template      || 'minimal',
-          groom_name:    existing.groom_name    || '',
-          bride_name:    existing.bride_name    || '',
-          wedding_date:  existing.wedding_date  || '',
+          // 이름이 비어있으면 users 테이블에서 자동 매핑
+          groom_name:    existing.groom_name    || groomName,
+          bride_name:    existing.bride_name    || brideName,
+          wedding_date:  existing.wedding_date  || coupleRes.data?.wedding_date || '',
           wedding_time:  existing.wedding_time  || '',
           venue_name:    existing.venue_name    || '',
           venue_address: existing.venue_address || '',
@@ -94,12 +99,13 @@ export default function InvitationPage() {
           message:       existing.message       || '',
         });
       } else {
-        // couples 테이블에서 wedding_date 가져와서 pre-fill
-        const { data: couple } = await supabase
-          .from('couples').select('wedding_date').eq('id', userData.couple_id).single();
-        if (couple?.wedding_date) {
-          setForm(f => ({ ...f, wedding_date: couple.wedding_date }));
-        }
+        // 신규 — users & couples 테이블로 자동 pre-fill
+        setForm(f => ({
+          ...f,
+          groom_name:   groomName,
+          bride_name:   brideName,
+          wedding_date: coupleRes.data?.wedding_date || '',
+        }));
       }
       setLoading(false);
     };
