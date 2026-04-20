@@ -35,7 +35,7 @@ export async function generateMetadata({ params }) {
   // 150자 제한
   if (description.length > 150) description = description.slice(0, 147) + '...';
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ourday.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ourday-rust.vercel.app';
   const pageUrl = `${baseUrl}/i/${slug}`;
 
   return {
