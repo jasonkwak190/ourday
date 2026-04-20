@@ -9,9 +9,11 @@
 ### 코어 플로우
 | 페이지 | 경로 | 상태 |
 |--------|------|------|
-| 랜딩 | `/` | ✅ 실제 커플 수 표시 (service role key 필요) |
-| 회원가입 | `/signup` | ✅ |
-| 로그인 | `/login` | ✅ |
+| 랜딩 | `/` | ✅ 실제 커플 수 표시 |
+| 회원가입 | `/signup` | ✅ OAuth + 이메일 |
+| 로그인 | `/login` | ✅ OAuth + 이메일 |
+| OAuth 콜백 | `/auth/callback` | ✅ Google·카카오 신규/기존 유저 분기 |
+| 프로필 설정 | `/setup-profile` | ✅ OAuth 신규 유저 이름·역할 수집 |
 | 커플 연동 | `/connect` | ✅ 초대코드 발급·입력 |
 | 기본 정보 설정 | `/setup` | ✅ 결혼일·장소·이름 |
 | 대시보드 | `/dashboard` | ✅ D-day, 진행률, 이번달 할일 |
@@ -19,116 +21,103 @@
 ### 결혼 준비 도구
 | 페이지 | 경로 | 상태 |
 |--------|------|------|
-| 타임라인 체크리스트 | `/timeline` | ✅ 월별 탭, 체크 토글 |
-| 예산 관리 | `/budget` | ✅ 항목 CRUD, 예산 대비 지출 |
-| 하객 관리 | `/guests` | ✅ 목록 CRUD, 축의금 |
+| 타임라인 체크리스트 | `/timeline` | ✅ 월별 탭 + 캘린더 뷰 통합 |
+| 예산 관리 | `/budget` | ✅ 항목 CRUD, 도넛 차트 |
+| 하객 관리 | `/guests` | ✅ CRUD, 축의금 통계, 사진 탭, RSVP |
 | 업체 관리 | `/vendors` | ✅ 계약 현황, 잔금 일정 |
 | 의사결정 | `/decisions` | ✅ 신랑/신부 의견 + 최종 결정 |
-| 캘린더 뷰 | `/calendar` | ✅ 체크리스트·잔금 한눈에 |
 | 예식 가이드 | `/guide` | ✅ 정적 정보 |
 | 설정 | `/settings` | ✅ 프로필·초대코드·로그아웃 |
 
-### 신규 기능 (최근 추가)
+### 신규 기능
 | 페이지 | 경로 | 상태 |
 |--------|------|------|
-| 하객 사진 갤러리 | `/gallery` | ✅ SUPABASE_SERVICE_ROLE_KEY Vercel 설정 완료 |
-| 하객 업로드 페이지 | `/guest/[code]` | ✅ QR 스캔 후 사진 업로드 |
+| 하객 사진 갤러리 | `/guests` 사진 탭 | ✅ QR 생성, 다운로드, 슬라이드쇼 |
+| 하객 업로드 | `/guest/[code]` | ✅ QR 스캔 후 사진 업로드 |
 | 라이브 슬라이드쇼 | `/live/[code]` | ✅ 식장 대형화면용 자동 슬라이드 |
-| 모바일 청첩장 편집 | `/invitation` | ✅ 3가지 템플릿, 계정 이름 자동 매핑 |
-| 모바일 청첩장 공개 | `/i/[slug]` | ✅ 미니멀·클래식·플라워 템플릿, 조회수 |
-| 정보 공유 노트 | `/notes` | ✅ 말풍선 UI, Realtime, 검색, 수정·삭제 |
+| 모바일 청첩장 편집 | `/invitation` | ✅ 3가지 템플릿, 미리보기 모달 |
+| 모바일 청첩장 공개 | `/i/[slug]` | ✅ OG태그, 방명록, 조회수 |
+| 정보 공유 노트 | `/notes` | ✅ 말풍선 UI, Realtime, 검색 |
+| 참석 확인(RSVP) | `/rsvp/[id]` | ✅ 공개 폼, 자동 집계 |
 
 ### API Routes
 | 경로 | 기능 |
 |------|------|
-| `POST /api/gallery` | 커플 photo_event 생성/조회 |
-| `GET /api/gallery` | 사진 목록 + signed URL |
-| `DELETE /api/gallery` | 사진 삭제 |
-| `POST /api/guest/upload` | 하객 사진 업로드 (서비스 롤) |
-| `GET /api/live` | 슬라이드쇼용 사진 조회 |
-| `GET /api/stats` | 커플 수 공개 통계 |
+| `/api/gallery` | 커플 photo_event CRUD + signed URL |
+| `/api/guest/upload` | 하객 사진 업로드 |
+| `/api/live` | 슬라이드쇼용 사진 조회 |
+| `/api/guestbook` | 청첩장 방명록 CRUD |
+| `/api/rsvp` | 참석 확인 조회·제출 |
+| `/api/stats` | 커플 수 공개 통계 |
 
 ---
 
 ## 🐛 에러 히스토리
 
-### ERR-001 · CSS @import 순서 오류
-- **증상**: `globals.css`에서 @import가 규칙 뒤에 위치해 빌드 경고
-- **해결**: @import를 파일 최상단으로 이동
+### ERR-001 ~ ERR-010 (이전 세션 기록)
+> 상세 내역은 git log 참조
 
-### ERR-002 · Tossface 숫자 렌더링 파괴
-- **증상**: 숫자가 Tossface 이모지 폰트에 가로채여 깨진 글자로 렌더링
-- **해결**: font-family에서 Tossface 완전 제거, 시스템 이모지로 대체
+### ERR-011 · qrcode Canvas API Vercel 미지원
+- **증상**: QR "생성 중..." 무한 대기
+- **해결**: `react-qr-code` (순수 SVG) 로 교체
 
-### ERR-003 · font-feature-settings tnum 전역 적용
-- **증상**: body에 `"tnum"` 전역 적용 시 전체 숫자 폰트 깨짐
-- **해결**: body에서 제거, `.tabular-nums` 클래스로 필요한 곳에만 선택 적용
+### ERR-012 · SUPABASE_SERVICE_ROLE_KEY 미설정 ✅ 해결
+- **증상**: gallery API 500 오류
+- **해결**: Vercel 환경변수 추가 완료
 
-### ERR-004 · Next.js 16 params Promise 미처리
-- **증상**: `/guest/[code]`, `/live/[code]`에서 `params.code` 동기 접근 시 에러
-- **원인**: Next.js 16에서 `params`가 Promise로 변경됨
-- **해결**: `use(params)`로 unwrap
+### ERR-013 · Next.js 16 params Promise
+- **증상**: `params.code` 동기 접근 에러
+- **해결**: `use(params)` 로 unwrap
 
-### ERR-005 · QR 코드 외부 API 실패
-- **증상**: `api.qrserver.com` 이미지 로드 안 됨
-- **해결**: `qrcode` npm 패키지로 로컬 생성으로 전환
+### ERR-014 · middleware → proxy 이름 변경 경고
+- **증상**: Next.js 16.2 빌드 경고
+- **해결**: `middleware.js` → `proxy.js`, 함수명 `proxy`로 변경
 
-### ERR-006 · qrcode 패키지 SSR 오류 (top-level import)
-- **증상**: Vercel 빌드에서 Canvas API 없어 침묵 실패
-- **해결**: `await import('qrcode')` dynamic import로 전환
-
-### ERR-007 · qrcode dynamic import도 Vercel 프로덕션에서 실패
-- **증상**: 여전히 "QR 생성 중..." 표시 — Canvas 의존성이 Vercel 서버리스에서 완전히 미지원
-- **해결**: `react-qr-code` (순수 SVG, Canvas 불필요)로 교체
-
-### ERR-008 · SUPABASE_SERVICE_ROLE_KEY Vercel 미설정 ← ✅ 해결됨 (2026-04-20)
-- **증상**: `/gallery` 에서 "서버 오류" — photo_events 조회 불가 / 랜딩 커플 수 0으로 표시
-- **원인**: `SUPABASE_SERVICE_ROLE_KEY` 환경변수가 Vercel에 없음
-- **해결**: Vercel → Settings → Environment Variables에 추가 완료
-
-### ERR-009 · 랜딩 커플 수 RLS 차단
-- **증상**: anon key로 `couples` 테이블 count → 항상 0 반환
-- **원인**: RLS가 활성화되어 있어 anon key로 전체 행 조회 불가
-- **해결**: service role key 사용 (ERR-008 해결 시 자동 해결)
-
-### ERR-010 · 청첩장 신랑/신부 이름 계정 미매핑 (초기)
-- **증상**: 청첩장 편집 시 이름 빈칸
-- **해결**: `users` 테이블에서 `role` 기준으로 groom/bride 이름 자동 pre-fill, 계정 이름 우선
+### ERR-015 · force-dynamic + Capacitor 정적 빌드 충돌
+- **증상**: `MOBILE_BUILD=true` 시 API 라우트 빌드 실패
+- **해결**: 클라이언트 페이지에서 `force-dynamic` 제거, API 라우트에만 유지.
+  Capacitor는 `server.url`로 Vercel을 직접 로드 → 정적 빌드 불필요
 
 ---
 
-## 🔴 즉시 해결 필요
+## 📱 앱 배포 현황
 
-| 항목 | 방법 |
-|------|------|
-| gallery 디버그 코드 정리 | 에러 메시지 표시 코드 제거 (env 설정 완료됐으므로) |
+### Capacitor 설정 완료 (2026-04-20)
+- `capacitor.config.ts`: appId `com.ourday.app`, server.url = Vercel
+- Android 플랫폼 추가 완료 (`android/`)
+- iOS 플랫폼 추가 완료 (`ios/`)
+- **구조**: 웹(Vercel) + Android + iOS 모두 동일 코드베이스
+
+### Android 빌드 방법
+```bash
+npm run cap:android   # Android Studio로 열기
+# Android Studio ▶ 버튼 → 에뮬레이터/기기 선택 → 실행
+```
+
+### iOS 빌드 방법
+```bash
+npm run cap:ios       # Xcode로 열기
+# Xcode ▶ 버튼 → 시뮬레이터/기기 선택 → 실행
+```
+
+### 업데이트 방법
+```bash
+git push              # Vercel 자동 배포 → 웹+앱 동시 반영
+npx cap sync          # 네이티브 플러그인 변경 시에만 필요
+```
 
 ---
 
-## 🚀 다음 개발 후보
+## 🔴 남은 작업
 
-### P0 · 바로 해야 할 것
-- [ ] **갤러리 디버그 코드 정리** — 에러 메시지 표시 코드 제거
-
-### P1 · 핵심 UX 완성
-- [x] **온보딩 개선** ✅ — OnboardingProgress 3단계 인디케이터, 파트너 연동 감지, 성공 피드백 (2026-04-20)
-- [x] **청첩장 템플릿 미리보기** ✅ — 저장 전 풀스크린 미리보기 모달, 모달에서 바로 저장 가능 (2026-04-20)
-- [ ] **대시보드 개선** — 오늘 해야 할 일 / 이번주 마감 항목 강조
-- [x] **하객 RSVP** ✅ — `/rsvp/[coupleId]` 공개 폼, guests 페이지 RSVP 탭 (집계+링크복사) (2026-04-20)
-
-### P2 · 기능 확장
-- [ ] **푸시 알림 / 리마인더** — 체크리스트 마감일 D-3, D-1 알림
-- [x] **예산 카테고리 차트** ✅ — 순수 SVG 도넛 차트, 2열 범례 (2026-04-20)
-- [ ] **업체 계약서 첨부** — PDF/이미지 업로드 (Supabase Storage 활용)
-- [x] **하객 축의금 통계** ✅ — 신랑/신부측 분리, 인당 평균, 손익 진행바 (2026-04-20)
-- [x] **청첩장 방명록** ✅ — `/i/[slug]` 하단, 이름+메시지, 목록 표시 (2026-04-20) * DB 테이블 필요
-
-### P3 · 완성도
-- [ ] **PWA 설정** — manifest.json, 홈화면 추가, 오프라인 지원
-- [ ] **OG 태그** — 청첩장 공유 시 카카오톡 미리보기 이미지
-- [ ] **다크모드** — `prefers-color-scheme` 대응
-- [ ] **빈 상태 개선** — 각 페이지 첫 진입 시 안내 일러스트
-- [ ] **결혼 후 모드** — D+day 이후 추억 앨범 전환
+| 항목 | 우선순위 | 비고 |
+|------|----------|------|
+| Android Studio 설치 | 🔴 즉시 | 에뮬레이터 테스트 필요 |
+| Google Play 개발자 계정 등록 | 🟡 나중에 | $25 일회성 |
+| 앱 아이콘 교체 | 🟡 출시 전 | 현재 기본 Capacitor 아이콘 |
+| 스플래시 스크린 디자인 | 🟡 출시 전 | 현재 기본값 |
+| Google OAuth Supabase 설정 | 🟡 | Supabase → Auth → Providers |
+| 카카오 OAuth Supabase 설정 | 🟡 | developers.kakao.com |
 
 ---
 
@@ -137,16 +126,18 @@
 | 테이블 | 용도 | RLS |
 |--------|------|-----|
 | `couples` | 커플 기본 정보 | ✅ |
-| `users` | 개인 프로필, role(groom/bride) | ✅ |
+| `users` | 프로필, role(groom/bride) | ✅ |
 | `checklist_items` | 타임라인 항목 | ✅ |
 | `budget_items` | 예산 항목 | ✅ |
 | `decisions` | 의사결정 | ✅ |
-| `guests` | 하객 목록 | ✅ |
+| `guests` | 하객 목록 + 축의금 | ✅ |
 | `vendors` | 업체 목록 | ✅ |
 | `invitations` | 모바일 청첩장 | ✅ |
 | `couple_notes` | 정보 공유 노트 | ✅ |
-| `photo_events` | 하객 사진 이벤트 (QR) | ✅ |
+| `photo_events` | 하객 사진 이벤트 | ✅ |
 | `guest_photos` | 하객 업로드 사진 메타 | ✅ |
+| `guestbook_entries` | 청첩장 방명록 | ✅ |
+| `rsvp_responses` | 참석 확인 응답 | ✅ |
 
 ## Storage Buckets
 | 버킷 | 용도 |
