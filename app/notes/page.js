@@ -4,7 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, Send, Link2, Edit2, Trash2, Check, ExternalLink, ChevronDown } from 'lucide-react';
+import { Search, X, Send, Link2, Edit2, Trash2, Check, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 
@@ -218,15 +219,12 @@ export default function NotesPage() {
       {/* 노트 목록 */}
       <div style={{ overflowY: 'auto', maxHeight: 'calc(100dvh - 340px)', paddingBottom: 8 }}>
         {filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 24px' }}>
-            <p style={{ fontSize: 36, marginBottom: 12 }}>📎</p>
-            <p className="text-sm font-semibold mb-1" style={{ color: 'var(--toss-text-primary)' }}>
-              {search ? '검색 결과가 없어요' : '아직 공유된 정보가 없어요'}
-            </p>
-            <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)', lineHeight: 1.6 }}>
-              {search ? '다른 키워드로 검색해보세요' : '블로그 링크나 메모를 아래에서 공유해보세요'}
-            </p>
-          </div>
+          <EmptyState
+            icon={StickyNote}
+            title={search ? '검색 결과가 없어요' : '아직 공유된 정보가 없어요'}
+            description={search ? '다른 키워드로 검색해보세요' : '블로그 링크나 메모를 아래에서 공유해보세요'}
+            compact
+          />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 2px' }}>
             {filtered.map(note => (

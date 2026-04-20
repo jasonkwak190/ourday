@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import EmptyState from '@/components/EmptyState';
+import { Wallet } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'hall',   label: '웨딩홀',   icon: '🏛',  color: '#3182f6' },
@@ -351,9 +353,13 @@ export default function BudgetPage() {
       {/* 항목 목록 */}
       <div className="flex flex-col gap-3 mb-4">
         {items.length === 0 ? (
-          <div className="card text-center py-8" style={{ color: 'var(--stone)' }}>
-            <p className="text-2xl mb-2">💸</p>
-            <p className="text-sm">아직 예산 항목이 없어요</p>
+          <div className="card">
+            <EmptyState
+              icon={Wallet}
+              title="아직 예산 항목이 없어요"
+              description="웨딩홀, 스드메, 신혼여행 등 항목을 추가해보세요"
+              action={{ label: '첫 항목 추가하기', onClick: () => setShowForm(true) }}
+            />
           </div>
         ) : (
           items.map((item) => {

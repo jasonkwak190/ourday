@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import EmptyState from '@/components/EmptyState';
+import { MessageSquarePlus } from 'lucide-react';
 
 const FILTERS = [
   { key: 'all',        label: '전체' },
@@ -202,9 +204,13 @@ export default function DecisionsPage() {
       {/* 결정 카드 목록 */}
       <div className="flex flex-col gap-4 mb-4">
         {filtered.length === 0 ? (
-          <div className="card text-center py-8" style={{ color: 'var(--stone)' }}>
-            <p className="text-2xl mb-2">🤝</p>
-            <p className="text-sm">해당 항목이 없어요</p>
+          <div className="card">
+            <EmptyState
+              icon={MessageSquarePlus}
+              title="아직 의사결정 항목이 없어요"
+              description="웨딩홀 선택, 신혼여행지 등 함께 결정해야 할 것들을 추가해보세요"
+              action={{ label: '첫 의제 추가하기', onClick: () => setShowForm(true) }}
+            />
           </div>
         ) : (
           filtered.map((d) => {

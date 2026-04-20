@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import EmptyState from '@/components/EmptyState';
+import { Store } from 'lucide-react';
 
 const VENDOR_TYPES = [
   { value: 'hall',      label: '웨딩홀',   icon: '🏛️' },
@@ -415,11 +417,13 @@ export default function VendorsPage() {
       {/* 목록 */}
       <div className="flex flex-col gap-3 mb-4">
         {filtered.length === 0 ? (
-          <div className="card text-center py-8">
-            <p className="text-2xl mb-2">🏢</p>
-            <p className="text-sm" style={{ color: 'var(--stone)' }}>
-              {vendors.length === 0 ? '아직 등록된 업체가 없어요' : '해당 조건의 업체가 없어요'}
-            </p>
+          <div className="card">
+            <EmptyState
+              icon={Store}
+              title={vendors.length === 0 ? '아직 등록된 업체가 없어요' : '해당 조건의 업체가 없어요'}
+              description={vendors.length === 0 ? '웨딩홀, 스튜디오, 드레스샵 등 업체 정보를 관리해보세요' : '다른 카테고리나 검색어로 찾아보세요'}
+              action={vendors.length === 0 ? { label: '업체 추가하기', onClick: () => setShowForm(true) } : undefined}
+            />
           </div>
         ) : (
           filtered.map((vendor) => {

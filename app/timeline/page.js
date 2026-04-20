@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import EmptyState from '@/components/EmptyState';
+import { CheckSquare } from 'lucide-react';
 
 const TABS = [
   { label: '이번달',    value: 'current' },
@@ -366,8 +368,13 @@ export default function TimelinePage() {
             );
           })}
           {items.length === 0 && (
-            <div className="card text-center py-8">
-              <p className="text-sm" style={{ color: 'var(--stone)' }}>항목이 없어요</p>
+            <div className="card">
+              <EmptyState
+                icon={CheckSquare}
+                title="체크리스트가 비어있어요"
+                description="결혼 준비 항목을 직접 추가하거나 기본 템플릿을 불러올 수 있어요"
+                compact
+              />
             </div>
           )}
         </div>
@@ -378,7 +385,11 @@ export default function TimelinePage() {
           )}
           <div className="card mb-4 p-0">
             {displayed.length === 0 ? (
-              <p className="text-sm text-center py-8" style={{ color: 'var(--stone)' }}>항목이 없어요</p>
+              <EmptyState
+                icon={CheckSquare}
+                title="해당 월에 항목이 없어요"
+                compact
+              />
             ) : (
               <ul className="px-4">{displayed.map((item, idx) => renderItem(item, idx === displayed.length - 1))}</ul>
             )}

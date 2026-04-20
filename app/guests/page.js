@@ -6,7 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
-import { Copy, Check } from 'lucide-react';
+import { Copy, Check, UserPlus, ClipboardList } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 
 const RELATIONS = ['가족', '친척', '친구', '직장', '지인', '기타'];
 
@@ -287,11 +288,13 @@ export default function GuestsPage() {
           {/* 목록 */}
           <div className="flex flex-col gap-3 mb-4">
             {filtered.length === 0 ? (
-              <div className="card text-center py-8">
-                <p className="text-2xl mb-2">👥</p>
-                <p className="text-sm" style={{ color: 'var(--stone)' }}>
-                  {filter === 'all' ? '아직 등록된 하객이 없어요' : `${SIDE_LABEL[filter]} 하객이 없어요`}
-                </p>
+              <div className="card">
+                <EmptyState
+                  icon={UserPlus}
+                  title={filter === 'all' ? '아직 등록된 하객이 없어요' : `${SIDE_LABEL[filter]} 하객이 없어요`}
+                  description={filter === 'all' ? '신랑·신부측 하객을 등록하고 축의금을 관리해보세요' : undefined}
+                  action={filter === 'all' ? { label: '하객 추가하기', onClick: () => setShowForm(true) } : undefined}
+                />
               </div>
             ) : (
               filtered.map((guest) => {
@@ -751,14 +754,13 @@ export default function GuestsPage() {
           {/* RSVP 응답 목록 */}
           <div className="flex flex-col gap-3 mb-4">
             {rsvpList.length === 0 ? (
-              <div className="card text-center py-8">
-                <p className="text-2xl mb-2">📋</p>
-                <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-                  아직 참석 확인 답변이 없어요
-                </p>
-                <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>
-                  위 링크를 하객에게 공유해보세요
-                </p>
+              <div className="card">
+                <EmptyState
+                  icon={ClipboardList}
+                  title="아직 참석 확인 답변이 없어요"
+                  description="위 링크를 하객에게 공유하면 답변이 여기에 모여요"
+                  compact
+                />
               </div>
             ) : (
               rsvpList.map((r) => (

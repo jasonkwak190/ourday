@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { QrCode, Copy, Check, Image as ImageIcon, Users, Trash2, RefreshCw, Download, MonitorPlay } from 'lucide-react';
+import EmptyState from '@/components/EmptyState';
 import QRCodeSVG from 'react-qr-code';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
@@ -241,15 +242,12 @@ export default function GalleryPage() {
 
       {/* 사진 그리드 */}
       {photoCount === 0 ? (
-        <div className="card text-center" style={{ padding: '40px 24px' }}>
-          <div className="flex items-center justify-center mx-auto mb-3 rounded-2xl"
-            style={{ width: 56, height: 56, backgroundColor: 'var(--toss-bg)' }}>
-            <Users size={24} color="var(--toss-text-tertiary)" />
-          </div>
-          <p className="text-sm font-semibold mb-1" style={{ color: 'var(--toss-text-primary)' }}>아직 사진이 없어요</p>
-          <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>
-            QR 코드를 공유하면 하객이 바로 업로드할 수 있어요
-          </p>
+        <div className="card">
+          <EmptyState
+            icon={ImageIcon}
+            title="아직 사진이 없어요"
+            description="QR 코드를 공유하면 하객이 현장에서 바로 업로드할 수 있어요"
+          />
         </div>
       ) : (
         <div className="card mb-4">
