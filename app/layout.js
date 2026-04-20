@@ -1,4 +1,5 @@
 import './globals.css';
+import BackButtonHandler from '@/components/BackButtonHandler';
 
 export const metadata = {
   title: 'Ourday · 우리의 날',
@@ -35,7 +36,10 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <BackButtonHandler />
+        {children}
+      </body>
     </html>
   );
 }
