@@ -530,47 +530,87 @@ export default function GuestsPage() {
       {/* ── 축의금 탭 ── */}
       {tab === 'gift' && (
         <>
-          {/* 손익 요약 */}
-          <div className="card mb-4">
-            <p className="text-xs font-semibold mb-3" style={{ color: 'var(--stone)' }}>축의금 vs 지출 비교</p>
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div>
-                <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>총 축의금</p>
-                <p className="text-base font-bold" style={{ color: 'var(--green)' }}>
-                  {totalGift.toLocaleString()}만원
-                </p>
-              </div>
-              <div>
-                <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>실제 지출</p>
-                <p className="text-base font-bold" style={{ color: 'var(--rose)' }}>
-                  {totalSpent.toLocaleString()}만원
-                </p>
-              </div>
-              <div>
-                <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>손익</p>
-                <p className="text-base font-bold" style={{ color: balance >= 0 ? 'var(--green)' : 'var(--rose)' }}>
-                  {balance >= 0 ? '+' : ''}{balance.toLocaleString()}만원
-                </p>
-              </div>
-            </div>
-            {/* 진행 바 */}
-            {totalSpent > 0 && (
-              <div className="mt-3">
-                <div className="progress-bar">
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${Math.min(100, Math.round((totalGift / totalSpent) * 100))}%`,
-                      backgroundColor: balance >= 0 ? 'var(--green)' : 'var(--rose)',
-                    }}
-                  />
+          {/* 측별 축의금 통계 */}
+          {(() => {
+            const groomGift   = groomGuests.reduce((s, g) => s + (g.gift_amount || 0), 0);
+            const brideGift   = brideGuests.reduce((s, g) => s + (g.gift_amount || 0), 0);
+            const recordedAll = guests.filter(g => g.gift_amount != null);
+            const recordedGroom = groomGuests.filter(g => g.gift_amount != null);
+            const recordedBride = brideGuests.filter(g => g.gift_amount != null);
+            const avgAll   = recordedAll.length   > 0 ? Math.round(totalGift / recordedAll.length)   : 0;
+            const avgGroom = recordedGroom.length > 0 ? Math.round(groomGift / recordedGroom.length) : 0;
+            const avgBride = recordedBride.length > 0 ? Math.round(brideGift / recordedBride.length) : 0;
+
+            return (
+              <>
+                {/* 측별 비교 */}
+                <div className="card mb-4">
+                  <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>측별 축의금</p>
+                  <div className="flex gap-3">
+                    {[
+                      { label: '신랑측', gift: groomGift, avg: avgGroom, count: recordedGroom.length, color: 'var(--rose)' },
+                      { label: '신부측', gift: brideGift, avg: avgBride, count: recordedBride.length, color: 'var(--toss-blue)' },
+                    ].map(s => (
+                      <div key={s.label} className="flex-1 rounded-2xl p-3" style={{ backgroundColor: 'var(--toss-bg)' }}>
+                        <p className="text-xs font-semibold mb-2" style={{ color: s.color }}>{s.label}</p>
+                        <p className="text-base font-bold tabular-nums" style={{ color: 'var(--toss-text-primary)' }}>
+                          {s.gift.toLocaleString()}<span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>만원</span>
+                        </p>
+                        <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>
+                          평균 {s.avg.toLocaleString()}만원
+                          {s.count > 0 && <span className="ml-1">({s.count}명 집계)</span>}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-xs mt-1.5 text-right" style={{ color: 'var(--stone)' }}>
-                  지출 대비 축의금 {totalSpent > 0 ? Math.round((totalGift / totalSpent) * 100) : 0}%
-                </p>
-              </div>
-            )}
-          </div>
+
+                {/* 손익 요약 */}
+                <div className="card mb-4">
+                  <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>축의금 vs 지출</p>
+                  <div className="grid grid-cols-3 gap-3 text-center mb-3">
+                    <div>
+                      <p className="text-xs mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>총 축의금</p>
+                      <p className="text-base font-bold tabular-nums" style={{ color: 'var(--toss-green)' }}>
+                        {totalGift.toLocaleString()}<span className="text-xs font-normal">만</span>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>실제 지출</p>
+                      <p className="text-base font-bold tabular-nums" style={{ color: 'var(--toss-red)' }}>
+                        {totalSpent.toLocaleString()}<span className="text-xs font-normal">만</span>
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>인당 평균</p>
+                      <p className="text-base font-bold tabular-nums" style={{ color: 'var(--toss-text-primary)' }}>
+                        {avgAll.toLocaleString()}<span className="text-xs font-normal">만</span>
+                      </p>
+                    </div>
+                  </div>
+                  {totalSpent > 0 && (
+                    <div>
+                      <div className="flex justify-between text-xs mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>
+                        <span>손익</span>
+                        <span style={{ color: balance >= 0 ? 'var(--toss-green)' : 'var(--toss-red)', fontWeight: 700 }}>
+                          {balance >= 0 ? '+' : ''}{balance.toLocaleString()}만원
+                        </span>
+                      </div>
+                      <div className="progress-bar">
+                        <div className="progress-fill" style={{
+                          width: `${Math.min(100, Math.round((totalGift / totalSpent) * 100))}%`,
+                          backgroundColor: balance >= 0 ? 'var(--toss-green)' : 'var(--toss-red)',
+                        }} />
+                      </div>
+                      <p className="text-xs mt-1 text-right" style={{ color: 'var(--toss-text-tertiary)' }}>
+                        지출 대비 {Math.round((totalGift / totalSpent) * 100)}%
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </>
+            );
+          })()}
 
           {/* 하객별 축의금 목록 */}
           <div className="flex flex-col gap-3 mb-4">
