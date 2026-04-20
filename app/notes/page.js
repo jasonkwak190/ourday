@@ -259,8 +259,8 @@ export default function NotesPage() {
         </div>
       )}
 
-      {/* 입력창 */}
-      <div className="card" style={{ borderRadius: 20, marginBottom: 80, padding: '12px 16px' }}>
+      {/* 입력창 — 하단 홈 인디케이터 + 바텀 네비 위로 여유 확보 */}
+      <div className="card" style={{ borderRadius: 20, marginBottom: 'calc(80px + env(safe-area-inset-bottom))', padding: '12px 16px' }}>
         {showLink && (
           <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl"
             style={{ backgroundColor: 'var(--toss-bg)' }}>

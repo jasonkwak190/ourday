@@ -1,6 +1,6 @@
 # CHECKPOINT.md — Ourday 개발 현황
 
-> 마지막 업데이트: 2026-04-20
+> 마지막 업데이트: 2026-04-21
 
 ---
 
@@ -40,6 +40,16 @@
 | 정보 공유 노트 | `/notes` | ✅ 말풍선 UI, Realtime, 검색 |
 | 참석 확인(RSVP) | `/rsvp/[id]` | ✅ 공개 폼, 자동 집계 |
 
+### 앱 / 네이티브
+| 항목 | 상태 |
+|------|------|
+| Capacitor Android | ✅ Android Studio로 빌드·실행 |
+| Capacitor iOS | ✅ Xcode로 빌드·실행 (Mac 필요) |
+| 뒤로가기 버튼 (Android) | ✅ 히스토리 있으면 뒤로, 없으면 홈 |
+| 앱 아이콘 | ✅ 두 겹치는 링 디자인 (커플 상징) |
+| 스플래시 스크린 | ✅ 2160×2160 블루 그라디언트 |
+| Safe-area (노치·홈바) | ✅ env(safe-area-inset-*) 전체 적용 |
+
 ### API Routes
 | 경로 | 기능 |
 |------|------|
@@ -78,6 +88,10 @@
 - **해결**: 클라이언트 페이지에서 `force-dynamic` 제거, API 라우트에만 유지.
   Capacitor는 `server.url`로 Vercel을 직접 로드 → 정적 빌드 불필요
 
+### ERR-016 · Android 에뮬레이터 ERR_NAME_NOT_RESOLVED
+- **증상**: 에뮬레이터 첫 실행 시 DNS 실패
+- **해결**: Android Studio → Build > Clean Project 후 재실행
+
 ---
 
 ## 📱 앱 배포 현황
@@ -87,6 +101,7 @@
 - Android 플랫폼 추가 완료 (`android/`)
 - iOS 플랫폼 추가 완료 (`ios/`)
 - **구조**: 웹(Vercel) + Android + iOS 모두 동일 코드베이스
+- **업데이트**: `git push` → Vercel 자동 배포 → 앱 자동 반영 (재빌드 불필요)
 
 ### Android 빌드 방법
 ```bash
@@ -112,12 +127,13 @@ npx cap sync          # 네이티브 플러그인 변경 시에만 필요
 
 | 항목 | 우선순위 | 비고 |
 |------|----------|------|
-| Android Studio 설치 | 🔴 즉시 | 에뮬레이터 테스트 필요 |
-| Google Play 개발자 계정 등록 | 🟡 나중에 | $25 일회성 |
-| 앱 아이콘 교체 | 🟡 출시 전 | 현재 기본 Capacitor 아이콘 |
-| 스플래시 스크린 디자인 | 🟡 출시 전 | 현재 기본값 |
+| Google Play 개발자 계정 등록 | 🔴 출시 전 | $25 일회성 |
 | Google OAuth Supabase 설정 | 🟡 | Supabase → Auth → Providers |
 | 카카오 OAuth Supabase 설정 | 🟡 | developers.kakao.com |
+| 앱 아이콘 재디자인 | 🟡 나중에 | 현재 링 디자인, 추후 수정 예정 |
+| 푸시 알림 | 🟢 다음 | D-day·할일 리마인더 |
+| 오프라인 지원 | 🟢 다음 | Service Worker 캐시 |
+| 카카오톡 공유 버튼 | 🟢 다음 | 청첩장 공유용 |
 
 ---
 
