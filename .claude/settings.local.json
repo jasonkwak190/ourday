@@ -16,7 +16,17 @@
       "Bash(which npm *)",
       "Bash(which node *)",
       "Bash(npm list *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(xargs kill *)",
+      "Bash(curl -s -o /tmp/og-test.png -w \"%{http_code} %{content_type} %{size_download}\" \"http://localhost:3000/i/71e45109e449/opengraph-image\")",
+      "Bash(curl -s -o /tmp/og-test.png -w \"%{http_code} | %{content_type} | size: %{size_download}bytes\" \"http://127.0.0.1:3000/i/71e45109e449/opengraph-image\")",
+      "Bash(node -e ' *)",
+      "Bash(echo \"PID: $!\" sleep 4 curl -s http://localhost:3000/manifest.json)",
+      "Bash(curl -s -o /tmp/icon192.png -w \"%{http_code} %{size_download}\" http://localhost:3000/api/icons/192)",
+      "Bash(curl -s -o /tmp/icon512.png -w \"%{http_code} %{size_download}\" http://localhost:3000/api/icons/512)",
+      "Bash(curl -s -o /tmp/apple-icon.png -w \"%{http_code} %{size_download}\" http://localhost:3000/apple-icon)",
+      "Bash(curl -s -o /tmp/favicon.png -w \"%{http_code} %{size_download}\" http://localhost:3000/icon)",
+      "Bash(gh pr *)"
     ]
   }
 }
