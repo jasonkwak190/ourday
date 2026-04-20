@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { MapPin, Clock, Copy, Check, Heart } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MapPin, Clock, Copy, Check, Heart, Send } from 'lucide-react';
 
 // ─── 날짜 포매터 ────────────────────────────────────────────────────
 export function formatDate(dateStr) {
@@ -200,10 +200,155 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
   );
 }
 
+// ─── 방명록 ─────────────────────────────────────────────────────────
+export function Guestbook({ invitationId, accentColor = '#3182f6' }) {
+  const [entries, setEntries]   = useState([]);
+  const [name, setName]         = useState('');
+  const [message, setMessage]   = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError]       = useState('');
+  const [done, setDone]         = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      const res = await fetch(`/api/guestbook?invitation_id=${invitationId}`);
+      if (!res.ok) return;
+      const { data } = await res.json();
+      setEntries(data || []);
+    };
+    load();
+  }, [invitationId]);
+
+  async function handleSubmit() {
+    setError('');
+    if (!name.trim()) { setError('이름을 입력해주세요.'); return; }
+    if (!message.trim()) { setError('메시지를 입력해주세요.'); return; }
+    setSubmitting(true);
+    const res = await fetch('/api/guestbook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invitation_id: invitationId, name: name.trim(), message: message.trim() }),
+    });
+    const json = await res.json();
+    setSubmitting(false);
+    if (!res.ok) { setError('전송에 실패했어요. 잠시 후 다시 시도해주세요.'); return; }
+    setEntries(prev => [json.data, ...prev]);
+    setName('');
+    setMessage('');
+    setDone(true);
+    setTimeout(() => setDone(false), 2000);
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (diff < 60) return '방금';
+    if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+    return `${Math.floor(diff / 86400)}일 전`;
+  }
+
+  return (
+    <div style={{ padding: '0 24px 48px' }}>
+      {/* 헤더 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <div style={{ flex: 1, height: 1, backgroundColor: '#f2f4f6' }} />
+        <p style={{ fontSize: 12, letterSpacing: '0.1em', color: '#b0b8c1' }}>축하 메시지</p>
+        <div style={{ flex: 1, height: 1, backgroundColor: '#f2f4f6' }} />
+      </div>
+
+      {/* 입력 폼 */}
+      <div style={{
+        backgroundColor: '#f8f9fa', borderRadius: 16,
+        padding: '16px', marginBottom: 16,
+      }}>
+        <input
+          type="text"
+          placeholder="이름"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          maxLength={20}
+          style={{
+            width: '100%', height: 44, borderRadius: 10,
+            border: '1.5px solid #e5e8eb', padding: '0 14px',
+            fontSize: 14, color: '#191f28', outline: 'none',
+            marginBottom: 8, boxSizing: 'border-box',
+            fontFamily: FONT, backgroundColor: 'white',
+          }}
+        />
+        <div style={{ position: 'relative' }}>
+          <textarea
+            placeholder="신랑신부에게 축하 메시지를 남겨주세요 💌"
+            value={message}
+            onChange={e => setMessage(e.target.value)}
+            maxLength={200}
+            rows={3}
+            style={{
+              width: '100%', borderRadius: 10,
+              border: '1.5px solid #e5e8eb', padding: '12px 14px',
+              fontSize: 14, color: '#191f28', outline: 'none',
+              resize: 'none', lineHeight: 1.6, boxSizing: 'border-box',
+              fontFamily: FONT, backgroundColor: 'white',
+            }}
+          />
+          <p style={{ position: 'absolute', bottom: 8, right: 12, fontSize: 11, color: '#c9d1d9' }}>
+            {message.length}/200
+          </p>
+        </div>
+        {error && <p style={{ fontSize: 12, color: '#ff4d4f', marginTop: 6 }}>{error}</p>}
+        <button
+          onClick={handleSubmit}
+          disabled={submitting}
+          style={{
+            width: '100%', height: 44, borderRadius: 10, border: 'none',
+            backgroundColor: done ? '#27b97c' : submitting ? '#c9d1d9' : accentColor,
+            color: 'white', fontWeight: 700, fontSize: 14,
+            cursor: submitting ? 'not-allowed' : 'pointer',
+            marginTop: 10, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', gap: 6, fontFamily: FONT,
+            transition: 'background-color 0.2s',
+          }}
+        >
+          {done ? <>✓ 전달됐어요!</> : submitting ? '전송 중...' : <><Send size={14} />메시지 남기기</>}
+        </button>
+      </div>
+
+      {/* 메시지 목록 */}
+      {entries.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {entries.map(entry => (
+            <div key={entry.id} style={{
+              backgroundColor: 'white', borderRadius: 14,
+              padding: '14px 16px', border: '1px solid #f2f4f6',
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#191f28', margin: 0 }}>{entry.name}</p>
+                <p style={{ fontSize: 11, color: '#b0b8c1', margin: 0 }}>{timeAgo(entry.created_at)}</p>
+              </div>
+              <p style={{ fontSize: 14, color: '#4e5968', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                {entry.message}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── 템플릿 라우터 ────────────────────────────────────────────────────
 export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowAccount }) {
   const props = { inv, copied, copyUrl, showAccount, setShowAccount };
-  if (inv.template === 'classic') return <ClassicTemplate {...props} />;
-  if (inv.template === 'floral')  return <FloralTemplate  {...props} />;
-  return <MinimalTemplate {...props} />;
+  const accentColor = inv.template === 'classic' ? '#7a5c40'
+                    : inv.template === 'floral'  ? '#c4617a'
+                    : '#191f28';
+
+  return (
+    <>
+      {inv.template === 'classic' && <ClassicTemplate {...props} />}
+      {inv.template === 'floral'  && <FloralTemplate  {...props} />}
+      {inv.template !== 'classic' && inv.template !== 'floral' && <MinimalTemplate {...props} />}
+      {/* 방명록 — 모든 템플릿 공통 */}
+      {inv.id && <Guestbook invitationId={inv.id} accentColor={accentColor} />}
+    </>
+  );
 }
