@@ -8,13 +8,106 @@ import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 
 const CATEGORIES = [
-  { value: 'hall',   label: '웨딩홀',   icon: '🏛' },
-  { value: 'dress',  label: '스드메',   icon: '👗' },
-  { value: 'travel', label: '신혼여행', icon: '✈️' },
-  { value: 'hanbok', label: '한복',     icon: '👘' },
-  { value: 'invite', label: '청첩장',   icon: '💌' },
-  { value: 'other',  label: '기타',     icon: '💼' },
+  { value: 'hall',   label: '웨딩홀',   icon: '🏛',  color: '#3182f6' },
+  { value: 'dress',  label: '스드메',   icon: '👗',  color: '#f06292' },
+  { value: 'travel', label: '신혼여행', icon: '✈️',  color: '#26a69a' },
+  { value: 'hanbok', label: '한복',     icon: '👘',  color: '#ff7043' },
+  { value: 'invite', label: '청첩장',   icon: '💌',  color: '#ab47bc' },
+  { value: 'other',  label: '기타',     icon: '💼',  color: '#8d6e63' },
 ];
+
+// ── 도넛 차트 ────────────────────────────────────────────
+function DonutChart({ items }) {
+  const R = 70;  // 반지름
+  const CX = 100, CY = 100;
+  const circumference = 2 * Math.PI * R;
+
+  // 카테고리별 실제 지출 합산
+  const catTotals = CATEGORIES.map(cat => ({
+    ...cat,
+    total: items.filter(i => i.category === cat.value)
+                .reduce((s, i) => s + (i.actual_amount || 0), 0),
+  })).filter(c => c.total > 0);
+
+  const grandTotal = catTotals.reduce((s, c) => s + c.total, 0);
+  if (grandTotal === 0) return null;
+
+  // 각 세그먼트 계산
+  let offset = 0;
+  const segments = catTotals.map(cat => {
+    const ratio = cat.total / grandTotal;
+    const dash  = ratio * circumference;
+    const seg   = { ...cat, ratio, dash, offset };
+    offset += dash;
+    return seg;
+  });
+
+  return (
+    <div className="card mb-4">
+      <p className="text-sm font-semibold mb-3" style={{ color: 'var(--toss-text-primary)' }}>
+        카테고리별 지출
+      </p>
+
+      {/* 도넛 — 가운데 정렬 */}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <svg width={160} height={160} viewBox="0 0 200 200">
+          <circle cx={CX} cy={CY} r={R}
+            fill="none" stroke="#f2f4f6" strokeWidth={30} />
+          <g transform={`rotate(-90 ${CX} ${CY})`}>
+            {segments.map((seg, i) => (
+              <circle key={i}
+                cx={CX} cy={CY} r={R}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth={30}
+                strokeDasharray={`${seg.dash - 2} ${circumference - seg.dash + 2}`}
+                strokeDashoffset={-seg.offset}
+                strokeLinecap="butt"
+              />
+            ))}
+          </g>
+          <text x={CX} y={CY - 8} textAnchor="middle"
+            fontSize={13} fill="#8b95a1" fontFamily="Pretendard Variable, Pretendard, sans-serif">
+            총 지출
+          </text>
+          <text x={CX} y={CY + 12} textAnchor="middle"
+            fontSize={17} fontWeight={700} fill="#191f28" fontFamily="Pretendard Variable, Pretendard, sans-serif">
+            {grandTotal.toLocaleString()}
+          </text>
+          <text x={CX} y={CY + 28} textAnchor="middle"
+            fontSize={11} fill="#8b95a1" fontFamily="Pretendard Variable, Pretendard, sans-serif">
+            만원
+          </text>
+        </svg>
+      </div>
+
+      {/* 범례 — 2열 그리드 */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 12px' }}>
+        {segments.map((seg, i) => (
+          <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
+            <div style={{
+              width: 10, height: 10, borderRadius: '50%',
+              backgroundColor: seg.color, flexShrink: 0,
+            }} />
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 4 }}>
+                <span style={{ fontSize: 12, color: '#4e5968', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                  {seg.label}
+                </span>
+                <span style={{ fontSize: 11, color: '#b0b8c1', flexShrink: 0 }}>
+                  {Math.round(seg.ratio * 100)}%
+                </span>
+              </div>
+              <p style={{ fontSize: 12, fontWeight: 700, color: '#191f28', margin: 0 }}>
+                {seg.total.toLocaleString()}만원
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 function getStatusTag(est, act) {
   if (act === null || act === undefined) return { label: '미결제', cls: 'tag-stone' };
@@ -251,6 +344,9 @@ export default function BudgetPage() {
           <div className="progress-fill" style={{ width: `${budgetPct}%` }} />
         </div>
       </div>
+
+      {/* 도넛 차트 */}
+      <DonutChart items={items} />
 
       {/* 항목 목록 */}
       <div className="flex flex-col gap-3 mb-4">
