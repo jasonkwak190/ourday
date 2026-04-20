@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import OnboardingProgress from '@/components/OnboardingProgress';
 
 const WEDDING_TYPES = [
   { value: 'hall',    label: '웨딩홀' },
@@ -234,18 +235,20 @@ export default function SetupPage() {
   if (pageLoading) {
     return (
       <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--stone)' }}>불러오는 중...</p>
+        <p className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>불러오는 중...</p>
       </div>
     );
   }
 
   return (
     <div className="page-wrapper flex flex-col">
+      {!isEdit && <OnboardingProgress current={3} />}
+
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-semibold" style={{ color: 'var(--ink)' }}>
-          {isEdit ? '결혼 정보 수정 ✏️' : '결혼 준비 시작하기 🎊'}
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--toss-text-primary)' }}>
+          {isEdit ? '결혼 정보 수정' : '마지막 단계예요!'}
         </h1>
-        <p className="mt-2 text-sm" style={{ color: 'var(--ink-soft)' }}>
+        <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
           {isEdit
             ? '언제든 수정할 수 있어요'
             : '나중에 설정해도 괜찮아요. 언제든 수정할 수 있어요'}
@@ -255,7 +258,7 @@ export default function SetupPage() {
       <div className="flex flex-col gap-5">
         {/* 결혼식 날짜 */}
         <div>
-          <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--ink-soft)' }}>
+          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             결혼식 날짜
           </label>
           <input
@@ -268,7 +271,7 @@ export default function SetupPage() {
 
         {/* 예식 형태 */}
         <div>
-          <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--ink-soft)' }}>
+          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             예식 형태
           </label>
           <div className="grid grid-cols-4 gap-2">
@@ -277,11 +280,11 @@ export default function SetupPage() {
                 key={t.value}
                 type="button"
                 onClick={() => setWeddingType(t.value)}
-                className="py-2.5 rounded-xl text-sm font-medium transition-all"
+                className="py-3 rounded-2xl text-sm font-semibold transition-all"
                 style={{
-                  backgroundColor: weddingType === t.value ? 'var(--rose)' : 'white',
-                  color: weddingType === t.value ? 'white' : 'var(--stone)',
-                  border: `1.5px solid ${weddingType === t.value ? 'var(--rose)' : 'var(--stone-light)'}`,
+                  backgroundColor: weddingType === t.value ? 'var(--toss-blue)' : 'var(--toss-bg)',
+                  color: weddingType === t.value ? 'white' : 'var(--toss-text-secondary)',
+                  border: weddingType === t.value ? 'none' : '1.5px solid var(--toss-border)',
                 }}
               >
                 {t.label}
@@ -292,7 +295,7 @@ export default function SetupPage() {
 
         {/* 총 예산 */}
         <div>
-          <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--ink-soft)' }}>
+          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             총 예산 (만원)
           </label>
           <input
@@ -306,7 +309,7 @@ export default function SetupPage() {
 
         {/* 예식 지역 */}
         <div>
-          <label className="text-sm font-medium block mb-1.5" style={{ color: 'var(--ink-soft)' }}>
+          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             예식 지역
           </label>
           <input
@@ -319,7 +322,7 @@ export default function SetupPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-center" style={{ color: 'var(--rose)' }}>
+          <p className="text-sm text-center" style={{ color: 'var(--toss-red)' }}>
             {error}
           </p>
         )}
@@ -334,13 +337,17 @@ export default function SetupPage() {
 
         {/* 스킵 버튼 (수정 모드가 아닐 때만) */}
         {!isEdit && (
-          <button
-            className="text-sm text-center"
-            style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
-            onClick={() => router.push('/dashboard')}
-          >
-            나중에 설정할게요 →
-          </button>
+          <>
+            <p className="text-xs text-center" style={{ color: 'var(--toss-text-tertiary)' }}>
+              지금 입력하지 않아도 나중에 설정에서 바꿀 수 있어요.
+            </p>
+            <button
+              className="btn-ghost w-full"
+              onClick={() => router.push('/dashboard')}
+            >
+              나중에 설정할게요
+            </button>
+          </>
         )}
       </div>
     </div>

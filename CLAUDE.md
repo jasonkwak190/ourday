@@ -66,6 +66,18 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
+**테스트 가계정** (로컬 + Supabase dev 프로젝트 전용)
+
+| 역할 | 이메일 | 비밀번호 | 이름 |
+|------|--------|----------|------|
+| 신랑 🤵 | `test_groom_ourday@mailinator.com` | `Test1234!` | 테스트신랑 |
+| 신부 👰 | `test_bride_ourday@mailinator.com` | `Test1234!` | 테스트신부 |
+
+- 두 계정은 이미 Supabase에 생성되어 있고 커플 연동 완료 상태
+- 기능 테스트 시 항상 이 두 계정을 사용 (새 계정 생성 불필요)
+- 로그인: `http://localhost:3000/login`
+- 신랑으로 테스트 후 신부로 교차 검증할 때 → settings에서 로그아웃 후 재로그인
+
 ---
 
 ## 규칙 (모든 작업에 적용)

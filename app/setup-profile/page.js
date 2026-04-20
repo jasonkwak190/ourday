@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import OnboardingProgress from '@/components/OnboardingProgress';
 
 export default function SetupProfilePage() {
   const router = useRouter();
@@ -54,12 +55,14 @@ export default function SetupProfilePage() {
 
   return (
     <div className="page-wrapper flex flex-col">
-      <div className="text-center mb-10">
-        <h2 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--toss-blue)' }}>
-          Ourday
+      <OnboardingProgress current={1} />
+
+      <div className="text-center mb-8">
+        <h2 className="text-2xl font-bold" style={{ color: 'var(--toss-text-primary)' }}>
+          딱 2가지만 알려주세요
         </h2>
-        <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-          딱 2가지만 알려주세요 🤍
+        <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
+          상대방에게 표시될 내 정보예요
         </p>
       </div>
 

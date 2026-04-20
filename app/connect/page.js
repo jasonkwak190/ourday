@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import OnboardingProgress from '@/components/OnboardingProgress';
 
 function generateInviteCode() {
   const array = new Uint8Array(3);
@@ -18,15 +19,17 @@ function generateInviteCode() {
 
 export default function ConnectPage() {
   const router = useRouter();
-  const [myCode, setMyCode] = useState('');
-  const [inputCode, setInputCode] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [joining, setJoining] = useState(false);
-  const [error, setError] = useState('');
-  const [userId, setUserId] = useState(null);
+  const [myCode,           setMyCode]           = useState('');
+  const [inputCode,        setInputCode]        = useState('');
+  const [copied,           setCopied]           = useState(false);
+  const [loading,          setLoading]          = useState(true);
+  const [joining,          setJoining]          = useState(false);
+  const [error,            setError]            = useState('');
+  const [userId,           setUserId]           = useState(null);
+  const [coupleId,         setCoupleId]         = useState(null);
+  const [partnerConnected, setPartnerConnected] = useState(false); // 상대방이 이미 연동됐는지
+  const [justConnected,    setJustConnected]    = useState(false); // 방금 연동 성공한 경우
 
-  // 진입 시 자동으로 couple row 생성 or 기존 코드 로드
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -35,7 +38,7 @@ export default function ConnectPage() {
       const uid = session.user.id;
       setUserId(uid);
 
-      // 이미 couple_id가 있으면 기존 코드 표시
+      // 기존 couple_id 확인
       const { data: user } = await supabase
         .from('users')
         .select('couple_id')
@@ -43,19 +46,29 @@ export default function ConnectPage() {
         .single();
 
       if (user?.couple_id) {
+        const cId = user.couple_id;
+        setCoupleId(cId);
+
+        // 코드 로드
         const { data: couple } = await supabase
           .from('couples')
           .select('invite_code')
-          .eq('id', user.couple_id)
+          .eq('id', cId)
           .single();
-        if (couple?.invite_code) {
-          setMyCode(couple.invite_code);
-          setLoading(false);
-          return;
-        }
+        if (couple?.invite_code) setMyCode(couple.invite_code);
+
+        // 파트너 연동 여부 확인
+        const { count } = await supabase
+          .from('users')
+          .select('id', { count: 'exact', head: true })
+          .eq('couple_id', cId);
+        if (count >= 2) setPartnerConnected(true);
+
+        setLoading(false);
+        return;
       }
 
-      // 없으면 새로 생성
+      // 없으면 새 couple 생성
       const code = generateInviteCode();
       const { data: couple, error: coupleError } = await supabase
         .from('couples')
@@ -64,7 +77,6 @@ export default function ConnectPage() {
         .single();
 
       if (coupleError) {
-        console.error('couples insert error:', coupleError);
         setError(`코드 생성에 실패했어요. (${coupleError.message})`);
         setLoading(false);
         return;
@@ -75,6 +87,7 @@ export default function ConnectPage() {
         .update({ couple_id: couple.id })
         .eq('id', uid);
 
+      setCoupleId(couple.id);
       setMyCode(code);
       setLoading(false);
     };
@@ -154,13 +167,18 @@ export default function ConnectPage() {
     }
 
     setJoining(false);
-    router.push('/setup');
+    setJustConnected(true);
+    setPartnerConnected(true);
+
+    // 2초 후 자동 이동
+    setTimeout(() => router.push('/setup'), 2000);
   }
 
+  // ─── 로딩 ───
   if (loading) {
     return (
       <div className="page-wrapper flex items-center justify-center">
-        <div className="text-center" style={{ color: 'var(--stone)' }}>
+        <div className="text-center" style={{ color: 'var(--toss-text-secondary)' }}>
           <div className="text-3xl mb-2 animate-pulse">💑</div>
           <p className="text-sm">준비 중...</p>
         </div>
@@ -168,32 +186,114 @@ export default function ConnectPage() {
     );
   }
 
+  // ─── 방금 연동 성공 ───
+  if (justConnected) {
+    return (
+      <div className="page-wrapper flex flex-col items-center justify-center text-center">
+        <OnboardingProgress current={2} />
+        <div
+          className="flex items-center justify-center mb-6"
+          style={{
+            width: 80, height: 80, borderRadius: '50%',
+            backgroundColor: 'var(--toss-blue-light)',
+          }}
+        >
+          <span style={{ fontSize: 40 }}>💑</span>
+        </div>
+        <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--toss-text-primary)' }}>
+          연동 완료!
+        </h2>
+        <p className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
+          상대방과 연결됐어요<br />결혼 정보를 입력하러 가요
+        </p>
+        <p className="text-xs mt-4" style={{ color: 'var(--toss-text-tertiary)' }}>
+          잠시 후 자동으로 이동해요...
+        </p>
+      </div>
+    );
+  }
+
+  // ─── 이미 파트너 연동된 상태 ───
+  if (partnerConnected) {
+    return (
+      <div className="page-wrapper flex flex-col">
+        <OnboardingProgress current={2} />
+
+        <div className="text-center mb-8">
+          <div
+            className="inline-flex items-center justify-center mb-4"
+            style={{
+              width: 72, height: 72, borderRadius: '50%',
+              backgroundColor: 'var(--toss-blue-light)',
+            }}
+          >
+            <span style={{ fontSize: 36 }}>💑</span>
+          </div>
+          <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--toss-text-primary)' }}>
+            이미 커플 연동이 됐어요!
+          </h1>
+          <p className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
+            상대방과 연결된 상태예요
+          </p>
+        </div>
+
+        <div
+          className="card mb-6 text-center"
+          style={{ backgroundColor: 'var(--toss-blue-light)', boxShadow: 'none' }}
+        >
+          <p className="text-xs mb-1" style={{ color: 'var(--toss-text-secondary)' }}>
+            내 초대 코드
+          </p>
+          <p
+            className="text-3xl font-bold tracking-[0.2em] tabular-nums"
+            style={{ color: 'var(--toss-blue)' }}
+          >
+            {myCode}
+          </p>
+        </div>
+
+        <button
+          className="btn-rose w-full"
+          onClick={() => router.push('/setup')}
+        >
+          다음 단계로 →
+        </button>
+        <button
+          className="btn-ghost w-full mt-2"
+          onClick={() => router.push('/dashboard')}
+        >
+          대시보드로 가기
+        </button>
+      </div>
+    );
+  }
+
+  // ─── 기본: 코드 공유 + 입력 ───
   return (
     <div className="page-wrapper flex flex-col">
+      <OnboardingProgress current={2} />
+
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-semibold" style={{ color: 'var(--ink)' }}>
-          커플 연동하기 💑
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--toss-text-primary)' }}>
+          커플 연동하기
         </h1>
-        <p className="mt-2 text-sm" style={{ color: 'var(--ink-soft)' }}>
+        <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
           상대방과 연결해서 함께 준비해요
         </p>
       </div>
 
       {/* 내 초대 코드 */}
       <div className="card mb-4">
-        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--ink)' }}>
-          내 초대 코드
+        <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>
+          📤 내 초대 코드를 상대방에게 보내세요
         </p>
         <div
           className="w-full py-5 rounded-2xl text-center mb-3"
-          style={{ backgroundColor: 'var(--rose-light)' }}
+          style={{ backgroundColor: 'var(--toss-blue-light)' }}
         >
-          <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>
-            상대방에게 이 코드를 공유하세요
-          </p>
           <p
-            className="text-4xl font-bold tracking-[0.25em]"
-            style={{ color: 'var(--rose)', fontVariantNumeric: 'tabular-nums' }}
+            className="text-4xl font-bold tracking-[0.25em] tabular-nums"
+            style={{ color: 'var(--toss-blue)' }}
           >
             {myCode}
           </p>
@@ -205,15 +305,17 @@ export default function ConnectPage() {
 
       {/* 구분선 */}
       <div className="flex items-center gap-3 my-2">
-        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--stone-light)' }} />
-        <span className="text-xs" style={{ color: 'var(--stone)' }}>상대방 코드가 있으면</span>
-        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--stone-light)' }} />
+        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--toss-border)' }} />
+        <span className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>
+          상대방 코드가 있으면
+        </span>
+        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--toss-border)' }} />
       </div>
 
       {/* 코드 입력 */}
       <div className="card mt-2 flex flex-col gap-3">
-        <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
-          상대방 코드 입력
+        <p className="text-xs font-semibold" style={{ color: 'var(--toss-text-tertiary)' }}>
+          📥 상대방 코드 입력
         </p>
         <input
           className="input-field text-center text-2xl tracking-widest font-bold"
@@ -226,26 +328,30 @@ export default function ConnectPage() {
         <button
           className="btn-rose w-full"
           onClick={handleJoin}
-          disabled={joining}
+          disabled={joining || inputCode.trim().length !== 6}
         >
           {joining ? '연동 중...' : '연동하기'}
         </button>
       </div>
 
       {error && (
-        <p className="text-sm text-center mt-4" style={{ color: 'var(--rose)' }}>
+        <p className="text-sm text-center mt-4" style={{ color: 'var(--toss-red)' }}>
           {error}
         </p>
       )}
 
-      {/* 나중에 설정하기 */}
-      <button
-        className="mt-6 text-sm text-center"
-        style={{ color: 'var(--stone)', background: 'none', border: 'none' }}
-        onClick={() => router.push('/setup')}
-      >
-        나중에 연동할게요 →
-      </button>
+      {/* 나중에 연동할게요 */}
+      <div className="mt-8 pt-4" style={{ borderTop: '1px solid var(--toss-border)' }}>
+        <p className="text-xs text-center mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>
+          상대방 코드가 없어도 괜찮아요. 나중에 설정에서 연동할 수 있어요.
+        </p>
+        <button
+          className="btn-ghost w-full"
+          onClick={() => router.push('/setup')}
+        >
+          나중에 연동할게요
+        </button>
+      </div>
     </div>
   );
 }
