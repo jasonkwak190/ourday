@@ -4,9 +4,10 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Copy, Check, Eye, Save, ExternalLink } from 'lucide-react';
+import { Copy, Check, Eye, Save, X, ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import { InvitationRenderer } from '@/components/InvitationTemplates';
 
 const TEMPLATES = [
   { key: 'minimal', label: '미니멀',  emoji: '🤍', desc: '깔끔하고 모던한 스타일' },
@@ -38,14 +39,99 @@ const FIELDS = [
   ]},
 ];
 
+// ─── 미리보기 모달 ────────────────────────────────────────────────────
+function PreviewModal({ form, onClose, onSave, saving }) {
+  const [showAccount, setShowAccount] = useState(false);
+
+  // 모달 열릴 때 스크롤 잠금
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        display: 'flex', flexDirection: 'column',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+      }}
+    >
+      {/* 상단 헤더 */}
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '16px 20px',
+          backgroundColor: 'var(--toss-card)',
+          borderBottom: '1px solid var(--toss-border)',
+          flexShrink: 0,
+        }}
+      >
+        <div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--toss-text-primary)', margin: 0 }}>
+            미리보기
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--toss-text-tertiary)', margin: '2px 0 0' }}>
+            저장 전 실제 화면이에요
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={onSave}
+            disabled={saving}
+            style={{
+              height: 36, padding: '0 16px', borderRadius: 10, border: 'none',
+              backgroundColor: 'var(--toss-blue)', color: 'white',
+              fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 6,
+              opacity: saving ? 0.7 : 1,
+            }}
+          >
+            <Save size={14} />
+            {saving ? '저장 중...' : '저장하기'}
+          </button>
+          <button
+            onClick={onClose}
+            style={{
+              width: 36, height: 36, borderRadius: 10,
+              border: '1px solid var(--toss-border)',
+              backgroundColor: 'var(--toss-bg)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <X size={16} color="var(--toss-text-secondary)" />
+          </button>
+        </div>
+      </div>
+
+      {/* 스크롤 가능한 청첩장 영역 */}
+      <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#f0f0f0' }}>
+        {/* 폰 프레임 */}
+        <div style={{ maxWidth: 390, margin: '20px auto', borderRadius: 24, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
+          <InvitationRenderer
+            inv={form}
+            copied={false}
+            copyUrl={() => {}}
+            showAccount={showAccount}
+            setShowAccount={setShowAccount}
+          />
+        </div>
+        <div style={{ height: 40 }} />
+      </div>
+    </div>
+  );
+}
+
+// ─── 메인 페이지 ──────────────────────────────────────────────────────
 export default function InvitationPage() {
   const router  = useRouter();
-  const [loading,  setLoading]  = useState(true);
-  const [saving,   setSaving]   = useState(false);
-  const [saved,    setSaved]    = useState(false);
-  const [copied,   setCopied]   = useState(false);
-  const [inv,      setInv]      = useState(null);    // DB record
-  const [form,     setForm]     = useState({
+  const [loading,      setLoading]      = useState(true);
+  const [saving,       setSaving]       = useState(false);
+  const [saved,        setSaved]        = useState(false);
+  const [copied,       setCopied]       = useState(false);
+  const [showPreview,  setShowPreview]  = useState(false);
+  const [inv,          setInv]          = useState(null);
+  const [form,         setForm]         = useState({
     template: 'minimal',
     groom_name: '', bride_name: '',
     wedding_date: '', wedding_time: '',
@@ -53,11 +139,10 @@ export default function InvitationPage() {
     account_groom: '', account_bride: '',
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
   });
-  const [coupleId, setCoupleId] = useState(null);
-  // 계정에서 가져온 원본 이름 (되돌리기용)
-  const [accountNames, setAccountNames] = useState({ groom: '', bride: '' });
+  const [coupleId,      setCoupleId]      = useState(null);
+  const [accountNames,  setAccountNames]  = useState({ groom: '', bride: '' });
 
-  const origin  = typeof window !== 'undefined' ? window.location.origin : '';
+  const origin   = typeof window !== 'undefined' ? window.location.origin : '';
   const shareUrl = inv ? `${origin}/i/${inv.slug}` : '';
 
   useEffect(() => {
@@ -71,7 +156,6 @@ export default function InvitationPage() {
 
       setCoupleId(userData.couple_id);
 
-      // 커플 멤버 이름 조회 (신랑/신부 자동 매핑)
       const [membersRes, coupleRes, existingRes] = await Promise.all([
         supabase.from('users').select('name, role').eq('couple_id', userData.couple_id),
         supabase.from('couples').select('wedding_date').eq('id', userData.couple_id).single(),
@@ -84,14 +168,12 @@ export default function InvitationPage() {
       const brideName = members.find(m => m.role === 'bride')?.name  || '';
       const existing  = existingRes.data;
 
-      // 계정 이름 저장 (되돌리기용)
       setAccountNames({ groom: groomName, bride: brideName });
 
       if (existing) {
         setInv(existing);
         setForm({
           template:      existing.template      || 'minimal',
-          // 계정 이름을 항상 우선 — 계정에 이름 없으면 저장값 사용
           groom_name:    groomName || existing.groom_name    || '',
           bride_name:    brideName || existing.bride_name    || '',
           wedding_date:  existing.wedding_date  || coupleRes.data?.wedding_date || '',
@@ -104,7 +186,6 @@ export default function InvitationPage() {
           message:       existing.message       || '',
         });
       } else {
-        // 신규 — users & couples 테이블로 자동 pre-fill
         setForm(f => ({
           ...f,
           groom_name:   groomName,
@@ -133,6 +214,7 @@ export default function InvitationPage() {
     }
     setSaving(false);
     setSaved(true);
+    setShowPreview(false);
     setTimeout(() => setSaved(false), 2000);
   }
 
@@ -156,6 +238,17 @@ export default function InvitationPage() {
 
   return (
     <div className="page-wrapper">
+      {/* 미리보기 모달 */}
+      {showPreview && (
+        <PreviewModal
+          form={form}
+          onClose={() => setShowPreview(false)}
+          onSave={save}
+          saving={saving}
+        />
+      )}
+
+      {/* 헤더 */}
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-xl font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
           💌 모바일 청첩장
@@ -183,8 +276,7 @@ export default function InvitationPage() {
                 transition: 'all 0.15s',
               }}>
               <p style={{ fontSize: 20, marginBottom: 4 }}>{t.emoji}</p>
-              <p style={{ fontSize: 12, fontWeight: 700,
-                color: form.template === t.key ? 'var(--toss-blue)' : 'var(--toss-text-primary)' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: form.template === t.key ? 'var(--toss-blue)' : 'var(--toss-text-primary)' }}>
                 {t.label}
               </p>
               <p style={{ fontSize: 10, color: 'var(--toss-text-tertiary)', marginTop: 2, lineHeight: 1.4 }}>
@@ -201,7 +293,6 @@ export default function InvitationPage() {
           <p className="text-sm font-bold mb-3" style={{ color: 'var(--toss-text-primary)' }}>{section}</p>
           <div className="flex flex-col gap-3">
             {fields.map(({ key, label, type, placeholder }) => {
-              // 신랑·신부 이름 필드는 계정 연동 뱃지 표시
               const accountVal = key === 'groom_name' ? accountNames.groom
                                : key === 'bride_name' ? accountNames.bride
                                : null;
@@ -210,8 +301,7 @@ export default function InvitationPage() {
               return (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold"
-                      style={{ color: 'var(--toss-text-secondary)' }}>
+                    <label className="text-xs font-semibold" style={{ color: 'var(--toss-text-secondary)' }}>
                       {label}
                     </label>
                     {accountVal && (
@@ -256,23 +346,33 @@ export default function InvitationPage() {
         </div>
       ))}
 
-      {/* 저장 버튼 */}
-      <button
-        onClick={save}
-        disabled={saving}
-        className="btn-rose mb-3 flex items-center justify-center gap-2"
-        style={{ width: '100%', height: 56 }}>
-        {saved ? <Check size={18} /> : <Save size={18} />}
-        {saving ? '저장 중...' : saved ? '저장됐어요!' : '저장하기'}
-      </button>
+      {/* 미리보기 + 저장 버튼 */}
+      <div className="flex gap-3 mb-3">
+        <button
+          onClick={() => setShowPreview(true)}
+          className="btn-outline flex items-center justify-center gap-2"
+          style={{ flex: 1, height: 56 }}
+        >
+          <Eye size={18} />
+          미리보기
+        </button>
+        <button
+          onClick={save}
+          disabled={saving}
+          className="btn-rose flex items-center justify-center gap-2"
+          style={{ flex: 2, height: 56 }}
+        >
+          {saved ? <Check size={18} /> : <Save size={18} />}
+          {saving ? '저장 중...' : saved ? '저장됐어요!' : '저장하기'}
+        </button>
+      </div>
 
       {/* 공유 영역 */}
       {inv && (
         <div className="card mb-4">
           <p className="text-sm font-bold mb-3" style={{ color: 'var(--toss-text-primary)' }}>공유하기</p>
           <p className="text-xs mb-3 px-3 py-2 rounded-xl tabular-nums"
-            style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text-secondary)',
-              wordBreak: 'break-all', lineHeight: 1.6 }}>
+            style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text-secondary)', wordBreak: 'break-all', lineHeight: 1.6 }}>
             {shareUrl}
           </p>
           <div className="flex gap-2">
@@ -298,8 +398,8 @@ export default function InvitationPage() {
                 color: 'var(--toss-text-secondary)',
                 fontWeight: 700, fontSize: 14,
               }}>
-              <Eye size={16} />
-              미리보기
+              <ExternalLink size={16} />
+              실제 청첩장
             </button>
           </div>
         </div>
