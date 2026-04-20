@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import { Copy, Check } from 'lucide-react';
 
 const RELATIONS = ['가족', '친척', '친구', '직장', '지인', '기타'];
 
@@ -34,8 +35,12 @@ export default function GuestsPage() {
   const [guests, setGuests] = useState([]);
   const [budgetItems, setBudgetItems] = useState([]);
 
-  // 탭: 'list' | 'gift'
+  // 탭: 'list' | 'gift' | 'rsvp'
   const [tab, setTab] = useState('list');
+
+  // RSVP
+  const [rsvpList, setRsvpList]   = useState([]);
+  const [rsvpCopied, setRsvpCopied] = useState(false);
 
   // 필터: 'all' | 'groom' | 'bride'
   const [filter, setFilter] = useState('all');
@@ -67,13 +72,15 @@ export default function GuestsPage() {
       const cId = user.couple_id;
       setCoupleId(cId);
 
-      const [guestRes, budgetRes] = await Promise.all([
+      const [guestRes, budgetRes, rsvpRes] = await Promise.all([
         supabase.from('guests').select('*').eq('couple_id', cId).order('created_at'),
         supabase.from('budget_items').select('actual_amount').eq('couple_id', cId),
+        supabase.from('rsvp_responses').select('*').eq('couple_id', cId).order('created_at', { ascending: false }),
       ]);
 
       setGuests(guestRes.data || []);
       setBudgetItems(budgetRes.data || []);
+      setRsvpList(rsvpRes.data || []);
       setLoading(false);
     };
     load();
@@ -233,7 +240,7 @@ export default function GuestsPage() {
         className="flex mb-4 rounded-2xl overflow-hidden"
         style={{ backgroundColor: 'var(--beige)' }}
       >
-        {[{ key: 'list', label: '👥 하객 명단' }, { key: 'gift', label: '💝 축의금' }].map((t) => (
+        {[{ key: 'list', label: '👥 명단' }, { key: 'gift', label: '💝 축의금' }, { key: 'rsvp', label: '📋 RSVP' }].map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -635,6 +642,122 @@ export default function GuestsPage() {
                   </div>
                 );
               })
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── RSVP 탭 ── */}
+      {tab === 'rsvp' && (
+        <>
+          {/* RSVP 링크 공유 */}
+          <div className="card mb-4">
+            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>
+              RSVP 링크를 하객에게 공유하세요
+            </p>
+            <p className="text-xs mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>
+              하객이 링크에서 참석 여부를 직접 입력할 수 있어요
+            </p>
+            <button
+              onClick={async () => {
+                const url = `${window.location.origin}/rsvp/${coupleId}`;
+                await navigator.clipboard.writeText(url);
+                setRsvpCopied(true);
+                setTimeout(() => setRsvpCopied(false), 2000);
+              }}
+              style={{
+                width: '100%', height: 48, borderRadius: 12,
+                border: '1.5px solid var(--toss-blue)',
+                backgroundColor: rsvpCopied ? 'var(--toss-blue-light)' : 'transparent',
+                color: 'var(--toss-blue)', fontWeight: 700, fontSize: 14,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              {rsvpCopied
+                ? <><Check size={16} />링크 복사됐어요!</>
+                : <><Copy size={16} />RSVP 링크 복사</>
+              }
+            </button>
+          </div>
+
+          {/* RSVP 집계 */}
+          {rsvpList.length > 0 && (
+            <div className="card mb-4">
+              <div className="flex justify-around py-1">
+                <div className="flex flex-col items-center gap-0.5">
+                  <p className="text-xl font-bold" style={{ color: 'var(--toss-blue)' }}>
+                    {rsvpList.filter(r => r.attending).length}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>참석</p>
+                </div>
+                <div style={{ width: 1, backgroundColor: 'var(--toss-border)' }} />
+                <div className="flex flex-col items-center gap-0.5">
+                  <p className="text-xl font-bold" style={{ color: 'var(--toss-text-secondary)' }}>
+                    {rsvpList.filter(r => !r.attending).length}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>불참</p>
+                </div>
+                <div style={{ width: 1, backgroundColor: 'var(--toss-border)' }} />
+                <div className="flex flex-col items-center gap-0.5">
+                  <p className="text-xl font-bold" style={{ color: 'var(--toss-text-primary)' }}>
+                    {rsvpList.filter(r => r.attending).reduce((s, r) => s + (r.meal_count || 1), 0)}
+                  </p>
+                  <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>총 식사</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* RSVP 응답 목록 */}
+          <div className="flex flex-col gap-3 mb-4">
+            {rsvpList.length === 0 ? (
+              <div className="card text-center py-8">
+                <p className="text-2xl mb-2">📋</p>
+                <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
+                  아직 RSVP 응답이 없어요
+                </p>
+                <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>
+                  위 링크를 하객에게 공유해보세요
+                </p>
+              </div>
+            ) : (
+              rsvpList.map((r) => (
+                <div key={r.id} className="card flex items-start gap-3">
+                  <div
+                    className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-base"
+                    style={{ backgroundColor: r.attending ? 'var(--toss-blue-light)' : '#f2f4f6' }}
+                  >
+                    {r.attending ? '🎉' : '🙏'}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
+                        {r.name}
+                      </p>
+                      <span
+                        className="text-xs px-2 py-0.5 rounded-full font-medium"
+                        style={{
+                          backgroundColor: r.attending ? 'var(--toss-blue-light)' : '#f2f4f6',
+                          color: r.attending ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)',
+                        }}
+                      >
+                        {r.attending ? `참석 · ${r.meal_count || 1}명` : '불참'}
+                      </span>
+                    </div>
+                    {r.phone && (
+                      <p className="text-xs mt-0.5" style={{ color: 'var(--toss-text-tertiary)' }}>{r.phone}</p>
+                    )}
+                    {r.message && (
+                      <p className="text-xs mt-1 italic" style={{ color: 'var(--toss-text-secondary)' }}>
+                        "{r.message}"
+                      </p>
+                    )}
+                    <p className="text-xs mt-0.5" style={{ color: 'var(--toss-text-tertiary)' }}>
+                      {new Date(r.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </div>
+                </div>
+              ))
             )}
           </div>
         </>
