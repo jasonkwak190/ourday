@@ -240,7 +240,7 @@ export default function GuestsPage() {
         className="flex mb-4 rounded-2xl overflow-hidden"
         style={{ backgroundColor: 'var(--beige)' }}
       >
-        {[{ key: 'list', label: '👥 명단' }, { key: 'gift', label: '💝 축의금' }, { key: 'rsvp', label: '📋 RSVP' }].map((t) => (
+        {[{ key: 'list', label: '👥 명단' }, { key: 'gift', label: '💝 축의금' }, { key: 'rsvp', label: '✅ 참석 확인' }].map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -650,13 +650,13 @@ export default function GuestsPage() {
       {/* ── RSVP 탭 ── */}
       {tab === 'rsvp' && (
         <>
-          {/* RSVP 링크 공유 */}
+          {/* 참석 확인 링크 공유 */}
           <div className="card mb-4">
             <p className="text-xs font-semibold mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>
-              RSVP 링크를 하객에게 공유하세요
+              참석 확인 링크를 하객에게 공유하세요
             </p>
             <p className="text-xs mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>
-              하객이 링크에서 참석 여부를 직접 입력할 수 있어요
+              링크를 열면 참석 여부를 바로 알려줄 수 있어요
             </p>
             <button
               onClick={async () => {
@@ -674,8 +674,8 @@ export default function GuestsPage() {
               }}
             >
               {rsvpCopied
-                ? <><Check size={16} />링크 복사됐어요!</>
-                : <><Copy size={16} />RSVP 링크 복사</>
+                ? <><Check size={16} />복사됐어요!</>
+                : <><Copy size={16} />참석 확인 링크 복사</>
               }
             </button>
           </div>
@@ -714,7 +714,7 @@ export default function GuestsPage() {
               <div className="card text-center py-8">
                 <p className="text-2xl mb-2">📋</p>
                 <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-                  아직 RSVP 응답이 없어요
+                  아직 참석 확인 답변이 없어요
                 </p>
                 <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>
                   위 링크를 하객에게 공유해보세요

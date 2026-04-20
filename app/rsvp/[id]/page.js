@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { Heart, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Check } from 'lucide-react';
 
 const FONT = "'Pretendard Variable','Pretendard',-apple-system,sans-serif";
 
@@ -15,19 +15,18 @@ function formatDate(dateStr) {
 export default function RSVPPage({ params }) {
   const { id: coupleId } = use(params);
 
-  const [info, setInfo]         = useState(null);   // 커플 기본 정보
-  const [loading, setLoading]   = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const [info, setInfo]           = useState(null);
+  const [loading, setLoading]     = useState(true);
+  const [notFound, setNotFound]   = useState(false);
 
-  // 폼 상태
-  const [name, setName]         = useState('');
-  const [attending, setAttending] = useState(null); // true | false | null
+  const [name, setName]           = useState('');
+  const [attending, setAttending] = useState(null);
   const [mealCount, setMealCount] = useState(1);
-  const [phone, setPhone]       = useState('');
-  const [message, setMessage]   = useState('');
+  const [phone, setPhone]         = useState('');
+  const [message, setMessage]     = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [done, setDone]         = useState(false);
-  const [error, setError]       = useState('');
+  const [done, setDone]           = useState(false);
+  const [error, setError]         = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -42,7 +41,7 @@ export default function RSVPPage({ params }) {
 
   async function handleSubmit() {
     setError('');
-    if (!name.trim()) { setError('이름을 입력해주세요.'); return; }
+    if (!name.trim()) { setError('성함을 입력해주세요.'); return; }
     if (attending === null) { setError('참석 여부를 선택해주세요.'); return; }
 
     setSubmitting(true);
@@ -79,7 +78,7 @@ export default function RSVPPage({ params }) {
       <div style={centered}>
         <p style={{ fontSize: 32, marginBottom: 12 }}>💌</p>
         <p style={{ fontSize: 16, color: '#4e5968', fontWeight: 600 }}>잘못된 링크예요</p>
-        <p style={{ fontSize: 13, color: '#b0b8c1', marginTop: 6 }}>초대장의 RSVP 링크를 다시 확인해주세요</p>
+        <p style={{ fontSize: 13, color: '#b0b8c1', marginTop: 6 }}>청첩장에서 받은 링크를 다시 확인해주세요</p>
       </div>
     );
   }
@@ -100,19 +99,18 @@ export default function RSVPPage({ params }) {
           }
         </div>
         <p style={{ fontSize: 20, fontWeight: 700, color: '#191f28', marginBottom: 8 }}>
-          {attending ? '참석 신청 완료! 🎉' : '불참 접수 완료'}
+          {attending ? '참석 확인 완료! 🎉' : '전달 완료'}
         </p>
-        <p style={{ fontSize: 14, color: '#8b95a1', textAlign: 'center', lineHeight: 1.7 }}>
+        <p style={{ fontSize: 14, color: '#8b95a1', textAlign: 'center', lineHeight: 1.8 }}>
           {attending
             ? `${name}님의 참석을 기다릴게요.\n소중한 자리에 함께해주셔서 감사해요 ♥`
-            : `${name}님의 응답을 전달했어요.\n다음에 좋은 자리에서 만나요 😊`
+            : `${name}님의 답변을 잘 받았어요.\n다음에 좋은 자리에서 뵙겠습니다 😊`
           }
         </p>
       </div>
     );
   }
 
-  // ── 폼 ──
   const groomName = info?.groom_name || '신랑';
   const brideName = info?.bride_name || '신부';
 
@@ -130,7 +128,7 @@ export default function RSVPPage({ params }) {
         borderBottom: '1px solid #f2f4f6',
       }}>
         <p style={{ fontSize: 11, letterSpacing: '0.18em', color: '#d4879a', marginBottom: 16, textTransform: 'uppercase' }}>
-          Wedding RSVP
+          Wedding Invitation
         </p>
         <div style={{
           display: 'inline-flex', alignItems: 'center', gap: 12,
@@ -157,12 +155,20 @@ export default function RSVPPage({ params }) {
             {info.venue_address ? ` · ${info.venue_address}` : ''}
           </p>
         )}
+        <div style={{
+          marginTop: 20, padding: '12px 20px',
+          backgroundColor: 'rgba(212,135,154,0.08)',
+          borderRadius: 12,
+          fontSize: 13, color: '#6b3549', lineHeight: 1.6,
+        }}>
+          참석 여부를 알려주시면<br />자리를 미리 준비할 수 있어요 🙏
+        </div>
       </div>
 
-      {/* 폼 본문 */}
+      {/* 폼 */}
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
-        {/* 이름 */}
+        {/* 성함 */}
         <Section title="성함">
           <input
             type="text"
@@ -189,7 +195,7 @@ export default function RSVPPage({ params }) {
               selected={attending === false}
               onClick={() => setAttending(false)}
               emoji="🙏"
-              label="불참합니다"
+              label="참석이 어려워요"
               color="#8b95a1"
               bg="#f2f4f6"
             />
@@ -198,7 +204,7 @@ export default function RSVPPage({ params }) {
 
         {/* 식사 인원 (참석할 경우만) */}
         {attending === true && (
-          <Section title="식사 인원">
+          <Section title="참석 인원 (식사 수)">
             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <button
                 onClick={() => setMealCount(c => Math.max(1, c - 1))}
@@ -229,9 +235,9 @@ export default function RSVPPage({ params }) {
         </Section>
 
         {/* 축하 메시지 */}
-        <Section title="축하 메시지 (선택)">
+        <Section title="신랑신부에게 한마디 (선택)">
           <textarea
-            placeholder="신랑신부에게 한마디 남겨주세요"
+            placeholder="축하 메시지를 남겨주세요"
             value={message}
             onChange={e => setMessage(e.target.value)}
             maxLength={200}
@@ -250,7 +256,6 @@ export default function RSVPPage({ params }) {
           <p style={{ fontSize: 13, color: '#ff4d4f', textAlign: 'center' }}>{error}</p>
         )}
 
-        {/* 제출 버튼 */}
         <button
           onClick={handleSubmit}
           disabled={submitting}
@@ -287,7 +292,7 @@ function AttendBtn({ selected, onClick, emoji, label, color, bg }) {
     <button
       onClick={onClick}
       style={{
-        flex: 1, height: 72, borderRadius: 16, border: `2px solid ${selected ? color : '#e5e8eb'}`,
+        flex: 1, height: 76, borderRadius: 16, border: `2px solid ${selected ? color : '#e5e8eb'}`,
         backgroundColor: selected ? bg : '#f8f9fa',
         cursor: 'pointer', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -295,7 +300,7 @@ function AttendBtn({ selected, onClick, emoji, label, color, bg }) {
         transition: 'all 0.15s',
       }}
     >
-      <span style={{ fontSize: 22 }}>{emoji}</span>
+      <span style={{ fontSize: 24 }}>{emoji}</span>
       <span style={{ fontSize: 13, fontWeight: 600, color: selected ? color : '#8b95a1' }}>{label}</span>
     </button>
   );
