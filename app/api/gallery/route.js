@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // 커플 인증 후 자신의 photo_event + signed URLs 반환
 import { createClient } from '@supabase/supabase-js';
 import { createSupabaseServerClient } from '@/lib/supabase-server';

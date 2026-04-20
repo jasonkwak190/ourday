@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 // 슬라이드쇼용 — event_code 기반, 인증 불필요 (커플이 공유한 링크)
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
