@@ -201,17 +201,32 @@ export default function InvitationPage() {
   async function save() {
     if (!coupleId) return;
     setSaving(true);
-    const payload = { ...form, couple_id: coupleId, updated_at: new Date().toISOString() };
 
+    // slug = couple_id 앞 12자리 기반 (고정 URL 보장)
+    const slug = coupleId.replace(/-/g, '').slice(0, 12);
+    // 빈 문자열 date는 null로 변환 (PostgreSQL date 타입 오류 방지)
+    const payload = {
+      ...form,
+      wedding_date: form.wedding_date || null,
+      couple_id: coupleId,
+      slug,
+      updated_at: new Date().toISOString(),
+    };
+
+    let savedData = null;
     if (inv) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('invitations').update(payload).eq('id', inv.id).select().single();
-      if (data) setInv(data);
+      if (error) console.error('[invitation] update error:', error.message);
+      else savedData = data;
     } else {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('invitations').insert(payload).select().single();
-      if (data) setInv(data);
+      if (error) console.error('[invitation] insert error:', error.message);
+      else savedData = data;
     }
+
+    if (savedData) setInv(savedData);
     setSaving(false);
     setSaved(true);
     setShowPreview(false);
