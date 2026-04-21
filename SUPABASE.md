@@ -1,7 +1,7 @@
 # Ourday — Supabase 스키마 & 정책 정리
 
-> 마지막 업데이트: 2026-04-21  
-> 총 13개 테이블 · 12개 활성 · 1개 보류(`invitation_guestbook`)
+> 마지막 업데이트: 2026-04-21 (v2)  
+> 총 13개 테이블 · **13개 전부 활성** · 보류 없음
 
 ---
 
@@ -201,7 +201,7 @@ create policy "커플만 하객 접근" on guests
 | attending | boolean | 참석 여부 |
 | meal_count | integer | 식사 수 (default 1) |
 | phone | text | 연락처 |
-| message | text | 메시지 |
+| message | text | ~~메시지~~ **더 이상 사용 안 함** — RSVP 폼에서 제거, 방명록으로 통합 (항상 null) |
 | created_at | timestamptz | |
 
 **RLS**: 커플은 본인 couple_id로 읽기 / anon insert는 service role로 처리
@@ -373,8 +373,10 @@ create policy "커플 사진 조회" on guest_photos
 
 ## 보류/검토 테이블
 
-### ⚠️ `invitation_guestbook`
-청첩장 공개 방명록. **현재 대시보드 UI가 없어서 데이터를 확인할 방법이 없음.**
+없음. 모든 테이블이 활성 상태.
+
+### ✅ `invitation_guestbook` — 완전 활성화 (2026-04-21)
+청첩장 공개 방명록. 이전에 UI 없음 상태였으나 연동 완료.
 
 | 컬럼 | 타입 | 설명 |
 |------|------|------|
@@ -385,14 +387,10 @@ create policy "커플 사진 조회" on guest_photos
 | created_at | timestamptz | |
 
 **현재 상태**:
-- `app/api/guestbook/route.js` — GET/POST API 존재
-- `components/InvitationTemplates.js` — 청첩장 렌더링 시 방명록 폼 표시
-- **⚠️ 커플 대시보드에서 방명록 내용을 볼 수 있는 UI 없음**
-
-**권장 처리**:
-- [ ] 옵션 A: `guests/page.js`의 RSVP 탭에 방명록 섹션 추가 (권장)
-- [ ] 옵션 B: 현재 기능 미사용 상태가 맞으면 `InvitationTemplates.js`에서 방명록 폼 제거 + 테이블 삭제
-- [ ] 옵션 C: 현행 유지 (방명록만 쓰고 대시보드에 추가 예정)
+- `app/api/guestbook/route.js` — GET/POST API
+- `components/InvitationTemplates.js` — 청첩장 하단 "축하 메시지" 폼
+- `app/guests/page.js` — 참석확인 탭 하단 방명록 섹션 (최신 50개)
+- `app/dashboard/page.js` — 대시보드 방명록 위젯 (최신 3개)
 
 ---
 
@@ -435,9 +433,15 @@ RLS를 우회하지 않고 서버 API Route(`/api/rsvp`)에서 `SUPABASE_SERVICE
 
 ## 정리 권장 사항
 
-### 즉시 해야 할 것
-- [ ] `invitation_guestbook` 처리 방향 결정 (위 옵션 A/B/C 중 선택)
-- [ ] `next.config.js` + `next.config.ts` 두 파일 공존 문제 해결 → `next.config.js` 하나만 유지
+### 완료된 것
+- [x] `invitation_guestbook` 대시보드 + 하객관리 연동 완료
+- [x] `next.config.ts` 삭제 (`next.config.js` 하나만 유지)
+- [x] `middleware.js` → `proxy.js` 마이그레이션 (Next.js 16)
+- [x] RSVP `message` 필드 미사용 처리 (방명록으로 통합)
+- [x] 인덱스 12개 추가
+
+### 남은 것
+- [ ] `rsvp_responses.message` 컬럼 — DB에서 DROP 해도 됨 (항상 null, 앱에서 미사용)
 
 ### Supabase Storage
 - `guest-photos` 버킷: 하객 업로드 사진 저장
