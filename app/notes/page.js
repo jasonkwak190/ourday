@@ -1,39 +1,107 @@
 'use client';
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, Send, Link2, Edit2, Trash2, Check, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
+import { Search, X, Send, Link2, Edit2, Trash2, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 
+/* ─── 날짜 포맷 ─────────────────────────────────────────────── */
+function formatNoteTime(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today    = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const noteDay  = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((today - noteDay) / (1000 * 60 * 60 * 24));
+  const timeStr  = d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+
+  if (diffDays === 0) return timeStr;
+  if (diffDays === 1) return `어제 ${timeStr}`;
+  if (d.getFullYear() === now.getFullYear())
+    return `${d.getMonth() + 1}월 ${d.getDate()}일 ${timeStr}`;
+  return `${d.getFullYear()}. ${d.getMonth() + 1}. ${d.getDate()} ${timeStr}`;
+}
+
+function formatDividerDate(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today   = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const noteDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((today - noteDay) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return '오늘';
+  if (diffDays === 1) return '어제';
+  const days = ['일', '월', '화', '수', '목', '금', '토'];
+  if (d.getFullYear() === now.getFullYear())
+    return `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+
+function isSameDay(a, b) {
+  const da = new Date(a), db = new Date(b);
+  return da.getFullYear() === db.getFullYear() &&
+         da.getMonth()    === db.getMonth()    &&
+         da.getDate()     === db.getDate();
+}
+
+/* ─── 링크 미리보기 캐시 (세션 수준) ────────────────────────── */
+const previewCache = new Map();
+
+function useLinkPreview(url) {
+  const [preview, setPreview] = useState(previewCache.get(url) ?? null);
+  const [loading, setLoading] = useState(!previewCache.has(url) && !!url);
+
+  useEffect(() => {
+    if (!url) return;
+    if (previewCache.has(url)) {
+      setPreview(previewCache.get(url));
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    fetch(`/api/link-preview?url=${encodeURIComponent(url)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        if (!data.error) {
+          previewCache.set(url, data);
+          setPreview(data);
+        } else {
+          previewCache.set(url, null);
+        }
+        setLoading(false);
+      })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [url]);
+
+  return { preview, loading };
+}
+
+/* ─── 메인 페이지 ────────────────────────────────────────────── */
 export default function NotesPage() {
   const router = useRouter();
-  const bottomRef   = useRef(null);
-  const inputRef    = useRef(null);
+  const bottomRef = useRef(null);
+  const inputRef  = useRef(null);
 
-  const [loading, setLoading]   = useState(true);
-  const [myRole, setMyRole]     = useState(null);   // 'groom' | 'bride'
+  const [loading,  setLoading]  = useState(true);
+  const [myRole,   setMyRole]   = useState(null);
   const [myUserId, setMyUserId] = useState(null);
   const [coupleId, setCoupleId] = useState(null);
-  const [notes, setNotes]       = useState([]);
+  const [notes,    setNotes]    = useState([]);
 
-  // 입력 상태
   const [content,  setContent]  = useState('');
   const [linkUrl,  setLinkUrl]  = useState('');
   const [showLink, setShowLink] = useState(false);
   const [sending,  setSending]  = useState(false);
 
-  // 검색
-  const [search, setSearch]     = useState('');
+  const [search,    setSearch]    = useState('');
   const [searching, setSearching] = useState(false);
 
-  // 수정
   const [editId,      setEditId]      = useState(null);
   const [editContent, setEditContent] = useState('');
   const [editLink,    setEditLink]    = useState('');
-
-  // 삭제 확인
-  const [deleteId, setDeleteId] = useState(null);
+  const [deleteId,    setDeleteId]    = useState(null);
 
   const filtered = search.trim()
     ? notes.filter(n =>
@@ -42,7 +110,6 @@ export default function NotesPage() {
       )
     : notes;
 
-  // ── 초기 로드 ──────────────────────────────────────────────
   useEffect(() => {
     const init = async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -68,74 +135,45 @@ export default function NotesPage() {
     init();
   }, [router]);
 
-  // ── Realtime 구독 ──────────────────────────────────────────
   useEffect(() => {
     if (!coupleId) return;
-
     const channel = supabase.channel(`notes-${coupleId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'couple_notes',
-        filter: `couple_id=eq.${coupleId}`,
-      }, (payload) => {
-        if (payload.eventType === 'INSERT') {
-          setNotes(prev => {
-            if (prev.find(n => n.id === payload.new.id)) return prev;
-            return [...prev, payload.new];
-          });
-        }
-        if (payload.eventType === 'UPDATE') {
-          setNotes(prev => prev.map(n => n.id === payload.new.id ? payload.new : n));
-        }
-        if (payload.eventType === 'DELETE') {
-          setNotes(prev => prev.filter(n => n.id !== payload.old.id));
-        }
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_notes', filter: `couple_id=eq.${coupleId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT')
+            setNotes(prev => prev.find(n => n.id === payload.new.id) ? prev : [...prev, payload.new]);
+          if (payload.eventType === 'UPDATE')
+            setNotes(prev => prev.map(n => n.id === payload.new.id ? payload.new : n));
+          if (payload.eventType === 'DELETE')
+            setNotes(prev => prev.filter(n => n.id !== payload.old.id));
+        })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [coupleId]);
 
-  // ── 새 노트 전송 ────────────────────────────────────────────
   async function handleSend() {
     const text = content.trim();
     if (!text || !coupleId || !myRole) return;
     setSending(true);
-
-    const payload = {
-      couple_id: coupleId,
-      user_id:   myUserId,
-      role:      myRole,
-      content:   text,
-      link_url:  linkUrl.trim() || null,
-    };
-
-    const { data } = await supabase.from('couple_notes').insert(payload).select().single();
-    if (data) {
-      setNotes(prev => prev.find(n => n.id === data.id) ? prev : [...prev, data]);
-    }
-
-    setContent('');
-    setLinkUrl('');
-    setShowLink(false);
-    setSending(false);
+    const { data } = await supabase
+      .from('couple_notes')
+      .insert({ couple_id: coupleId, user_id: myUserId, role: myRole, content: text, link_url: linkUrl.trim() || null })
+      .select().single();
+    if (data) setNotes(prev => prev.find(n => n.id === data.id) ? prev : [...prev, data]);
+    setContent(''); setLinkUrl(''); setShowLink(false); setSending(false);
     setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
   }
 
-  // ── 수정 저장 ───────────────────────────────────────────────
   async function handleEdit(note) {
     if (!editContent.trim()) return;
     const { data } = await supabase
       .from('couple_notes')
       .update({ content: editContent.trim(), link_url: editLink.trim() || null, updated_at: new Date().toISOString() })
-      .eq('id', note.id)
-      .select().single();
+      .eq('id', note.id).select().single();
     if (data) setNotes(prev => prev.map(n => n.id === data.id ? data : n));
     setEditId(null);
   }
 
-  // ── 삭제 ────────────────────────────────────────────────────
   async function handleDelete(id) {
     await supabase.from('couple_notes').delete().eq('id', id);
     setNotes(prev => prev.filter(n => n.id !== id));
@@ -143,13 +181,7 @@ export default function NotesPage() {
   }
 
   function startEdit(note) {
-    setEditId(note.id);
-    setEditContent(note.content);
-    setEditLink(note.link_url || '');
-  }
-
-  function scrollToBottom() {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setEditId(note.id); setEditContent(note.content); setEditLink(note.link_url || '');
   }
 
   const isGroom = myRole === 'groom';
@@ -161,6 +193,16 @@ export default function NotesPage() {
       </div>
     );
   }
+
+  /* 날짜 구분선 삽입 */
+  const listWithDividers = [];
+  filtered.forEach((note, i) => {
+    const prev = filtered[i - 1];
+    if (!prev || !isSameDay(prev.created_at, note.created_at)) {
+      listWithDividers.push({ type: 'divider', date: note.created_at, key: `div-${note.id}` });
+    }
+    listWithDividers.push({ type: 'note', note, key: note.id });
+  });
 
   return (
     <div className="page-wrapper" style={{ paddingBottom: 0 }}>
@@ -182,17 +224,13 @@ export default function NotesPage() {
         <div className="mb-3 flex items-center gap-2 px-4 rounded-2xl"
           style={{ backgroundColor: 'var(--toss-bg)', border: '1.5px solid var(--toss-border)', height: 44 }}>
           <Search size={16} color="var(--toss-text-tertiary)" />
-          <input
-            autoFocus
-            type="text"
-            placeholder="링크·메모 검색..."
-            value={search}
+          <input autoFocus type="text" placeholder="링크·메모 검색..." value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ flex: 1, border: 'none', background: 'none', outline: 'none',
-              fontSize: 14, color: 'var(--toss-text-primary)', fontFamily: 'inherit' }}
-          />
+              fontSize: 14, color: 'var(--toss-text-primary)', fontFamily: 'inherit' }} />
           {search && (
-            <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
+            <button onClick={() => setSearch('')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
               <X size={14} color="var(--toss-text-tertiary)" />
             </button>
           )}
@@ -201,12 +239,10 @@ export default function NotesPage() {
 
       {/* 역할 배지 */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="px-3 py-1 rounded-full text-xs font-semibold"
-            style={{ backgroundColor: isGroom ? '#e8f0fe' : '#fce4ec',
-              color: isGroom ? '#1a56db' : '#c2185b' }}>
-            {isGroom ? '🤵 신랑' : '👰 신부'} 으로 작성 중
-          </div>
+        <div className="px-3 py-1 rounded-full text-xs font-semibold"
+          style={{ backgroundColor: isGroom ? '#e8f0fe' : '#fce4ec',
+            color: isGroom ? '#1a56db' : '#c2185b' }}>
+          {isGroom ? '🤵 신랑' : '👰 신부'} 으로 작성 중
         </div>
         <span className="text-xs tabular-nums" style={{ color: 'var(--toss-text-tertiary)' }}>
           {filtered.length}개
@@ -224,25 +260,38 @@ export default function NotesPage() {
           />
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '0 2px' }}>
-            {filtered.map(note => (
-              <NoteItem
-                key={note.id}
-                note={note}
-                isMe={note.user_id === myUserId}
-                isGroom={note.role === 'groom'}
-                editId={editId}
-                editContent={editContent}
-                editLink={editLink}
-                deleteId={deleteId}
-                onEditStart={() => startEdit(note)}
-                onEditChange={(c, l) => { setEditContent(c); setEditLink(l); }}
-                onEditSave={() => handleEdit(note)}
-                onEditCancel={() => setEditId(null)}
-                onDeleteRequest={() => setDeleteId(note.id)}
-                onDeleteConfirm={() => handleDelete(note.id)}
-                onDeleteCancel={() => setDeleteId(null)}
-              />
-            ))}
+            {listWithDividers.map(item =>
+              item.type === 'divider' ? (
+                /* ── 날짜 구분선 ── */
+                <div key={item.key} style={{
+                  display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0',
+                }}>
+                  <div style={{ flex: 1, height: 1, backgroundColor: 'var(--toss-border)' }} />
+                  <span style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                    {formatDividerDate(item.date)}
+                  </span>
+                  <div style={{ flex: 1, height: 1, backgroundColor: 'var(--toss-border)' }} />
+                </div>
+              ) : (
+                <NoteItem
+                  key={item.key}
+                  note={item.note}
+                  isMe={item.note.user_id === myUserId}
+                  isGroom={item.note.role === 'groom'}
+                  editId={editId}
+                  editContent={editContent}
+                  editLink={editLink}
+                  deleteId={deleteId}
+                  onEditStart={() => startEdit(item.note)}
+                  onEditChange={(c, l) => { setEditContent(c); setEditLink(l); }}
+                  onEditSave={() => handleEdit(item.note)}
+                  onEditCancel={() => setEditId(null)}
+                  onDeleteRequest={() => setDeleteId(item.note.id)}
+                  onDeleteConfirm={() => handleDelete(item.note.id)}
+                  onDeleteCancel={() => setDeleteId(null)}
+                />
+              )
+            )}
           </div>
         )}
         <div ref={bottomRef} />
@@ -251,7 +300,7 @@ export default function NotesPage() {
       {/* 맨 아래로 버튼 */}
       {!search && notes.length > 3 && (
         <div className="flex justify-center mb-2">
-          <button onClick={scrollToBottom}
+          <button onClick={() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' })}
             style={{ background: 'none', border: 'none', cursor: 'pointer',
               color: 'var(--toss-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
             <ChevronDown size={14} /> 최신 메시지로
@@ -259,20 +308,16 @@ export default function NotesPage() {
         </div>
       )}
 
-      {/* 입력창 — 하단 홈 인디케이터 + 바텀 네비 위로 여유 확보 */}
+      {/* 입력창 */}
       <div className="card" style={{ borderRadius: 20, marginBottom: 'calc(80px + env(safe-area-inset-bottom))', padding: '12px 16px' }}>
         {showLink && (
           <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl"
             style={{ backgroundColor: 'var(--toss-bg)' }}>
             <Link2 size={14} color="var(--toss-blue)" />
-            <input
-              type="url"
-              placeholder="https://..."
-              value={linkUrl}
+            <input type="url" placeholder="https://..." value={linkUrl}
               onChange={e => setLinkUrl(e.target.value)}
               style={{ flex: 1, border: 'none', background: 'none', outline: 'none',
-                fontSize: 13, color: 'var(--toss-text-primary)', fontFamily: 'inherit' }}
-            />
+                fontSize: 13, color: 'var(--toss-text-primary)', fontFamily: 'inherit' }} />
             <button onClick={() => { setShowLink(false); setLinkUrl(''); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
               <X size={14} color="var(--toss-text-tertiary)" />
@@ -281,8 +326,7 @@ export default function NotesPage() {
         )}
 
         <div className="flex items-end gap-2">
-          <button
-            onClick={() => setShowLink(v => !v)}
+          <button onClick={() => setShowLink(v => !v)}
             style={{ padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer', flexShrink: 0,
               backgroundColor: showLink ? 'var(--toss-blue-light)' : 'var(--toss-bg)',
               color: showLink ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)' }}>
@@ -298,24 +342,17 @@ export default function NotesPage() {
               e.target.style.height = 'auto';
               e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
             }}
-            onKeyDown={e => {
-              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-            }}
-            style={{
-              flex: 1, border: 'none', outline: 'none', resize: 'none', overflow: 'hidden',
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
+            style={{ flex: 1, border: 'none', outline: 'none', resize: 'none', overflow: 'hidden',
               fontSize: 14, lineHeight: 1.5, backgroundColor: 'transparent',
-              color: 'var(--toss-text-primary)', fontFamily: 'inherit', padding: '6px 0',
-            }}
+              color: 'var(--toss-text-primary)', fontFamily: 'inherit', padding: '6px 0' }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!content.trim() || sending}
-            style={{
-              width: 36, height: 36, borderRadius: 10, border: 'none', cursor: content.trim() ? 'pointer' : 'not-allowed',
+          <button onClick={handleSend} disabled={!content.trim() || sending}
+            style={{ width: 36, height: 36, borderRadius: 10, border: 'none',
+              cursor: content.trim() ? 'pointer' : 'not-allowed',
               backgroundColor: content.trim() ? 'var(--toss-blue)' : 'var(--toss-border)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              transition: 'background-color 0.15s',
-            }}>
+              transition: 'background-color 0.15s' }}>
             <Send size={16} color="white" />
           </button>
         </div>
@@ -326,12 +363,13 @@ export default function NotesPage() {
   );
 }
 
-// ─── 개별 노트 아이템 ──────────────────────────────────────────────────────
+/* ─── 개별 노트 아이템 ──────────────────────────────────────── */
 function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId,
   onEditStart, onEditChange, onEditSave, onEditCancel, onDeleteRequest, onDeleteConfirm, onDeleteCancel }) {
 
-  const isEditing  = editId  === note.id;
+  const isEditing  = editId   === note.id;
   const isDeleting = deleteId === note.id;
+  const { preview, loading: previewLoading } = useLinkPreview(note.link_url);
 
   const bubbleColor = isGroom
     ? { bg: '#e8f0fe', text: '#1a56db', badge: '🤵' }
@@ -342,29 +380,27 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: align, gap: 2 }}>
       {/* 역할 배지 */}
-      <span style={{ fontSize: 10, color: 'var(--toss-text-tertiary)', paddingLeft: isGroom ? 4 : 0, paddingRight: isGroom ? 0 : 4 }}>
+      <span style={{ fontSize: 10, color: 'var(--toss-text-tertiary)',
+        paddingLeft: isGroom ? 4 : 0, paddingRight: isGroom ? 0 : 4 }}>
         {bubbleColor.badge} {isGroom ? '신랑' : '신부'}
       </span>
 
       {/* 말풍선 */}
       <div style={{
-        maxWidth: '78%', padding: '10px 14px', borderRadius: isGroom ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
+        maxWidth: '78%', padding: '10px 14px',
+        borderRadius: isGroom ? '4px 16px 16px 16px' : '16px 4px 16px 16px',
         backgroundColor: isEditing ? 'white' : bubbleColor.bg,
         border: isEditing ? `1.5px solid ${bubbleColor.text}` : 'none',
         boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
       }}>
         {isEditing ? (
-          /* 수정 모드 */
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 200 }}>
-            <textarea
-              autoFocus
-              value={editContent}
-              onChange={e => onEditChange(e.target.value, editLink)}
-              rows={2}
+            <textarea autoFocus value={editContent}
+              onChange={e => onEditChange(e.target.value, editLink)} rows={2}
               style={{ border: 'none', outline: 'none', resize: 'none', fontSize: 14,
-                lineHeight: 1.5, fontFamily: 'inherit', color: 'var(--toss-text-primary)', width: '100%' }}
-            />
-            <div className="flex items-center gap-1.5" style={{ borderTop: '1px solid #e5e8eb', paddingTop: 8 }}>
+                lineHeight: 1.5, fontFamily: 'inherit', color: 'var(--toss-text-primary)', width: '100%' }} />
+            <div className="flex items-center gap-1.5"
+              style={{ borderTop: '1px solid #e5e8eb', paddingTop: 8 }}>
               <Link2 size={12} color="var(--toss-text-tertiary)" />
               <input type="url" placeholder="링크 (선택)" value={editLink}
                 onChange={e => onEditChange(editContent, e.target.value)}
@@ -385,7 +421,6 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
             </div>
           </div>
         ) : isDeleting ? (
-          /* 삭제 확인 */
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 160 }}>
             <p style={{ fontSize: 13, color: 'var(--toss-text-primary)', margin: 0 }}>삭제할까요?</p>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -402,18 +437,59 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
             </div>
           </div>
         ) : (
-          /* 일반 모드 */
           <>
-            <p style={{ fontSize: 14, color: 'var(--toss-text-primary)', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <p style={{ fontSize: 14, color: 'var(--toss-text-primary)', lineHeight: 1.6,
+              margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {note.content}
             </p>
+
+            {/* 링크 미리보기 */}
             {note.link_url && (
               <a href={note.link_url} target="_blank" rel="noreferrer"
-                style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6,
-                  fontSize: 12, color: bubbleColor.text, textDecoration: 'none', wordBreak: 'break-all' }}>
-                <Link2 size={11} />
-                {note.link_url.length > 40 ? note.link_url.slice(0, 40) + '…' : note.link_url}
-                <ExternalLink size={10} style={{ flexShrink: 0 }} />
+                style={{ display: 'block', textDecoration: 'none', marginTop: 8 }}>
+                {previewLoading ? (
+                  /* 로딩 스켈레톤 */
+                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)',
+                    backgroundColor: 'rgba(255,255,255,0.6)', padding: '10px 12px' }}>
+                    <div style={{ height: 11, borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.08)', marginBottom: 6, width: '70%' }} />
+                    <div style={{ height: 9, borderRadius: 6, backgroundColor: 'rgba(0,0,0,0.05)', width: '50%' }} />
+                  </div>
+                ) : preview ? (
+                  /* 미리보기 카드 */
+                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)',
+                    backgroundColor: 'rgba(255,255,255,0.7)' }}>
+                    {preview.image && (
+                      <img src={preview.image} alt=""
+                        style={{ width: '100%', maxHeight: 120, objectFit: 'cover', display: 'block' }}
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    )}
+                    <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <img src={preview.favicon} alt=""
+                        style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0 }}
+                        onError={e => { e.target.style.display = 'none'; }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {preview.title && (
+                          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--toss-text-primary)',
+                            margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {preview.title}
+                          </p>
+                        )}
+                        <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', margin: '1px 0 0' }}>
+                          {preview.domain}
+                        </p>
+                      </div>
+                      <ExternalLink size={11} color="var(--toss-text-tertiary)" style={{ flexShrink: 0 }} />
+                    </div>
+                  </div>
+                ) : (
+                  /* 파싱 실패 — 일반 링크 */
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2,
+                    fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all' }}>
+                    <Link2 size={11} />
+                    {note.link_url.length > 40 ? note.link_url.slice(0, 40) + '…' : note.link_url}
+                    <ExternalLink size={10} style={{ flexShrink: 0 }} />
+                  </div>
+                )}
               </a>
             )}
           </>
@@ -423,10 +499,11 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
       {/* 시간 + 수정/삭제 버튼 */}
       {!isEditing && !isDeleting && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6,
-          flexDirection: isGroom ? 'row' : 'row-reverse', paddingLeft: isGroom ? 4 : 0, paddingRight: isGroom ? 0 : 4 }}>
+          flexDirection: isGroom ? 'row' : 'row-reverse',
+          paddingLeft: isGroom ? 4 : 0, paddingRight: isGroom ? 0 : 4 }}>
           <span style={{ fontSize: 10, color: 'var(--toss-text-tertiary)' }}>
-            {new Date(note.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-            {note.updated_at !== note.created_at && ' (수정됨)'}
+            {formatNoteTime(note.created_at)}
+            {note.updated_at && note.updated_at !== note.created_at ? ' (수정됨)' : ''}
           </span>
           {isMe && (
             <div style={{ display: 'flex', gap: 4 }}>
