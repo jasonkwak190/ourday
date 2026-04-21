@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
-import { Wallet } from 'lucide-react';
+import VendorsTab from '@/components/VendorsTab';
+import { Wallet, Store } from 'lucide-react';
 
 const CATEGORIES = [
   { value: 'hall',   label: '웨딩홀',   icon: '🏛',  color: '#3182f6' },
@@ -136,6 +137,9 @@ export default function BudgetPage() {
   // 총 예산 수정
   const [editingBudget, setEditingBudget] = useState(false);
   const [budgetInput, setBudgetInput] = useState('');
+
+  // 탭
+  const [tab, setTab] = useState('budget'); // 'budget' | 'vendors'
 
   // 수정/삭제
   const [menuId, setMenuId] = useState(null);
@@ -282,8 +286,24 @@ export default function BudgetPage() {
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
       <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
-        💰 예산 관리
+        💰 예산·업체
       </h1>
+
+      {/* 탭 선택 */}
+      <div className="flex mb-4 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--beige)' }}>
+        {[{ key: 'budget', label: '💰 예산 항목', Icon: Wallet }, { key: 'vendors', label: '🏢 업체 관리', Icon: Store }].map(t => (
+          <button key={t.key} onClick={() => setTab(t.key)} className="flex-1 py-2.5 text-sm font-medium transition-all"
+            style={{ background: tab === t.key ? 'white' : 'none', color: tab === t.key ? 'var(--rose)' : 'var(--stone)', border: 'none', cursor: 'pointer', borderRadius: '1rem', margin: '4px' }}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* 업체 탭 */}
+      {tab === 'vendors' && coupleId && <VendorsTab coupleId={coupleId} />}
+
+      {/* 예산 탭 */}
+      {tab === 'budget' && <>
 
       {/* 요약 카드 */}
       <div className="card mb-4">
@@ -502,6 +522,8 @@ export default function BudgetPage() {
           + 항목 추가
         </button>
       )}
+
+      </> /* end 예산 탭 */}
 
       <BottomNav active="budget" />
     </div>

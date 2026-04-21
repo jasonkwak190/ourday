@@ -39,7 +39,8 @@
       "Bash(sed -i '' \"s|fetch\\('/api/guest/upload'|fetch\\(\\\\`\\\\${process.env.NEXT_PUBLIC_API_BASE || ''}/api/guest/upload\\\\`|g\" /Users/jaehyeok/ourday/app/guest/[code]/page.js)",
       "Bash(python3)",
       "Bash(npx next *)",
-      "Bash(npx cap *)"
+      "Bash(npx cap *)",
+      "Bash(git pull *)"
     ]
   }
 }

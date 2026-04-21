@@ -6,6 +6,7 @@ import BottomNav from '@/components/BottomNav';
 import { Copy, Check, UserPlus, ClipboardList } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
 import GalleryTab from '@/components/GalleryTab';
+import InvitationTab from '@/components/InvitationTab';
 
 const RELATIONS = ['가족', '친척', '친구', '직장', '지인', '기타'];
 
@@ -239,7 +240,7 @@ export default function GuestsPage() {
         className="flex mb-4 rounded-2xl overflow-hidden"
         style={{ backgroundColor: 'var(--beige)' }}
       >
-        {[{ key: 'list', label: '👥 명단' }, { key: 'gift', label: '💝 축의금' }, { key: 'rsvp', label: '✅ 참석' }, { key: 'photo', label: '📷 사진' }].map((t) => (
+        {[{ key: 'list', label: '👥 명단' }, { key: 'gift', label: '💝 축의금' }, { key: 'rsvp', label: '✅ 참석' }, { key: 'photo', label: '📷 사진' }, { key: 'invite', label: '💌 청첩장' }].map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -805,6 +806,9 @@ export default function GuestsPage() {
 
       {/* ── 사진 탭 ── */}
       {tab === 'photo' && <GalleryTab />}
+
+      {/* ── 청첩장 탭 ── */}
+      {tab === 'invite' && <InvitationTab coupleId={coupleId} />}
 
       <BottomNav active="guests" />
     </div>

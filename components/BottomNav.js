@@ -2,22 +2,20 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, CalendarDays, Wallet, Users, Building2, MoreHorizontal, MessageSquare, BookOpen, Settings, Mail, Paperclip } from 'lucide-react';
+import { Home, CalendarDays, Wallet, Users, MoreHorizontal, MessageSquare, BookOpen, Settings, Paperclip } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { key: 'home',     label: '홈',   Icon: Home,         href: '/dashboard' },
-  { key: 'timeline', label: '일정', Icon: CalendarDays, href: '/timeline' },
-  { key: 'budget',   label: '예산', Icon: Wallet,       href: '/budget' },
-  { key: 'guests',   label: '하객', Icon: Users,        href: '/guests' },
-  { key: 'vendors',  label: '업체', Icon: Building2,    href: '/vendors' },
+  { key: 'home',      label: '홈',   Icon: Home,         href: '/dashboard' },
+  { key: 'timeline',  label: '일정', Icon: CalendarDays, href: '/timeline' },
+  { key: 'budget',    label: '예산', Icon: Wallet,       href: '/budget' },
+  { key: 'decisions', label: '결정', Icon: MessageSquare,href: '/decisions' },
 ];
 
 const MORE_ITEMS = [
-  { key: 'invitation', label: '모바일 청첩장', Icon: Mail,          href: '/invitation', desc: '템플릿으로 청첩장 만들고 공유' },
-  { key: 'notes',      label: '정보 공유',    Icon: Paperclip,     href: '/notes',      desc: '링크·메모 함께 모아두기' },
-  { key: 'decisions',  label: '의사결정',     Icon: MessageSquare, href: '/decisions',  desc: '신랑·신부 의견 조율' },
-  { key: 'guide',      label: '예식 가이드',  Icon: BookOpen,      href: '/guide',      desc: '폐백·청첩장·예단 정보' },
-  { key: 'settings',   label: '설정',         Icon: Settings,      href: '/settings',   desc: '프로필·결혼정보 수정' },
+  { key: 'guests',  label: '하객 관리',   Icon: Users,     href: '/guests',   desc: '하객 명단·축의금·청첩장' },
+  { key: 'notes',   label: '정보 공유',   Icon: Paperclip, href: '/notes',    desc: '링크·메모 함께 모아두기' },
+  { key: 'guide',   label: '예식 가이드', Icon: BookOpen,  href: '/guide',    desc: '폐백·청첩장·예단 정보' },
+  { key: 'settings',label: '설정',        Icon: Settings,  href: '/settings', desc: '프로필·결혼정보 수정' },
 ];
 
 const MORE_KEYS = MORE_ITEMS.map(i => i.key);
