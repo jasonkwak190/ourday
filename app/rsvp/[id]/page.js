@@ -24,7 +24,6 @@ export default function RSVPPage({ params }) {
   const [attending, setAttending] = useState(null);
   const [mealCount, setMealCount] = useState(1);
   const [phone, setPhone]         = useState('');
-  const [message, setMessage]     = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone]           = useState(false);
   const [error, setError]         = useState('');
@@ -57,7 +56,6 @@ export default function RSVPPage({ params }) {
         attending,
         meal_count: attending ? mealCount : 0,
         phone: phone.trim() || null,
-        message: message.trim() || null,
       }),
     });
     setSubmitting(false);
@@ -252,24 +250,6 @@ export default function RSVPPage({ params }) {
             onChange={e => setPhone(e.target.value)}
             maxLength={15}
             style={inputStyle}
-          />
-        </Section>
-
-        {/* 축하 메시지 */}
-        <Section title="신랑신부에게 한마디 (선택)">
-          <textarea
-            placeholder="축하 메시지를 남겨주세요"
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            maxLength={200}
-            rows={3}
-            style={{
-              ...inputStyle,
-              height: 'auto',
-              resize: 'none',
-              padding: '14px 16px',
-              lineHeight: 1.6,
-            }}
           />
         </Section>
 
