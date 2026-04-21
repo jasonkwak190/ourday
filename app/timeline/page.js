@@ -297,7 +297,7 @@ export default function TimelinePage() {
   function filterItems() {
     if (activeTab === 'all') return items;
     if (activeTab === 'current') {
-      if (!weddingDate) return items;
+      if (!weddingDate) return [];   // 날짜 미설정 → 빈 배열, 안내 메시지 표시
       const wedding    = new Date(weddingDate);
       const monthsDiff = (wedding - todayDt) / (1000 * 60 * 60 * 24 * 30);
       return items.filter(i => i.due_months_before >= monthsDiff - 0.5 && i.due_months_before <= monthsDiff + 1.5);
@@ -594,7 +594,15 @@ export default function TimelinePage() {
               )}
               <div className="card mb-4 p-0">
                 {displayed.length === 0 ? (
-                  <EmptyState icon={CheckSquare} title="해당 기간에 항목이 없어요" compact />
+                  activeTab === 'current' && !weddingDate ? (
+                    <div className="px-4 py-6 text-center">
+                      <p className="text-sm font-semibold mb-1" style={{ color: 'var(--ink)' }}>결혼 날짜를 설정해주세요</p>
+                      <p className="text-xs mb-3" style={{ color: 'var(--stone)' }}>날짜를 설정하면 이번달 준비 항목이 자동으로 표시돼요</p>
+                      <button className="btn-rose" style={{ height: 40, fontSize: 13 }} onClick={() => router.push('/setup')}>날짜 설정하기</button>
+                    </div>
+                  ) : (
+                    <EmptyState icon={CheckSquare} title="해당 기간에 항목이 없어요" compact />
+                  )
                 ) : (
                   <ul className="px-4">{displayed.map((item, idx) => renderItem(item, idx === displayed.length - 1))}</ul>
                 )}
