@@ -1,6 +1,15 @@
-import { redirect } from 'next/navigation';
+'use client';
+import BottomNav from '@/components/BottomNav';
+import GalleryTab from '@/components/GalleryTab';
 
-// 갤러리는 하객 관리 탭으로 통합됨
-export default function GalleryRedirect() {
-  redirect('/guests');
+export default function GalleryPage() {
+  return (
+    <div className="page-wrapper">
+      <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--toss-text-primary)' }}>
+        📷 웨딩 사진
+      </h1>
+      <GalleryTab />
+      <BottomNav active="gallery" />
+    </div>
+  );
 }

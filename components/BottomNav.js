@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, CalendarDays, Wallet, Users, MoreHorizontal, MessageSquare, BookOpen, Settings, Paperclip } from 'lucide-react';
+import { Home, CalendarDays, Wallet, Users, MoreHorizontal, MessageSquare, BookOpen, Settings, Paperclip, Camera } from 'lucide-react';
 
 const NAV_ITEMS = [
   { key: 'home',      label: '홈',   Icon: Home,         href: '/dashboard' },
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
 
 const MORE_ITEMS = [
   { key: 'guests',  label: '하객 관리',   Icon: Users,     href: '/guests',   desc: '하객 명단·축의금·청첩장' },
+  { key: 'gallery', label: '웨딩 사진',   Icon: Camera,    href: '/gallery',  desc: '촬영 QR·사진 모아보기' },
   { key: 'notes',   label: '정보 공유',   Icon: Paperclip, href: '/notes',    desc: '링크·메모 함께 모아두기' },
   { key: 'guide',   label: '예식 가이드', Icon: BookOpen,  href: '/guide',    desc: '폐백·청첩장·예단 정보' },
   { key: 'settings',label: '설정',        Icon: Settings,  href: '/settings', desc: '프로필·결혼정보 수정' },
