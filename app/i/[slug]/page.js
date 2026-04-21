@@ -1,17 +1,57 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { Heart, Check, ChevronUp, ChevronDown } from 'lucide-react';
+import { Heart, Check, X, Send, Minus, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 
 const FONT = "'Pretendard Variable','Pretendard',-apple-system,sans-serif";
 
-function formatDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr);
-  const days = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+// ── 신랑 SVG (수트 실루엣) ───────────────────────────────────────────
+function GroomSvg({ selected, accent }) {
+  const fill = selected ? accent : '#c9d1d9';
+  return (
+    <svg width="48" height="52" viewBox="0 0 48 52" fill="none">
+      {/* 머리 */}
+      <circle cx="24" cy="14" r="9" fill={fill} />
+      {/* 수트 */}
+      <path d="M8 52 C8 38 16 32 24 32 C32 32 40 38 40 52H8Z" fill={fill} />
+      {/* 왼쪽 라펠 */}
+      <path d="M24 32 L19 38 L22 44 L24 41Z" fill={selected ? 'white' : '#f2f4f6'} opacity="0.9" />
+      {/* 오른쪽 라펠 */}
+      <path d="M24 32 L29 38 L26 44 L24 41Z" fill={selected ? 'white' : '#f2f4f6'} opacity="0.9" />
+      {/* 넥타이 */}
+      <path d="M23 32 L21.5 37 L24 40.5 L26.5 37 L25 32Z" fill={selected ? accent : '#b0b8c1'} opacity="0.7" />
+    </svg>
+  );
+}
+
+// ── 신부 SVG (드레스 실루엣) ─────────────────────────────────────────
+function BrideSvg({ selected, accent }) {
+  const fill = selected ? accent : '#c9d1d9';
+  return (
+    <svg width="48" height="52" viewBox="0 0 48 52" fill="none">
+      {/* 베일 */}
+      <path d="M15 12 Q24 4 33 12 L33 22 Q24 18 15 22Z" fill={fill} opacity="0.5" />
+      {/* 머리 */}
+      <circle cx="24" cy="14" r="9" fill={fill} />
+      {/* 드레스 (A라인) */}
+      <path d="M17 32 L8 52 H40 L31 32 Q27 36 24 36 Q21 36 17 32Z" fill={fill} />
+      {/* 웨이스트 */}
+      <rect x="18" y="30" width="12" height="5" rx="2" fill={fill} />
+      {/* 드레스 하이라이트 */}
+      <path d="M20 38 L14 52 H22 L26 38Z" fill={selected ? 'white' : '#f2f4f6'} opacity="0.2" />
+    </svg>
+  );
+}
+
+// ── 날짜 포매터 ──────────────────────────────────────────────────────
+function timeAgo(dateStr) {
+  const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+  if (diff < 60) return '방금';
+  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+  return `${Math.floor(diff / 86400)}일 전`;
 }
 
 export default function InvitationViewPage({ params }) {
@@ -22,17 +62,20 @@ export default function InvitationViewPage({ params }) {
   const [copied,      setCopied]      = useState(false);
   const [showAccount, setShowAccount] = useState(false);
 
-  // ── 방명록 + RSVP 공유 이름 ──────────────────────────────
-  const [guestName, setGuestName] = useState('');
+  // ── 통합 폼 상태 ─────────────────────────────────────────────────
+  const [name,      setName]      = useState('');
+  const [side,      setSide]      = useState(null);   // 'groom' | 'bride'
+  const [attending, setAttending] = useState(null);   // true | false
+  const [mealCount, setMealCount] = useState(1);
+  const [phone,     setPhone]     = useState('');
+  const [message,   setMessage]   = useState('');
 
-  // ── 인라인 RSVP 상태 ─────────────────────────────────────
-  const [side,       setSide]       = useState(null);   // 'groom' | 'bride'
-  const [attending,  setAttending]  = useState(null);   // true | false
-  const [mealCount,  setMealCount]  = useState(1);
-  const [phone,      setPhone]      = useState('');
-  const [rsvpError,  setRsvpError]  = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [rsvpDone,   setRsvpDone]   = useState(false);
+  const [done,       setDone]       = useState(false);
+  const [error,      setError]      = useState('');
+
+  // ── 방명록 목록 ──────────────────────────────────────────────────
+  const [entries, setEntries] = useState([]);
 
   useEffect(() => {
     const load = async () => {
@@ -43,6 +86,13 @@ export default function InvitationViewPage({ params }) {
 
       if (data) {
         await supabase.rpc('increment_view_count', { invitation_slug: slug });
+
+        // 방명록 목록 로드
+        const res = await fetch(`/api/guestbook?invitation_id=${data.id}`);
+        if (res.ok) {
+          const json = await res.json();
+          setEntries(json.data || []);
+        }
       }
     };
     load();
@@ -54,31 +104,58 @@ export default function InvitationViewPage({ params }) {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function handleRsvpSubmit() {
-    setRsvpError('');
-    if (!guestName.trim()) { setRsvpError('성함을 위의 방명록 이름란에 입력해주세요.'); return; }
-    if (!side)             { setRsvpError('신랑측/신부측을 선택해주세요.'); return; }
-    if (attending === null) { setRsvpError('참석 여부를 선택해주세요.'); return; }
+  async function handleSubmit() {
+    setError('');
+    if (!name.trim())      { setError('성함을 입력해주세요.'); return; }
+    if (!side)             { setError('신랑측/신부측을 선택해주세요.'); return; }
+    if (attending === null) { setError('참석 여부를 선택해주세요.'); return; }
 
     setSubmitting(true);
-    const res = await fetch('/api/rsvp', {
+
+    // 1. RSVP 제출 (필수)
+    const rsvpRes = await fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         couple_id:  inv.couple_id,
-        name:       guestName.trim(),
+        name:       name.trim(),
         side,
         attending,
         meal_count: attending ? mealCount : 0,
         phone:      phone.trim() || null,
       }),
     });
+
+    // 2. 방명록 제출 (메시지 있을 때만)
+    let newEntry = null;
+    if (message.trim() && inv.id) {
+      const gbRes = await fetch('/api/guestbook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invitation_id: inv.id,
+          name:          name.trim(),
+          message:       message.trim(),
+        }),
+      });
+      if (gbRes.ok) {
+        const gbJson = await gbRes.json();
+        newEntry = gbJson.data;
+      }
+    }
+
     setSubmitting(false);
-    if (!res.ok) { setRsvpError('전송에 실패했어요. 잠시 후 다시 시도해주세요.'); return; }
-    setRsvpDone(true);
+
+    if (!rsvpRes.ok) {
+      setError('전송에 실패했어요. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    if (newEntry) setEntries(prev => [newEntry, ...prev]);
+    setDone(true);
   }
 
-  // ── 로딩 / 오류 ──────────────────────────────────────────
+  // ── 로딩 / 없음 ──────────────────────────────────────────────────
   if (loading) {
     return (
       <div style={centered}>
@@ -102,145 +179,268 @@ export default function InvitationViewPage({ params }) {
   const brideName   = inv.bride_name || '신부';
   const accentColor = inv.template === 'classic' ? '#7a5c40'
                     : inv.template === 'floral'  ? '#c4617a'
-                    : '#191f28';
+                    : '#3182f6';
+  const sectionBg   = inv.template === 'classic' ? '#fdf8f0'
+                    : inv.template === 'floral'  ? '#fff8fa'
+                    : '#f8f9fa';
 
   return (
-    <div style={{ fontFamily: FONT }}>
-      {/* ── 청첩장 템플릿 + 방명록 ── */}
+    <div style={{ fontFamily: FONT, backgroundColor: sectionBg }}>
+
+      {/* ── 청첩장 템플릿 ── */}
       <InvitationRenderer
         inv={inv}
         copied={copied}
         copyUrl={copyUrl}
         showAccount={showAccount}
         setShowAccount={setShowAccount}
-        guestName={guestName}
-        onGuestNameChange={setGuestName}
       />
 
-      {/* ── 인라인 RSVP ─────────────────────────────────── */}
+      {/* ── 통합 참여 폼 ── */}
       {inv.couple_id && (
         <div style={{
-          maxWidth: 430, margin: '0 auto',
+          maxWidth: 430,
+          margin: '0 auto',
           padding: '0 20px 64px',
-          backgroundColor: inv.template === 'floral'
-            ? 'transparent'
-            : inv.template === 'classic' ? '#fdf8f0' : '#f8f9fa',
+          backgroundColor: sectionBg,
         }}>
-          {/* 구분선 */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <div style={{ flex: 1, height: 1, backgroundColor: '#f2f4f6' }} />
-            <p style={{ fontSize: 12, letterSpacing: '0.1em', color: '#b0b8c1' }}>참석 여부</p>
-            <div style={{ flex: 1, height: 1, backgroundColor: '#f2f4f6' }} />
-          </div>
 
-          {rsvpDone ? (
-            /* ── 제출 완료 ── */
+          {/* 구분선 */}
+          <Divider label="참여하기" />
+
+          {done ? (
+            /* ── 완료 화면 ── */
             <div style={{
-              backgroundColor: 'white', borderRadius: 20, padding: '28px 20px',
-              textAlign: 'center', boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+              backgroundColor: 'white', borderRadius: 20,
+              padding: '36px 24px', textAlign: 'center',
+              boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
             }}>
               <div style={{
-                width: 64, height: 64, borderRadius: '50%', margin: '0 auto 16px',
+                width: 68, height: 68, borderRadius: '50%', margin: '0 auto 20px',
                 backgroundColor: attending ? '#eaf4ff' : '#f2f4f6',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {attending
-                  ? <Check size={30} color="#3182f6" strokeWidth={2.5} />
-                  : <Heart size={28} color="#b0b8c1" />
+                  ? <Check size={32} color="#3182f6" strokeWidth={2.5} />
+                  : <X     size={28} color="#8b95a1" strokeWidth={2.5} />
                 }
               </div>
-              <p style={{ fontSize: 17, fontWeight: 700, color: '#191f28', marginBottom: 8 }}>
+              <p style={{ fontSize: 18, fontWeight: 700, color: '#191f28', marginBottom: 10 }}>
                 {attending ? '참석 확인 완료!' : '답변이 전달됐어요'}
               </p>
-              <p style={{ fontSize: 14, color: '#8b95a1', lineHeight: 1.7 }}>
+              <p style={{ fontSize: 14, color: '#8b95a1', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
                 {attending
-                  ? `${guestName}님의 참석을 기다릴게요.\n소중한 자리에 함께해주셔서 감사해요.`
-                  : `${guestName}님의 답변을 잘 받았어요.\n다음에 좋은 자리에서 뵙겠습니다.`
+                  ? `${name}님의 참석을 기다릴게요.\n소중한 자리에 함께해주셔서 감사해요.`
+                  : `${name}님의 답변을 잘 받았어요.\n다음에 좋은 자리에서 뵙겠습니다.`
                 }
               </p>
             </div>
+
           ) : (
-            /* ── RSVP 폼 ── */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            /* ── 폼 ── */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
 
-              {/* 이름 안내 */}
-              {guestName ? (
-                <div style={{
-                  padding: '12px 16px', borderRadius: 12,
-                  backgroundColor: '#eaf4ff',
-                  fontSize: 13, color: '#3182f6', fontWeight: 600,
-                }}>
-                  {guestName}님으로 참석 여부를 전달해요
-                </div>
-              ) : (
-                <div style={{
-                  padding: '12px 16px', borderRadius: 12,
-                  backgroundColor: '#fff9e6',
-                  fontSize: 13, color: '#b08a00',
-                }}>
-                  위의 방명록에서 이름을 먼저 입력하면 자동으로 연결돼요
-                </div>
-              )}
+              {/* 1. 이름 */}
+              <FormCard>
+                <FieldLabel required>성함</FieldLabel>
+                <input
+                  type="text"
+                  placeholder="홍길동"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  maxLength={20}
+                  style={inputStyle}
+                />
+              </FormCard>
 
-              {/* 신랑측 / 신부측 */}
-              <RsvpSection title="어느 분 하객이세요?">
+              {/* 2. 신랑측 / 신부측 */}
+              <FormCard>
+                <FieldLabel required>어느 분 하객이세요?</FieldLabel>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <SideBtn selected={side === 'groom'} onClick={() => setSide('groom')} label={`${groomName}측`} accent={accentColor} />
-                  <SideBtn selected={side === 'bride'} onClick={() => setSide('bride')} label={`${brideName}측`} accent={accentColor} />
-                </div>
-              </RsvpSection>
 
-              {/* 참석 여부 */}
-              <RsvpSection title="참석 여부">
+                  {/* 신랑측 */}
+                  <button
+                    onClick={() => setSide('groom')}
+                    style={{
+                      flex: 1, padding: '18px 8px 14px',
+                      borderRadius: 14,
+                      border: `2px solid ${side === 'groom' ? accentColor : '#e5e8eb'}`,
+                      backgroundColor: side === 'groom' ? `${accentColor}12` : '#f8f9fa',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 8, fontFamily: FONT,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <GroomSvg selected={side === 'groom'} accent={accentColor} />
+                    <span style={{
+                      fontSize: 13, fontWeight: 700,
+                      color: side === 'groom' ? accentColor : '#8b95a1',
+                    }}>
+                      {groomName}측
+                    </span>
+                  </button>
+
+                  {/* 신부측 */}
+                  <button
+                    onClick={() => setSide('bride')}
+                    style={{
+                      flex: 1, padding: '18px 8px 14px',
+                      borderRadius: 14,
+                      border: `2px solid ${side === 'bride' ? accentColor : '#e5e8eb'}`,
+                      backgroundColor: side === 'bride' ? `${accentColor}12` : '#f8f9fa',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 8, fontFamily: FONT,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <BrideSvg selected={side === 'bride'} accent={accentColor} />
+                    <span style={{
+                      fontSize: 13, fontWeight: 700,
+                      color: side === 'bride' ? accentColor : '#8b95a1',
+                    }}>
+                      {brideName}측
+                    </span>
+                  </button>
+                </div>
+              </FormCard>
+
+              {/* 3. 참석 여부 */}
+              <FormCard>
+                <FieldLabel required>참석 여부</FieldLabel>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <AttendBtn
-                    selected={attending === true} onClick={() => setAttending(true)}
-                    label="참석할게요" color="#3182f6" bg="#eaf4ff"
-                  />
-                  <AttendBtn
-                    selected={attending === false} onClick={() => setAttending(false)}
-                    label="참석이 어려워요" color="#8b95a1" bg="#f2f4f6"
-                  />
-                </div>
-              </RsvpSection>
 
-              {/* 식사 인원 */}
+                  {/* 참석 */}
+                  <button
+                    onClick={() => setAttending(true)}
+                    style={{
+                      flex: 1, padding: '16px 8px',
+                      borderRadius: 14,
+                      border: `2px solid ${attending === true ? '#3182f6' : '#e5e8eb'}`,
+                      backgroundColor: attending === true ? '#eaf4ff' : '#f8f9fa',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 8, fontFamily: FONT,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      backgroundColor: attending === true ? '#3182f6' : '#e5e8eb',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background-color 0.15s',
+                    }}>
+                      <Check size={18} color="white" strokeWidth={2.5} />
+                    </div>
+                    <span style={{
+                      fontSize: 13, fontWeight: 700,
+                      color: attending === true ? '#3182f6' : '#8b95a1',
+                    }}>
+                      참석할게요
+                    </span>
+                  </button>
+
+                  {/* 불참 */}
+                  <button
+                    onClick={() => setAttending(false)}
+                    style={{
+                      flex: 1, padding: '16px 8px',
+                      borderRadius: 14,
+                      border: `2px solid ${attending === false ? '#8b95a1' : '#e5e8eb'}`,
+                      backgroundColor: attending === false ? '#f2f4f6' : '#f8f9fa',
+                      cursor: 'pointer', display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', gap: 8, fontFamily: FONT,
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{
+                      width: 36, height: 36, borderRadius: '50%',
+                      backgroundColor: attending === false ? '#8b95a1' : '#e5e8eb',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background-color 0.15s',
+                    }}>
+                      <X size={18} color="white" strokeWidth={2.5} />
+                    </div>
+                    <span style={{
+                      fontSize: 13, fontWeight: 700,
+                      color: attending === false ? '#8b95a1' : '#b0b8c1',
+                    }}>
+                      참석이 어려워요
+                    </span>
+                  </button>
+                </div>
+              </FormCard>
+
+              {/* 4. 참석 인원 (참석 시에만) */}
               {attending === true && (
-                <RsvpSection title="참석 인원 (식사 수)">
+                <FormCard>
+                  <FieldLabel>참석 인원 (식사 수)</FieldLabel>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                    <CounterBtn onClick={() => setMealCount(c => Math.max(1, c - 1))} bg="#f2f4f6" color="#191f28">−</CounterBtn>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: '#191f28', minWidth: 32, textAlign: 'center' }}>
+                    <button
+                      onClick={() => setMealCount(c => Math.max(1, c - 1))}
+                      style={counterBtnStyle('#f2f4f6', '#191f28')}
+                    >
+                      <Minus size={16} strokeWidth={2.5} />
+                    </button>
+                    <span style={{ fontSize: 22, fontWeight: 700, color: '#191f28', minWidth: 36, textAlign: 'center' }}>
                       {mealCount}
                     </span>
-                    <CounterBtn onClick={() => setMealCount(c => c + 1)} bg="#eaf4ff" color="#3182f6">+</CounterBtn>
+                    <button
+                      onClick={() => setMealCount(c => c + 1)}
+                      style={counterBtnStyle('#eaf4ff', '#3182f6')}
+                    >
+                      <Plus size={16} strokeWidth={2.5} />
+                    </button>
                     <span style={{ fontSize: 13, color: '#8b95a1' }}>명</span>
                   </div>
-                </RsvpSection>
+                </FormCard>
               )}
 
-              {/* 연락처 */}
-              <RsvpSection title="연락처 (선택)">
+              {/* 5. 연락처 */}
+              <FormCard>
+                <FieldLabel optional>연락처</FieldLabel>
                 <input
                   type="tel"
                   placeholder="010-0000-0000"
                   value={phone}
                   onChange={e => setPhone(e.target.value)}
                   maxLength={15}
-                  style={{
-                    width: '100%', height: 48, borderRadius: 12,
-                    border: '1.5px solid #e5e8eb', padding: '0 16px',
-                    fontSize: 15, color: '#191f28', outline: 'none',
-                    boxSizing: 'border-box', fontFamily: FONT,
-                  }}
+                  style={inputStyle}
                 />
-              </RsvpSection>
+              </FormCard>
 
-              {rsvpError && (
-                <p style={{ fontSize: 13, color: '#ff4d4f', textAlign: 'center' }}>{rsvpError}</p>
+              {/* 6. 축하 메시지 */}
+              <FormCard>
+                <FieldLabel optional>축하 메시지</FieldLabel>
+                <div style={{ position: 'relative' }}>
+                  <textarea
+                    placeholder="신랑신부에게 따뜻한 축하 메시지를 남겨주세요"
+                    value={message}
+                    onChange={e => setMessage(e.target.value)}
+                    maxLength={200}
+                    rows={3}
+                    style={{
+                      width: '100%', borderRadius: 10,
+                      border: '1.5px solid #e5e8eb', padding: '12px 14px',
+                      fontSize: 14, color: '#191f28', outline: 'none',
+                      resize: 'none', lineHeight: 1.6, boxSizing: 'border-box',
+                      fontFamily: FONT, backgroundColor: '#f8f9fa',
+                    }}
+                  />
+                  <p style={{ position: 'absolute', bottom: 8, right: 12, fontSize: 11, color: '#c9d1d9', margin: 0 }}>
+                    {message.length}/200
+                  </p>
+                </div>
+              </FormCard>
+
+              {/* 에러 */}
+              {error && (
+                <p style={{ fontSize: 13, color: '#ff4d4f', textAlign: 'center', padding: '0 4px', margin: 0 }}>
+                  {error}
+                </p>
               )}
 
+              {/* 제출 버튼 */}
               <button
-                onClick={handleRsvpSubmit}
+                onClick={handleSubmit}
                 disabled={submitting}
                 style={{
                   height: 56, borderRadius: 16, border: 'none',
@@ -248,10 +448,40 @@ export default function InvitationViewPage({ params }) {
                   color: 'white', fontSize: 16, fontWeight: 700,
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   fontFamily: FONT, transition: 'background-color 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  marginTop: 4,
                 }}
               >
+                <Send size={16} />
                 {submitting ? '전송 중...' : '참석 여부 전달하기'}
               </button>
+            </div>
+          )}
+
+          {/* ── 방명록 목록 ── */}
+          {entries.length > 0 && (
+            <div style={{ marginTop: 36 }}>
+              <Divider label={`축하 메시지 ${entries.length}개`} />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {entries.map(entry => (
+                  <div key={entry.id} style={{
+                    backgroundColor: 'white', borderRadius: 14,
+                    padding: '14px 16px', border: '1px solid #f2f4f6',
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#191f28', margin: 0 }}>
+                        {entry.name}
+                      </p>
+                      <p style={{ fontSize: 11, color: '#b0b8c1', margin: 0 }}>
+                        {timeAgo(entry.created_at)}
+                      </p>
+                    </div>
+                    <p style={{ fontSize: 14, color: '#4e5968', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                      {entry.message}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
@@ -260,66 +490,57 @@ export default function InvitationViewPage({ params }) {
   );
 }
 
-// ── 서브 컴포넌트들 ──────────────────────────────────────────────────
+// ── 공통 UI 컴포넌트 ────────────────────────────────────────────────
 
-function RsvpSection({ title, children }) {
+function FormCard({ children }) {
   return (
     <div style={{
       backgroundColor: 'white', borderRadius: 16,
-      padding: '16px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+      padding: '16px', boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
     }}>
-      <p style={{ fontSize: 12, fontWeight: 600, color: '#8b95a1', marginBottom: 10 }}>{title}</p>
       {children}
     </div>
   );
 }
 
-function SideBtn({ selected, onClick, label, accent }) {
+function FieldLabel({ children, required, optional }) {
   return (
-    <button onClick={onClick} style={{
-      flex: 1, height: 52, borderRadius: 12,
-      border: `2px solid ${selected ? accent : '#e5e8eb'}`,
-      backgroundColor: selected ? `${accent}14` : '#f8f9fa',
-      cursor: 'pointer', fontFamily: FONT,
-      fontSize: 14, fontWeight: 700,
-      color: selected ? accent : '#8b95a1',
-      transition: 'all 0.15s',
-    }}>
-      {label}
-    </button>
-  );
-}
-
-function AttendBtn({ selected, onClick, label, color, bg }) {
-  return (
-    <button onClick={onClick} style={{
-      flex: 1, height: 68, borderRadius: 12,
-      border: `2px solid ${selected ? color : '#e5e8eb'}`,
-      backgroundColor: selected ? bg : '#f8f9fa',
-      cursor: 'pointer', fontFamily: FONT,
-      fontSize: 13, fontWeight: 700,
-      color: selected ? color : '#8b95a1',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      transition: 'all 0.15s',
-    }}>
-      {label}
-    </button>
-  );
-}
-
-function CounterBtn({ onClick, bg, color, children }) {
-  return (
-    <button onClick={onClick} style={{
-      width: 40, height: 40, borderRadius: 10,
-      backgroundColor: bg, color, border: 'none',
-      fontSize: 20, fontWeight: 700, cursor: 'pointer',
-      display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: FONT,
+    <p style={{
+      fontSize: 12, fontWeight: 700, color: '#8b95a1',
+      marginBottom: 10, margin: '0 0 10px',
+      display: 'flex', alignItems: 'center', gap: 4,
     }}>
       {children}
-    </button>
+      {required && <span style={{ color: '#ff4d4f', fontSize: 10 }}>필수</span>}
+      {optional && <span style={{ color: '#c9d1d9', fontSize: 10, fontWeight: 400 }}>선택</span>}
+    </p>
   );
 }
+
+function Divider({ label }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px' }}>
+      <div style={{ flex: 1, height: 1, backgroundColor: '#e5e8eb' }} />
+      <p style={{ fontSize: 12, color: '#b0b8c1', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
+      <div style={{ flex: 1, height: 1, backgroundColor: '#e5e8eb' }} />
+    </div>
+  );
+}
+
+const inputStyle = {
+  width: '100%', height: 48, borderRadius: 10,
+  border: '1.5px solid #e5e8eb', padding: '0 14px',
+  fontSize: 15, color: '#191f28', outline: 'none',
+  boxSizing: 'border-box', fontFamily: FONT, backgroundColor: '#f8f9fa',
+};
+
+const counterBtnStyle = (bg, color) => ({
+  width: 40, height: 40, borderRadius: 10,
+  backgroundColor: bg, color, border: 'none',
+  cursor: 'pointer',
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  fontFamily: FONT,
+});
 
 const centered = {
   position: 'fixed', inset: 0, display: 'flex', flexDirection: 'column',

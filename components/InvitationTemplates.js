@@ -345,27 +345,15 @@ export function Guestbook({ invitationId, accentColor = '#3182f6', guestName, on
 }
 
 // ─── 템플릿 라우터 ────────────────────────────────────────────────────
-// guestName / onGuestNameChange: 청첩장 페이지에서 내려주면 방명록 이름을 공유
-export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowAccount, guestName, onGuestNameChange }) {
+// 템플릿만 렌더링. 방명록·RSVP는 페이지에서 직접 처리.
+export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowAccount }) {
   const props = { inv, copied, copyUrl, showAccount, setShowAccount };
-  const accentColor = inv.template === 'classic' ? '#7a5c40'
-                    : inv.template === 'floral'  ? '#c4617a'
-                    : '#191f28';
 
   return (
     <>
       {inv.template === 'classic' && <ClassicTemplate {...props} />}
       {inv.template === 'floral'  && <FloralTemplate  {...props} />}
       {inv.template !== 'classic' && inv.template !== 'floral' && <MinimalTemplate {...props} />}
-      {/* 방명록 — 모든 템플릿 공통, 이름 상태 공유 */}
-      {inv.id && (
-        <Guestbook
-          invitationId={inv.id}
-          accentColor={accentColor}
-          guestName={guestName}
-          onGuestNameChange={onGuestNameChange}
-        />
-      )}
     </>
   );
 }
