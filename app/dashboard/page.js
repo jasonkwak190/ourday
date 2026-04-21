@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
-import { AlertCircle, ChevronRight, CalendarDays, Wallet, MessageSquare, Users } from 'lucide-react';
+import { AlertCircle, ChevronRight, CalendarDays, Wallet, MessageSquare, BookOpen } from 'lucide-react';
 
 function calcDday(dateStr) {
   if (!dateStr) return null;
@@ -37,6 +37,7 @@ export default function DashboardPage() {
   const [decisions,   setDecisions]   = useState([]);
   const [budgetItems, setBudgetItems] = useState([]);
   const [vendors,     setVendors]     = useState([]);
+  const [guestbook,   setGuestbook]   = useState([]);
   const [error,       setError]       = useState('');
 
   useEffect(() => {
@@ -53,12 +54,13 @@ export default function DashboardPage() {
       if (!user?.couple_id) { setLoading(false); return; }
 
       const cId = user.couple_id;
-      const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes] = await Promise.all([
+      const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes] = await Promise.all([
         supabase.from('couples').select('*').eq('id', cId).single(),
         supabase.from('checklist_items').select('*').eq('couple_id', cId),
         supabase.from('decisions').select('id, title, status').eq('couple_id', cId),
         supabase.from('budget_items').select('estimated_amount, actual_amount, category, name').eq('couple_id', cId),
         supabase.from('vendors').select('id, name, type, balance, balance_due, contract_status').eq('couple_id', cId),
+        supabase.from('invitations').select('id').eq('couple_id', cId).maybeSingle(),
       ]);
 
       if (coupleRes.error) { setError('데이터를 불러오지 못했어요.'); }
@@ -68,6 +70,17 @@ export default function DashboardPage() {
         setDecisions(decisionsRes.data || []);
         setBudgetItems(budgetRes.data || []);
         setVendors(vendorsRes.data || []);
+
+        const invId = invRes.data?.id || null;
+        if (invId) {
+          const { data: gbData } = await supabase
+            .from('invitation_guestbook')
+            .select('id, name, message, created_at')
+            .eq('invitation_id', invId)
+            .order('created_at', { ascending: false })
+            .limit(3);
+          setGuestbook(gbData || []);
+        }
       }
       setLoading(false);
     };
@@ -429,6 +442,44 @@ export default function DashboardPage() {
                 + {undecided.length - 3}개 더
               </p>
             )}
+          </div>
+        </button>
+      )}
+
+      {/* 방명록 최근 메시지 */}
+      {guestbook.length > 0 && (
+        <button
+          className="card mb-4 w-full text-left"
+          style={{ cursor: 'pointer' }}
+          onClick={() => router.push('/guests')}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <BookOpen size={16} color="var(--rose)" />
+              <p className="text-sm font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
+                방명록
+              </p>
+              <span className="text-xs font-medium px-1.5 py-0.5 rounded-full"
+                style={{ backgroundColor: 'var(--rose-light)', color: 'var(--rose)' }}>
+                {guestbook.length}
+              </span>
+            </div>
+            <ChevronRight size={16} color="var(--toss-text-tertiary)" />
+          </div>
+          <div className="flex flex-col gap-2">
+            {guestbook.map(msg => (
+              <div key={msg.id} className="flex items-start gap-2">
+                <span className="text-xs flex-shrink-0 mt-0.5">💌</span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
+                    {msg.name}
+                  </span>
+                  <span className="text-xs ml-1.5" style={{ color: 'var(--toss-text-secondary)' }}>
+                    {msg.message.length > 30 ? msg.message.slice(0, 30) + '…' : msg.message}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </button>
       )}

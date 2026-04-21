@@ -14,9 +14,8 @@ const PROTECTED_ROUTES = [
   '/setup-profile',
   '/settings',
   '/gallery',
-  '/invitation',
   '/notes',
-  '/calendar',
+  '/invitation',
 ];
 
 export async function proxy(request) {
@@ -73,8 +72,7 @@ export const config = {
     '/setup-profile/:path*',
     '/settings/:path*',
     '/gallery/:path*',
-    '/invitation/:path*',
     '/notes/:path*',
-    '/calendar/:path*',
+    '/invitation/:path*',
   ],
 };
