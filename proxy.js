@@ -19,7 +19,7 @@ const PROTECTED_ROUTES = [
   '/calendar',
 ];
 
-export async function middleware(request) {
+export async function proxy(request) {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route)

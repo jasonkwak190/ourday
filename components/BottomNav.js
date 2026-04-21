@@ -46,7 +46,8 @@ export default function BottomNav({ active }) {
           <div
             className="fixed z-50 left-1/2"
             style={{
-              bottom: '64px',
+              /* 바텀 네비 높이(≈64px) + 홈 인디케이터 위에 딱 붙도록 */
+              bottom: 'calc(64px + env(safe-area-inset-bottom))',
               transform: 'translateX(-50%)',
               width: '100%',
               maxWidth: '430px',

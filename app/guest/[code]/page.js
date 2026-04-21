@@ -39,7 +39,7 @@ export default function GuestUploadPage({ params }) {
     fd.append('event_code', code);
     if (name.trim()) fd.append('uploader_name', name.trim());
 
-    const res  = await fetch('/api/guest/upload', { method: 'POST', body: fd });
+    const res  = await fetch(`/api/guest/upload`, { method: 'POST', body: fd });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || '업로드 실패');
     return data;

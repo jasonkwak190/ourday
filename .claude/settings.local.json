@@ -26,7 +26,20 @@
       "Bash(curl -s -o /tmp/icon512.png -w \"%{http_code} %{size_download}\" http://localhost:3000/api/icons/512)",
       "Bash(curl -s -o /tmp/apple-icon.png -w \"%{http_code} %{size_download}\" http://localhost:3000/apple-icon)",
       "Bash(curl -s -o /tmp/favicon.png -w \"%{http_code} %{size_download}\" http://localhost:3000/icon)",
-      "Bash(gh pr *)"
+      "Bash(gh pr *)",
+      "WebSearch",
+      "WebFetch(domain:developers-apps-in-toss.toss.im)",
+      "WebFetch(domain:www.npmjs.com)",
+      "Bash(grep -rn \"fetch\\(\\\\`/api/\\\\|fetch\\('/api/\" /Users/jaehyeok/ourday/app --include=\"*.js\")",
+      "Bash(grep -v \"node_modules\\\\|route.js\\\\|\\\\`/api/live\\\\|/api/guest\\\\|/api/rsvp\")",
+      "Bash(sed -i '' \"s|fetch\\(\\\\`/api/gallery|fetch\\(\\\\`\\\\${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gallery|g\" /Users/jaehyeok/ourday/components/GalleryTab.js)",
+      "Bash(sed -i '' \"s|fetch\\('/api/gallery'|fetch\\(\\\\`\\\\${process.env.NEXT_PUBLIC_API_BASE || ''}/api/gallery\\\\`|g\" /Users/jaehyeok/ourday/components/GalleryTab.js)",
+      "Bash(sed -i '' \"s|fetch\\(\\\\`/api/guestbook|fetch\\(\\\\`\\\\${process.env.NEXT_PUBLIC_API_BASE || ''}/api/guestbook|g\" /Users/jaehyeok/ourday/components/InvitationTemplates.js)",
+      "Bash(sed -i '' \"s|fetch\\('/api/guestbook'|fetch\\(\\\\`\\\\${process.env.NEXT_PUBLIC_API_BASE || ''}/api/guestbook\\\\`|g\" /Users/jaehyeok/ourday/components/InvitationTemplates.js)",
+      "Bash(sed -i '' \"s|fetch\\('/api/guest/upload'|fetch\\(\\\\`\\\\${process.env.NEXT_PUBLIC_API_BASE || ''}/api/guest/upload\\\\`|g\" /Users/jaehyeok/ourday/app/guest/[code]/page.js)",
+      "Bash(python3)",
+      "Bash(npx next *)",
+      "Bash(npx cap *)"
     ]
   }
 }

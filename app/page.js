@@ -1,7 +1,11 @@
+'use client';
+
+// 랜딩 페이지 — 웹(SSR)과 앱(정적) 모두 지원
+// 커플 수는 클라이언트에서 fetch해서 표시
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import OAuthButtons from '@/components/OAuthButtons';
-
-export const dynamic = 'force-dynamic';
 
 const FEATURES = [
   {
@@ -21,31 +25,15 @@ const FEATURES = [
   },
 ];
 
-async function getCoupleCount() {
-  try {
-    const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/couples?select=id`,
-      {
-        headers: {
-          apikey: key,
-          Authorization: `Bearer ${key}`,
-          Prefer: 'count=exact',
-          Range: '0-0',
-        },
-        cache: 'no-store',
-      }
-    );
-    const cr = res.headers.get('content-range') || '';
-    const match = cr.match(/\/(\d+)/);
-    return match ? parseInt(match[1], 10) : 0;
-  } catch {
-    return 0;
-  }
-}
+export default function LandingPage() {
+  const [coupleCount, setCoupleCount] = useState(null);
 
-export default async function LandingPage() {
-  const coupleCount = await getCoupleCount();
+  useEffect(() => {
+    fetch(`/api/stats`)
+      .then(r => r.json())
+      .then(d => setCoupleCount(d.couples ?? 0))
+      .catch(() => setCoupleCount(0));
+  }, []);
 
   return (
     <div className="page-wrapper flex flex-col">
@@ -89,7 +77,7 @@ export default async function LandingPage() {
         </p>
       )}
 
-      {/* CTA — OAuth 메인, 이메일 보조 */}
+      {/* CTA */}
       <div className="flex flex-col gap-3 mt-auto pt-6">
         <OAuthButtons />
 

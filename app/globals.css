@@ -40,6 +40,18 @@
 /* ─── Base ─── */
 * { box-sizing: border-box; }
 
+/*
+ * ─── Safe-area 전역 설정 ───
+ * viewport-fit=cover (layout.js) + env(safe-area-inset-*) 조합으로
+ * iPhone 노치·Dynamic Island·안드로이드 컷아웃·홈 인디케이터 대응.
+ *
+ * body에 padding-top을 주어 상단 상태바 아래로 콘텐츠가 시작되게 하고,
+ * 배경색을 --toss-bg로 통일하여 safe area 영역도 자연스럽게 처리.
+ */
+html {
+  background-color: var(--toss-bg);  /* 상단 safe-area 배경 */
+}
+
 body {
   background-color: var(--toss-bg);
   color: var(--toss-text-primary);
@@ -57,6 +69,8 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* 상단 노치·상태바 영역 확보 */
+  padding-top: env(safe-area-inset-top);
 }
 
 /* tabular-nums: 금액·날짜처럼 숫자가 나란히 있을 때만 선택 적용 */
@@ -203,7 +217,11 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-around;
+  /* 홈 인디케이터(iOS) / 제스처 바(Android) 영역 확보 */
   padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  /* 좌우 landscape safe-area 대응 */
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
   z-index: 50;
 }
 
@@ -224,13 +242,17 @@ body {
 
 /*
  * ─── 페이지 래퍼 ───
- * 8pt grid: top 24px(8×3), horizontal 20px(Toss 표준 좌우 여백), bottom 96px(하단 네비 80+16)
+ * 8pt grid: top 24px(8×3), horizontal 20px(Toss 표준 좌우 여백)
+ * bottom: 네비 높이(64px) + 여유(16px) + 홈 인디케이터 safe-area
+ *
+ * body에 padding-top: env(safe-area-inset-top)이 이미 적용되어 있으므로
+ * page-wrapper 자체는 추가 top safe-area 불필요.
  */
 .page-wrapper {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 24px 20px 96px;   /* top: 8×3 | side: Toss 표준 20 | bottom: 네비 80 + 여유 16 */
+  padding: 24px 20px calc(80px + env(safe-area-inset-bottom));
   background-color: var(--toss-bg);
 }
 
