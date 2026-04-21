@@ -17,7 +17,7 @@ export default async function Image({ params }) {
   );
   const { data: inv } = await supabase
     .from('invitations')
-    .select('wedding_date')
+    .select('wedding_date, groom_name, bride_name, cover_image_url')
     .eq('slug', slug)
     .single();
 
@@ -29,6 +29,60 @@ export default async function Image({ params }) {
     dateLabel = `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   }
 
+  const coverImageUrl = inv?.cover_image_url || null;
+
+  // 커버 이미지가 있으면 사진 배경 레이아웃
+  if (coverImageUrl) {
+    return new ImageResponse(
+      (
+        <div style={{
+          width: '100%', height: '100%',
+          display: 'flex', alignItems: 'flex-end',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* 배경 사진 */}
+          <img
+            src={coverImageUrl}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+          />
+          {/* 어두운 그라디언트 오버레이 */}
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%)',
+            display: 'flex',
+          }} />
+          {/* 하단 텍스트 */}
+          <div style={{
+            position: 'relative', width: '100%',
+            padding: '40px 64px',
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            <p style={{
+              fontSize: 20, letterSpacing: '0.2em', color: 'rgba(255,255,255,0.75)',
+              margin: 0, display: 'flex', fontFamily: 'Georgia, serif',
+              textTransform: 'uppercase',
+            }}>
+              Wedding Invitation
+            </p>
+            {dateLabel && (
+              <p style={{
+                fontSize: 36, fontWeight: 700, color: 'white',
+                margin: 0, display: 'flex', fontFamily: 'Georgia, serif',
+              }}>
+                {dateLabel}
+              </p>
+            )}
+            <p style={{ fontSize: 18, color: 'rgba(255,255,255,0.6)', margin: 0, display: 'flex' }}>
+              Ourday
+            </p>
+          </div>
+        </div>
+      ),
+      { ...size }
+    );
+  }
+
+  // 커버 이미지 없으면 기존 그라디언트 디자인
   return new ImageResponse(
     (
       <div
@@ -50,7 +104,6 @@ export default async function Image({ params }) {
           background: 'rgba(255,255,255,0.85)',
           borderRadius: 32, padding: '56px 80px',
           boxShadow: '0 16px 64px rgba(180,120,160,0.15)',
-          backdropFilter: 'blur(8px)',
         }}>
           {/* 상단 장식 */}
           <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
@@ -59,7 +112,6 @@ export default async function Image({ params }) {
             ))}
           </div>
 
-          {/* Wedding Invitation */}
           <p style={{
             fontSize: 22, letterSpacing: '0.25em', color: '#c9a0b0',
             margin: '0 0 28px', fontFamily: 'Georgia, serif',
@@ -68,7 +120,6 @@ export default async function Image({ params }) {
             Wedding Invitation
           </p>
 
-          {/* 하트 */}
           <div style={{
             width: 72, height: 72, borderRadius: '50%',
             background: 'linear-gradient(135deg, #f8d7da, #e8aabb)',
@@ -76,15 +127,9 @@ export default async function Image({ params }) {
             marginBottom: 28,
             boxShadow: '0 4px 24px rgba(212,135,154,0.3)',
           }}>
-            <div style={{
-              fontSize: 36, display: 'flex',
-              color: 'white',
-            }}>
-              ♥
-            </div>
+            <div style={{ fontSize: 36, display: 'flex', color: 'white' }}>♥</div>
           </div>
 
-          {/* 날짜 */}
           {dateLabel ? (
             <p style={{
               fontSize: 32, fontWeight: 700, color: '#5c3d52',
@@ -96,7 +141,6 @@ export default async function Image({ params }) {
             <div style={{ height: 44, display: 'flex' }} />
           )}
 
-          {/* 하단 장식 */}
           <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
             <div style={{ width: 40, height: 1, background: '#e0c8d0', display: 'flex' }} />
             <p style={{ fontSize: 16, color: '#c9a0b0', margin: 0, display: 'flex' }}>Ourday</p>

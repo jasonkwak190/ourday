@@ -14,7 +14,7 @@ export async function generateMetadata({ params }) {
   const supabase = anonClient();
   const { data: inv } = await supabase
     .from('invitations')
-    .select('groom_name, bride_name, wedding_date, message, venue_name')
+    .select('groom_name, bride_name, wedding_date, message, venue_name, cover_image_url')
     .eq('slug', slug)
     .single();
 
@@ -38,6 +38,11 @@ export async function generateMetadata({ params }) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ourday-rust.vercel.app';
   const pageUrl = `${baseUrl}/i/${slug}`;
 
+  // 커스텀 커버 사진이 있으면 우선 사용, 없으면 자동 생성 OG 이미지
+  const ogImageUrl = inv?.cover_image_url
+    ? inv.cover_image_url
+    : `${baseUrl}/i/${slug}/opengraph-image`;
+
   return {
     title,
     description,
@@ -48,16 +53,13 @@ export async function generateMetadata({ params }) {
       type: 'website',
       siteName: 'Ourday',
       locale: 'ko_KR',
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: title }],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-    },
-    // KakaoTalk 공유 최적화
-    other: {
-      'og:image:width':  '1200',
-      'og:image:height': '630',
+      images: [ogImageUrl],
     },
   };
 }

@@ -20,6 +20,7 @@ export default function RSVPPage({ params }) {
   const [notFound, setNotFound]   = useState(false);
 
   const [name, setName]           = useState('');
+  const [side, setSide]           = useState(null);   // 'groom' | 'bride'
   const [attending, setAttending] = useState(null);
   const [mealCount, setMealCount] = useState(1);
   const [phone, setPhone]         = useState('');
@@ -42,6 +43,7 @@ export default function RSVPPage({ params }) {
   async function handleSubmit() {
     setError('');
     if (!name.trim()) { setError('성함을 입력해주세요.'); return; }
+    if (!side) { setError('신랑측/신부측을 선택해주세요.'); return; }
     if (attending === null) { setError('참석 여부를 선택해주세요.'); return; }
 
     setSubmitting(true);
@@ -51,6 +53,7 @@ export default function RSVPPage({ params }) {
       body: JSON.stringify({
         couple_id: coupleId,
         name: name.trim(),
+        side,
         attending,
         meal_count: attending ? mealCount : 0,
         phone: phone.trim() || null,
@@ -180,6 +183,24 @@ export default function RSVPPage({ params }) {
           />
         </Section>
 
+        {/* 신랑측 / 신부측 */}
+        <Section title="어느 분 하객이세요?">
+          <div style={{ display: 'flex', gap: 10 }}>
+            <SideBtn
+              selected={side === 'groom'}
+              onClick={() => setSide('groom')}
+              emoji="🤵"
+              label={`${groomName}측`}
+            />
+            <SideBtn
+              selected={side === 'bride'}
+              onClick={() => setSide('bride')}
+              emoji="👰"
+              label={`${brideName}측`}
+            />
+          </div>
+        </Section>
+
         {/* 참석 여부 */}
         <Section title="참석 여부">
           <div style={{ display: 'flex', gap: 10 }}>
@@ -284,6 +305,26 @@ function Section({ title, children }) {
       <p style={{ fontSize: 13, fontWeight: 600, color: '#191f28', marginBottom: 12 }}>{title}</p>
       {children}
     </div>
+  );
+}
+
+function SideBtn({ selected, onClick, emoji, label }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        flex: 1, height: 64, borderRadius: 16,
+        border: `2px solid ${selected ? '#6b3549' : '#e5e8eb'}`,
+        backgroundColor: selected ? '#fff0f3' : '#f8f9fa',
+        cursor: 'pointer', display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center', gap: 4,
+        fontFamily: "'Pretendard Variable','Pretendard',-apple-system,sans-serif",
+        transition: 'all 0.15s',
+      }}
+    >
+      <span style={{ fontSize: 20 }}>{emoji}</span>
+      <span style={{ fontSize: 13, fontWeight: 600, color: selected ? '#6b3549' : '#8b95a1' }}>{label}</span>
+    </button>
   );
 }
 

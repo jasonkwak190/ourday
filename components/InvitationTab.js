@@ -128,6 +128,7 @@ export default function InvitationTab({ coupleId }) {
     venue_name: '', venue_address: '', venue_map_url: '',
     account_groom: '', account_bride: '',
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
+    cover_image_url: '',
   });
   const [accountNames, setAccountNames] = useState({ groom: '', bride: '' });
 
@@ -155,17 +156,18 @@ export default function InvitationTab({ coupleId }) {
       if (existing) {
         setInv(existing);
         setForm({
-          template:      existing.template      || 'minimal',
-          groom_name:    groomName || existing.groom_name    || '',
-          bride_name:    brideName || existing.bride_name    || '',
-          wedding_date:  existing.wedding_date  || coupleRes.data?.wedding_date || '',
-          wedding_time:  existing.wedding_time  || '',
-          venue_name:    existing.venue_name    || '',
-          venue_address: existing.venue_address || '',
-          venue_map_url: existing.venue_map_url || '',
-          account_groom: existing.account_groom || '',
-          account_bride: existing.account_bride || '',
-          message:       existing.message       || '',
+          template:        existing.template        || 'minimal',
+          groom_name:      groomName || existing.groom_name    || '',
+          bride_name:      brideName || existing.bride_name    || '',
+          wedding_date:    existing.wedding_date  || coupleRes.data?.wedding_date || '',
+          wedding_time:    existing.wedding_time  || '',
+          venue_name:      existing.venue_name    || '',
+          venue_address:   existing.venue_address || '',
+          venue_map_url:   existing.venue_map_url || '',
+          account_groom:   existing.account_groom || '',
+          account_bride:   existing.account_bride || '',
+          message:         existing.message       || '',
+          cover_image_url: existing.cover_image_url || '',
         });
       } else {
         setForm(f => ({
@@ -336,6 +338,34 @@ export default function InvitationTab({ coupleId }) {
           </div>
         </div>
       ))}
+
+      {/* 카카오톡 공유 썸네일 사진 */}
+      <div className="card mb-4">
+        <p className="text-sm font-bold mb-1" style={{ color: 'var(--toss-text-primary)' }}>
+          📸 공유 썸네일 사진 <span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>(선택)</span>
+        </p>
+        <p className="text-xs mb-3" style={{ color: 'var(--toss-text-tertiary)', lineHeight: 1.6 }}>
+          카카오톡 등 링크 공유 시 미리보기 이미지로 쓰여요.{'\n'}
+          사진 URL을 붙여넣으세요 (Google Drive 공개 링크, imgur 등)
+        </p>
+        <input
+          type="url"
+          value={form.cover_image_url}
+          onChange={e => update('cover_image_url', e.target.value)}
+          placeholder="https://i.imgur.com/example.jpg"
+          className="input-field"
+        />
+        {form.cover_image_url && (
+          <div className="mt-3 rounded-xl overflow-hidden" style={{ aspectRatio: '1.9/1', backgroundColor: 'var(--toss-bg)' }}>
+            <img
+              src={form.cover_image_url}
+              alt="썸네일 미리보기"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={e => { e.target.style.display = 'none'; }}
+            />
+          </div>
+        )}
+      </div>
 
       {/* 미리보기 + 저장 버튼 */}
       <div className="flex gap-3 mb-3">

@@ -63,10 +63,11 @@ export async function GET(request) {
 
 // POST /api/rsvp
 // 공개 — 하객이 참석 여부 제출 (service role로 insert)
+// 참석인 경우 guests 테이블에도 자동 매핑
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { couple_id, name, attending, meal_count, phone, message } = body;
+    const { couple_id, name, side, attending, meal_count, phone, message } = body;
 
     if (!couple_id || !name?.trim()) {
       return NextResponse.json({ error: 'couple_id, name required' }, { status: 400 });
@@ -77,11 +78,13 @@ export async function POST(request) {
 
     const supabase = serviceClient();
 
+    // 1) rsvp_responses에 저장
     const { data, error } = await supabase
       .from('rsvp_responses')
       .insert({
         couple_id,
         name: name.trim(),
+        side: side || null,
         attending: Boolean(attending),
         meal_count: Number(meal_count) || 1,
         phone: phone?.trim() || null,
@@ -93,6 +96,42 @@ export async function POST(request) {
     if (error) {
       console.error('[rsvp] insert error:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
+    // 2) 참석인 경우 → guests 테이블에 자동 매핑
+    if (Boolean(attending)) {
+      // 이름+커플ID로 기존 하객 검색
+      const { data: existing } = await supabase
+        .from('guests')
+        .select('id')
+        .eq('couple_id', couple_id)
+        .eq('name', name.trim())
+        .maybeSingle();
+
+      if (existing) {
+        // 이미 있으면 식사수·연락처 업데이트
+        await supabase
+          .from('guests')
+          .update({
+            meal_count: Number(meal_count) || 1,
+            phone: phone?.trim() || null,
+            ...(side ? { side } : {}),
+          })
+          .eq('id', existing.id);
+      } else {
+        // 없으면 새로 추가
+        await supabase
+          .from('guests')
+          .insert({
+            couple_id,
+            name: name.trim(),
+            side: side || 'groom',
+            relation: '지인',
+            meal_count: Number(meal_count) || 1,
+            phone: phone?.trim() || null,
+            memo: 'RSVP 자동 등록',
+          });
+      }
     }
 
     return NextResponse.json({ success: true, data });

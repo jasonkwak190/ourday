@@ -35,6 +35,9 @@ export default function DecisionsPage() {
   const [editingFinal, setEditingFinal] = useState(null);
   const [finalText, setFinalText] = useState('');
 
+  // 결정 철회 확인
+  const [confirmClearId, setConfirmClearId] = useState(null);
+
   // 항목 추가
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -354,30 +357,7 @@ export default function DecisionsPage() {
                 )}
 
                 {/* 최종 결정 */}
-                {d.final_decision ? (
-                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--green-light)' }}>
-                    <div className="flex justify-between items-center mb-1">
-                      <p className="text-xs font-medium" style={{ color: 'var(--green)' }}>✅ 최종 결정</p>
-                      <div className="flex gap-2">
-                        <button
-                          className="text-xs"
-                          style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
-                          onClick={() => { setEditingFinal(d.id); setFinalText(d.final_decision); }}
-                        >
-                          수정
-                        </button>
-                        <button
-                          className="text-xs"
-                          style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
-                          onClick={() => clearFinal(d.id)}
-                        >
-                          취소
-                        </button>
-                      </div>
-                    </div>
-                    <p className="text-sm" style={{ color: 'var(--ink)' }}>{d.final_decision}</p>
-                  </div>
-                ) : isEditingFin ? (
+                {isEditingFin ? (
                   <div className="flex flex-col gap-2">
                     <textarea
                       className="input-field text-sm resize-none"
@@ -388,9 +368,68 @@ export default function DecisionsPage() {
                       autoFocus
                     />
                     <div className="flex gap-2">
-                      <button className="btn-outline flex-1 text-sm py-2" onClick={() => setEditingFinal(null)}>취소</button>
-                      <button className="btn-rose flex-1 text-sm py-2" onClick={() => saveFinal(d.id)} disabled={saving}>저장</button>
+                      <button
+                        className="btn-outline flex-1 text-sm py-2"
+                        onClick={() => setEditingFinal(null)}
+                      >
+                        편집 취소
+                      </button>
+                      <button
+                        className="btn-rose flex-1 text-sm py-2"
+                        onClick={() => saveFinal(d.id)}
+                        disabled={saving}
+                      >
+                        저장
+                      </button>
                     </div>
+                  </div>
+                ) : d.final_decision ? (
+                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--green-light)' }}>
+                    <div className="flex justify-between items-center mb-1">
+                      <p className="text-xs font-medium" style={{ color: 'var(--green)' }}>✅ 최종 결정</p>
+                      <button
+                        onClick={() => { setEditingFinal(d.id); setFinalText(d.final_decision); }}
+                        className="text-xs font-medium px-2 py-0.5 rounded-lg"
+                        style={{
+                          color: 'var(--stone)',
+                          backgroundColor: 'rgba(0,0,0,0.06)',
+                          border: 'none',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        ✏️ 수정
+                      </button>
+                    </div>
+                    <p className="text-sm" style={{ color: 'var(--ink)' }}>{d.final_decision}</p>
+                    {confirmClearId === d.id ? (
+                      <div className="mt-2 flex items-center gap-2">
+                        <p className="text-xs flex-1" style={{ color: 'var(--rose)' }}>
+                          최종 결정을 지울까요?
+                        </p>
+                        <button
+                          onClick={() => { clearFinal(d.id); setConfirmClearId(null); }}
+                          className="text-xs font-semibold px-2 py-1 rounded-lg"
+                          style={{ backgroundColor: 'var(--rose)', color: 'white', border: 'none', cursor: 'pointer' }}
+                        >
+                          네, 철회
+                        </button>
+                        <button
+                          onClick={() => setConfirmClearId(null)}
+                          className="text-xs font-semibold px-2 py-1 rounded-lg"
+                          style={{ backgroundColor: 'rgba(0,0,0,0.06)', color: 'var(--stone)', border: 'none', cursor: 'pointer' }}
+                        >
+                          취소
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setConfirmClearId(d.id)}
+                        className="mt-2 text-xs"
+                        style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        결정 철회 (논의 중으로 되돌리기)
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <button
@@ -398,7 +437,7 @@ export default function DecisionsPage() {
                     style={{ backgroundColor: 'var(--beige)', color: 'var(--stone)' }}
                     onClick={() => { setEditingFinal(d.id); setFinalText(''); }}
                   >
-                    최종 결정 입력하기
+                    ✅ 최종 결정 입력하기
                   </button>
                 )}
               </div>
