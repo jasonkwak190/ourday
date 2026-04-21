@@ -110,6 +110,53 @@ const VENUE_CHECKLIST = [
   { category: '🚗 교통·기타', items: ['주차 수용 대수', '대중교통 접근성', '셔틀버스 유무', 'ATM기 유무', '화환 반입 가능 여부'] },
 ];
 
+/* ─── 기본 체크리스트 템플릿 ───────────────────────────────── */
+const DEFAULT_CHECKLIST = [
+  // 12개월 전
+  { title: '결혼 날짜 및 웨딩홀 확정',         due_months_before: 12, assigned_to: 'both'  },
+  { title: '총 예산 협의',                      due_months_before: 12, assigned_to: 'both'  },
+  { title: '스드메(스튜디오·드레스·메이크업) 업체 투어', due_months_before: 12, assigned_to: 'bride' },
+  { title: '웨딩홀 투어 및 계약',               due_months_before: 12, assigned_to: 'both'  },
+  // 10개월 전
+  { title: '스튜디오 촬영 예약',                due_months_before: 10, assigned_to: 'bride' },
+  { title: '드레스·예복 계약',                  due_months_before: 10, assigned_to: 'both'  },
+  { title: '웨딩 메이크업·헤어 계약',           due_months_before: 10, assigned_to: 'bride' },
+  { title: '신혼여행 목적지 결정',              due_months_before: 10, assigned_to: 'both'  },
+  // 8개월 전
+  { title: '신혼여행 항공·숙소 예약',           due_months_before: 8,  assigned_to: 'both'  },
+  { title: '혼수 목록 작성',                    due_months_before: 8,  assigned_to: 'both'  },
+  { title: '신혼집 탐색 시작',                  due_months_before: 8,  assigned_to: 'both'  },
+  // 6개월 전
+  { title: '청첩장 문구 작성 및 인쇄',          due_months_before: 6,  assigned_to: 'both'  },
+  { title: '하객 명단 정리',                    due_months_before: 6,  assigned_to: 'both'  },
+  { title: '주례·사회자 섭외',                  due_months_before: 6,  assigned_to: 'groom' },
+  { title: '폐백 준비',                         due_months_before: 6,  assigned_to: 'bride' },
+  // 4개월 전
+  { title: '청첩장 발송',                       due_months_before: 4,  assigned_to: 'both'  },
+  { title: '혼수 구매 시작',                    due_months_before: 4,  assigned_to: 'both'  },
+  { title: '신혼집 계약 및 이사 준비',          due_months_before: 4,  assigned_to: 'both'  },
+  // 3개월 전
+  { title: '예물(반지) 구매',                   due_months_before: 3,  assigned_to: 'both'  },
+  { title: '함 내용 준비',                      due_months_before: 3,  assigned_to: 'groom' },
+  { title: '꽃 장식 및 포토테이블 확정',        due_months_before: 3,  assigned_to: 'both'  },
+  // 2개월 전
+  { title: '드레스 최종 피팅',                  due_months_before: 2,  assigned_to: 'bride' },
+  { title: '부케·부토니어 예약',                due_months_before: 2,  assigned_to: 'bride' },
+  { title: '신혼여행 여행자보험 가입',          due_months_before: 2,  assigned_to: 'both'  },
+  // 1개월 전
+  { title: '하객 참석 여부 최종 확인',          due_months_before: 1,  assigned_to: 'both'  },
+  { title: '식순 최종 점검',                    due_months_before: 1,  assigned_to: 'both'  },
+  { title: '웨딩홀 잔금 납부',                  due_months_before: 1,  assigned_to: 'both'  },
+  // D-2주
+  { title: '혼인신고서 준비',                   due_months_before: 0.5, assigned_to: 'both' },
+  { title: '신부 피부·네일 케어',               due_months_before: 0.5, assigned_to: 'bride'},
+  { title: '신혼여행 짐 준비',                  due_months_before: 0.5, assigned_to: 'both' },
+  // D-1주
+  { title: '혼인신고서 제출',                   due_months_before: 0.25, assigned_to: 'both' },
+  { title: '당일 타임라인 최종 확인',           due_months_before: 0.25, assigned_to: 'both' },
+  { title: '부모님·주례님 감사 인사 준비',      due_months_before: 0.25, assigned_to: 'both' },
+];
+
 /* ─── 메인 컴포넌트 ──────────────────────────────────────── */
 export default function TimelinePage() {
   const router  = useRouter();
@@ -141,6 +188,8 @@ export default function TimelinePage() {
   const [expandedMemo, setExpandedMemo] = useState(null);
   const [showVenueTour,setShowVenueTour]= useState(false);
   const [venueChecked, setVenueChecked] = useState({});
+  const [loadingTemplate, setLoadingTemplate] = useState(false);
+  const [templateDone,    setTemplateDone]    = useState(false);
 
   /* 캘린더 뷰 상태 */
   const [calYear,     setCalYear]     = useState(todayDt.getFullYear());
@@ -201,6 +250,27 @@ export default function TimelinePage() {
     if (!error && data) setItems(prev => [...prev, data]);
     setNewTitle(''); setNewAssigned('both'); setNewMemo('');
     setAdding(false); setSaving(false);
+  }
+
+  async function loadTemplate() {
+    if (!coupleId || loadingTemplate) return;
+    setLoadingTemplate(true);
+    const rows = DEFAULT_CHECKLIST.map(t => ({
+      couple_id: coupleId,
+      title: t.title,
+      due_months_before: t.due_months_before,
+      assigned_to: t.assigned_to,
+      is_done: false,
+    }));
+    const { data, error } = await supabase
+      .from('checklist_items')
+      .insert(rows)
+      .select();
+    if (!error && data) {
+      setItems(prev => [...prev, ...data]);
+      setTemplateDone(true);
+    }
+    setLoadingTemplate(false);
   }
 
   function startEdit(item) {
@@ -489,9 +559,31 @@ export default function TimelinePage() {
                 );
               })}
               {items.length === 0 && (
-                <div className="card">
-                  <EmptyState icon={CheckSquare} title="체크리스트가 비어있어요"
-                    description="결혼 준비 항목을 직접 추가하거나 기본 템플릿을 불러올 수 있어요" compact />
+                <div className="card text-center" style={{ padding: '32px 20px' }}>
+                  <div className="text-4xl mb-3">📋</div>
+                  <p className="text-base font-bold mb-1" style={{ color: 'var(--ink)' }}>
+                    체크리스트가 비어있어요
+                  </p>
+                  <p className="text-sm mb-5" style={{ color: 'var(--stone)', lineHeight: 1.6 }}>
+                    많이 쓰는 결혼 준비 항목 {DEFAULT_CHECKLIST.length}개를<br />
+                    한 번에 불러올 수 있어요
+                  </p>
+                  {templateDone ? (
+                    <p className="text-sm font-semibold" style={{ color: 'var(--toss-blue)' }}>
+                      ✓ 템플릿이 추가됐어요!
+                    </p>
+                  ) : (
+                    <button
+                      className="btn-rose w-full"
+                      onClick={loadTemplate}
+                      disabled={loadingTemplate}
+                    >
+                      {loadingTemplate ? '불러오는 중...' : '📋 기본 체크리스트 불러오기'}
+                    </button>
+                  )}
+                  <p className="text-xs mt-3" style={{ color: 'var(--stone)' }}>
+                    불러온 후 항목을 자유롭게 수정·삭제할 수 있어요
+                  </p>
                 </div>
               )}
             </div>

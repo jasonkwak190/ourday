@@ -148,7 +148,7 @@ export default function DashboardPage() {
       })
     : null;
 
-  // ─── 커플 미연동 상태 ───
+  // ─── 커플 미연동 상태 (회원가입 직후 첫 화면) ───
   if (!couple) {
     return (
       <div className="page-wrapper flex flex-col">
@@ -160,23 +160,63 @@ export default function DashboardPage() {
             aria-label="설정"
           >⚙️</button>
         </div>
-        <div className="text-center mt-12 mb-8">
+
+        {/* 환영 헤더 */}
+        <div className="text-center mt-8 mb-8">
           <div className="text-5xl mb-4">💍</div>
           <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--toss-text-primary)' }}>
-            결혼 준비를 시작해볼까요?
+            환영해요! 3단계로 시작해요
           </h1>
-          <p className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
-            정보를 설정하면 더 많은 기능을 쓸 수 있어요
+          <p className="text-sm" style={{ color: 'var(--toss-text-secondary)', lineHeight: 1.7 }}>
+            아래 순서대로 설정하면<br />결혼 준비를 함께 관리할 수 있어요
           </p>
         </div>
-        <div className="flex flex-col gap-3">
-          <button className="btn-rose w-full" onClick={() => router.push('/setup')}>
-            결혼 정보 설정하기
-          </button>
-          <button className="btn-outline w-full" onClick={() => router.push('/connect')}>
-            커플 연동하기 💑
-          </button>
+
+        {/* 3단계 온보딩 카드 */}
+        <div className="flex flex-col gap-3 mb-6">
+          {[
+            {
+              step: 1, emoji: '📅', label: '결혼 정보 설정',
+              desc: '날짜·장소·예산을 입력하면 D-day와 예산 현황이 표시돼요',
+              btnLabel: '결혼 정보 설정하기', path: '/setup', primary: true,
+            },
+            {
+              step: 2, emoji: '💑', label: '파트너와 연동',
+              desc: '초대 코드를 공유해 신랑·신부가 같은 화면을 볼 수 있어요',
+              btnLabel: '파트너 연동하기', path: '/connect', primary: false,
+            },
+            {
+              step: 3, emoji: '📋', label: '체크리스트 시작',
+              desc: '결혼 준비 항목 33개 기본 템플릿을 한 번에 불러올 수 있어요',
+              btnLabel: '타임라인 보기', path: '/timeline', primary: false,
+            },
+          ].map(({ step, emoji, label, desc, btnLabel, path, primary }) => (
+            <div key={step} className="card" style={{ padding: '20px' }}>
+              <div className="flex items-start gap-3 mb-3">
+                <div style={{
+                  width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
+                  backgroundColor: primary ? 'var(--toss-blue)' : 'var(--toss-bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: primary ? 'white' : 'var(--toss-text-tertiary)' }}>{step}</span>
+                </div>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--toss-text-primary)', margin: '0 0 4px' }}>
+                    {emoji} {label}
+                  </p>
+                  <p style={{ fontSize: 13, color: 'var(--toss-text-tertiary)', margin: 0, lineHeight: 1.5 }}>{desc}</p>
+                </div>
+              </div>
+              <button
+                className={primary ? 'btn-rose w-full' : 'btn-outline w-full'}
+                onClick={() => router.push(path)}
+              >
+                {btnLabel}
+              </button>
+            </div>
+          ))}
         </div>
+
         <BottomNav active="home" />
       </div>
     );
@@ -219,6 +259,45 @@ export default function DashboardPage() {
           </>
         )}
       </div>
+
+      {/* ── 첫 시작 온보딩 배너 (체크리스트 0개일 때만) ── */}
+      {items.length === 0 && (
+        <div className="card mb-5" style={{ background: 'linear-gradient(135deg, #eaf4ff 0%, #f0f8ff 100%)', border: '1.5px solid var(--toss-blue-light)' }}>
+          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-blue)', letterSpacing: '0.06em' }}>
+            🎉 결혼 준비를 시작해봐요!
+          </p>
+          <div className="flex flex-col gap-2">
+            {[
+              { step: 1, done: !!couple?.wedding_date, label: '결혼 날짜 설정', sub: couple?.wedding_date ? '완료' : '날짜를 설정하면 D-day가 표시돼요', path: '/setup' },
+              { step: 2, done: false, label: '체크리스트 불러오기', sub: '결혼 준비 항목 33개를 한 번에 추가해요', path: '/timeline' },
+              { step: 3, done: false, label: '파트너와 연동하기', sub: '신랑·신부 함께 같은 화면을 봐요', path: '/connect' },
+            ].map(({ step, done, label, sub, path }) => (
+              <button
+                key={step}
+                onClick={() => router.push(path)}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', width: '100%' }}
+              >
+                <div style={{
+                  width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                  backgroundColor: done ? 'var(--toss-blue)' : 'white',
+                  border: `2px solid ${done ? 'var(--toss-blue)' : 'var(--toss-border)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  {done
+                    ? <span style={{ fontSize: 12, color: 'white', fontWeight: 700 }}>✓</span>
+                    : <span style={{ fontSize: 12, color: 'var(--toss-text-tertiary)', fontWeight: 700 }}>{step}</span>
+                  }
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: done ? 'var(--toss-text-tertiary)' : 'var(--toss-text-primary)', margin: 0, textDecoration: done ? 'line-through' : 'none' }}>{label}</p>
+                  <p style={{ fontSize: 12, color: 'var(--toss-text-tertiary)', margin: '2px 0 0' }}>{sub}</p>
+                </div>
+                <span style={{ fontSize: 16, color: 'var(--toss-text-tertiary)' }}>›</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 스탯 카드 3개 */}
       <div className="grid grid-cols-3 gap-2 mb-5">
