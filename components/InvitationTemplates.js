@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { MapPin, Clock, Copy, Check, Heart, Send } from 'lucide-react';
+import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
 
 // ─── 날짜 포매터 ────────────────────────────────────────────────────
 export function formatDate(dateStr) {
@@ -47,8 +47,9 @@ export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccoun
       {(inv.account_groom || inv.account_bride) && (
         <button
           onClick={() => setShowAccount(v => !v)}
-          style={{ height: 52, borderRadius: 14, border: `1.5px solid ${accentColor}`, backgroundColor: 'transparent', color: accentColor, fontWeight: 700, fontSize: 15, cursor: 'pointer' }}>
-          💳 마음 전하기 {showAccount ? '▲' : '▼'}
+          style={{ height: 52, borderRadius: 14, border: `1.5px solid ${accentColor}`, backgroundColor: 'transparent', color: accentColor, fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+          <Gift size={17} />
+          마음 전하기 {showAccount ? '▲' : '▼'}
         </button>
       )}
       {showAccount && (
@@ -201,13 +202,21 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
 }
 
 // ─── 방명록 ─────────────────────────────────────────────────────────
-export function Guestbook({ invitationId, accentColor = '#3182f6' }) {
+// guestName / onGuestNameChange: 부모(청첩장 공개 페이지)에서 이름을 공유할 때 사용
+// 미제공 시 내부 상태로 동작 (하위 호환)
+export function Guestbook({ invitationId, accentColor = '#3182f6', guestName, onGuestNameChange }) {
   const [entries, setEntries]   = useState([]);
-  const [name, setName]         = useState('');
+  const [localName, setLocalName] = useState('');
   const [message, setMessage]   = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]       = useState('');
   const [done, setDone]         = useState(false);
+
+  // 이름 상태: 부모 제어 우선, 없으면 로컬
+  const name    = guestName    !== undefined ? guestName    : localName;
+  const setName = onGuestNameChange !== undefined
+    ? onGuestNameChange
+    : setLocalName;
 
   useEffect(() => {
     const load = async () => {
@@ -336,7 +345,8 @@ export function Guestbook({ invitationId, accentColor = '#3182f6' }) {
 }
 
 // ─── 템플릿 라우터 ────────────────────────────────────────────────────
-export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowAccount }) {
+// guestName / onGuestNameChange: 청첩장 페이지에서 내려주면 방명록 이름을 공유
+export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowAccount, guestName, onGuestNameChange }) {
   const props = { inv, copied, copyUrl, showAccount, setShowAccount };
   const accentColor = inv.template === 'classic' ? '#7a5c40'
                     : inv.template === 'floral'  ? '#c4617a'
@@ -347,8 +357,15 @@ export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowA
       {inv.template === 'classic' && <ClassicTemplate {...props} />}
       {inv.template === 'floral'  && <FloralTemplate  {...props} />}
       {inv.template !== 'classic' && inv.template !== 'floral' && <MinimalTemplate {...props} />}
-      {/* 방명록 — 모든 템플릿 공통 */}
-      {inv.id && <Guestbook invitationId={inv.id} accentColor={accentColor} />}
+      {/* 방명록 — 모든 템플릿 공통, 이름 상태 공유 */}
+      {inv.id && (
+        <Guestbook
+          invitationId={inv.id}
+          accentColor={accentColor}
+          guestName={guestName}
+          onGuestNameChange={onGuestNameChange}
+        />
+      )}
     </>
   );
 }
