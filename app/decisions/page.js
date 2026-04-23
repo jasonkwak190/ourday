@@ -209,7 +209,7 @@ export default function DecisionsPage() {
               icon={MessageSquarePlus}
               title="아직 의사결정 항목이 없어요"
               description="웨딩홀 선택, 신혼여행지 등 함께 결정해야 할 것들을 추가해보세요"
-              action={{ label: '첫 의제 추가하기', onClick: () => setShowForm(true) }}
+              action={{ label: '첫 의제 추가하기', onClick: () => setAdding(true) }}
             />
           </div>
         ) : (

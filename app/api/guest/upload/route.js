@@ -2,9 +2,17 @@ export const dynamic = 'force-dynamic';
 
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
 
 const MAX_FREE_PHOTOS = 50;
 const MAX_FILE_SIZE  = 10 * 1024 * 1024; // 10 MB
+
+// 허용 확장자 + MIME 타입 화이트리스트
+const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
+const ALLOWED_MIME_TYPES  = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+// Rate limit: IP당 1분에 최대 5장 업로드
+const uploadLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
 
 function serviceClient() {
   return createClient(
@@ -16,6 +24,12 @@ function serviceClient() {
 
 export async function POST(request) {
   try {
+    // ── Rate limit 체크 ────────────────────────────────────────
+    const ip = getClientIp(request);
+    if (!uploadLimiter(ip)) {
+      return NextResponse.json({ error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+
     const formData = await request.formData();
     const file         = formData.get('file');
     const eventCode    = formData.get('event_code');
@@ -25,12 +39,19 @@ export async function POST(request) {
     if (!file || !eventCode) {
       return NextResponse.json({ error: '파일과 이벤트 코드가 필요해요.' }, { status: 400 });
     }
-    if (!file.type.startsWith('image/')) {
-      return NextResponse.json({ error: '이미지 파일만 업로드할 수 있어요.' }, { status: 400 });
+
+    // 파일 확장자 + MIME 타입 화이트리스트 검증
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!ALLOWED_EXTENSIONS.has(ext) || !ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({ error: 'jpg, png, webp 파일만 업로드할 수 있어요.' }, { status: 400 });
     }
+
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: '파일 크기는 10MB 이하여야 해요.' }, { status: 400 });
     }
+
+    // uploader_name 길이 제한
+    const safeUploaderName = uploaderName ? String(uploaderName).slice(0, 50) : null;
 
     const supabase = serviceClient();
 
@@ -65,7 +86,6 @@ export async function POST(request) {
     }
 
     // ── Storage 업로드 ─────────────────────────────────────────
-    const ext      = file.name.split('.').pop().toLowerCase() || 'jpg';
     const filename = `${event.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
     const buffer   = Buffer.from(await file.arrayBuffer());
 
@@ -84,7 +104,7 @@ export async function POST(request) {
     // ── guest_photos 레코드 삽입 ───────────────────────────────
     const { error: insertErr } = await supabase
       .from('guest_photos')
-      .insert({ event_id: event.id, storage_path: filename, uploader_name: uploaderName });
+      .insert({ event_id: event.id, storage_path: filename, uploader_name: safeUploaderName });
 
     if (insertErr) {
       // 롤백: 이미 업로드된 파일 삭제

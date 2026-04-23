@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.ourday.app",
+      "sha256_cert_fingerprints": [
+        "D6:4A:2F:E4:79:7A:C6:03:4C:96:E6:25:A5:5D:39:43:D7:C7:F3:F9:CB:24:96:52:4E:E8:BD:98:19:E0:40:C7"
+      ]
+    }
+  }
+]

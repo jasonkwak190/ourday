@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
 import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen } from 'lucide-react';
 import EmptyState from '@/components/EmptyState';
@@ -136,9 +137,14 @@ export default function GuestsPage() {
 
   // ── 하객 삭제 ──
   async function deleteGuest(id) {
-    setGuests(prev => prev.filter(g => g.id !== id));
-    await supabase.from('guests').delete().eq('id', id);
+    const prev = guests;
+    setGuests(g => g.filter(g => g.id !== id)); // optimistic update
     setMenuId(null);
+    const { error: e } = await supabase.from('guests').delete().eq('id', id);
+    if (e) {
+      setGuests(prev); // 롤백
+      setError('삭제에 실패했어요. 다시 시도해주세요.');
+    }
   }
 
   // ── 축의금 저장 ──
@@ -514,7 +520,7 @@ export default function GuestsPage() {
             </p>
             <button
               onClick={async () => {
-                await navigator.clipboard.writeText(`${window.location.origin}/rsvp/${coupleId}`);
+                await copyToClipboard(`${window.location.origin}/rsvp/${coupleId}`);
                 setRsvpCopied(true);
                 setTimeout(() => setRsvpCopied(false), 2000);
               }}

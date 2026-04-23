@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { QrCode, Copy, Check, Image as ImageIcon, Trash2, RefreshCw, Download, MonitorPlay } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { QrCode, Copy, Check, Image as ImageIcon, Trash2, RefreshCw, Download, MonitorPlay, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { copyToClipboard } from '@/lib/clipboard';
 import EmptyState from '@/components/EmptyState';
 import QRCodeSVG from 'react-qr-code';
 
-/**
- * GalleryTab — 하객 사진 업로드/조회 탭
- * Guests 페이지의 4번째 탭으로 사용
- */
 export default function GalleryTab() {
   const qrRef = useRef(null);
 
@@ -17,13 +14,52 @@ export default function GalleryTab() {
   const [event,      setEvent]      = useState(null);
   const [photos,     setPhotos]     = useState([]);
   const [copied,     setCopied]     = useState(false);
-  const [selected,   setSelected]   = useState(null);
   const [deleting,   setDeleting]   = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  // 모달 상태: photo + 애니메이션 분리
+  const [modalPhoto,   setModalPhoto]   = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const [origin, setOrigin] = useState('');
   useEffect(() => { setOrigin(window.location.origin); }, []);
 
+  // ── 모달 열기/닫기 ─────────────────────────────────────────────
+  function openModal(photo) {
+    setModalPhoto(photo);
+    // 다음 프레임에서 visible → CSS transition 발동
+    requestAnimationFrame(() => requestAnimationFrame(() => setModalVisible(true)));
+  }
+
+  const closeModal = useCallback(() => {
+    setModalVisible(false);
+    setTimeout(() => setModalPhoto(null), 220); // transition 끝난 후 언마운트
+  }, []);
+
+  // 이전/다음 사진 이동
+  const currentIndex = useMemo(
+    () => modalPhoto ? photos.findIndex(p => p.id === modalPhoto.id) : -1,
+    [modalPhoto, photos]
+  );
+  const canPrev = currentIndex > 0;
+  const canNext = currentIndex < photos.length - 1;
+
+  function goPrev() { if (canPrev) openModal(photos[currentIndex - 1]); }
+  function goNext() { if (canNext) openModal(photos[currentIndex + 1]); }
+
+  // 키보드 단축키
+  useEffect(() => {
+    if (!modalPhoto) return;
+    function onKey(e) {
+      if (e.key === 'Escape')     closeModal();
+      if (e.key === 'ArrowLeft')  goPrev();
+      if (e.key === 'ArrowRight') goNext();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [modalPhoto, currentIndex, closeModal]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── QR 다운로드 ──────────────────────────────────────────────
   function downloadQR() {
     if (!qrRef.current || !event) return;
     const svg = qrRef.current.querySelector('svg');
@@ -46,6 +82,7 @@ export default function GalleryTab() {
     img.src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svgData)))}`;
   }
 
+  // ── 데이터 로드 ──────────────────────────────────────────────
   const loadGallery = useCallback(async (eventId) => {
     setRefreshing(true);
     const res  = await fetch(`/api/gallery?event_id=${eventId}`);
@@ -70,7 +107,7 @@ export default function GalleryTab() {
   }, [loadGallery]);
 
   async function copyLink() {
-    await navigator.clipboard.writeText(guestUrl);
+    await copyToClipboard(guestUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -81,9 +118,10 @@ export default function GalleryTab() {
     await fetch(`/api/gallery?photo_id=${photo.id}`, { method: 'DELETE' });
     setPhotos(prev => prev.filter(p => p.id !== photo.id));
     setDeleting(null);
-    if (selected?.id === photo.id) setSelected(null);
+    if (modalPhoto?.id === photo.id) closeModal();
   }
 
+  // ── 계산 ─────────────────────────────────────────────────────
   const guestUrl   = event ? `${origin}/guest/${event.event_code}` : '';
   const liveUrl    = event ? `${origin}/live/${event.event_code}` : '';
   const photoCount = photos.length;
@@ -217,64 +255,163 @@ export default function GalleryTab() {
           <p className="text-sm font-bold mb-3" style={{ color: 'var(--toss-text-primary)' }}>전체 사진</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 4 }}>
             {photos.map(photo => (
-              <div key={photo.id} className="relative"
-                style={{ aspectRatio: '1', borderRadius: 8, overflow: 'hidden',
-                  backgroundColor: 'var(--toss-bg)', cursor: 'pointer' }}
-                onClick={() => setSelected(photo)}>
-                {photo.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={photo.url} alt="하객 사진"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div className="flex items-center justify-center w-full h-full">
-                    <ImageIcon size={20} color="var(--toss-text-tertiary)" />
-                  </div>
-                )}
-                {photo.uploader_name && (
-                  <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1"
-                    style={{ background: 'linear-gradient(transparent, rgba(0,0,0,0.5))' }}>
-                    <p style={{ color: 'white', fontSize: 10, fontWeight: 500 }}>{photo.uploader_name}</p>
-                  </div>
-                )}
-              </div>
+              <PhotoThumb key={photo.id} photo={photo} onClick={() => openModal(photo)} />
             ))}
           </div>
         </div>
       )}
 
-      {/* 전체화면 모달 */}
-      {selected && (
-        <div className="fixed inset-0 z-50 flex flex-col"
-          style={{ backgroundColor: 'rgba(0,0,0,0.95)' }}
-          onClick={() => setSelected(null)}>
-          <div className="flex items-center justify-between px-4 py-3" onClick={e => e.stopPropagation()}>
+      {/* 전체화면 모달 — 항상 마운트, opacity로 fade */}
+      {modalPhoto && (
+        <div
+          onClick={closeModal}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', flexDirection: 'column',
+            backgroundColor: 'rgba(0,0,0,0.95)',
+            opacity: modalVisible ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+          }}>
+          {/* 상단 헤더 */}
+          <div className="flex items-center justify-between px-4 py-3"
+            onClick={e => e.stopPropagation()}>
             <div>
-              {selected.uploader_name && (
-                <p className="text-sm font-medium" style={{ color: 'white' }}>{selected.uploader_name}</p>
+              {modalPhoto.uploader_name && (
+                <p className="text-sm font-medium" style={{ color: 'white' }}>{modalPhoto.uploader_name}</p>
               )}
               <p className="text-xs" style={{ color: 'rgba(255,255,255,0.5)' }}>
-                {new Date(selected.created_at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {photos.length > 1 && `${currentIndex + 1} / ${photos.length} · `}
+                {new Date(modalPhoto.created_at).toLocaleString('ko-KR', { month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
-            <button onClick={() => deletePhoto(selected)} disabled={deleting === selected.id}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
-              <Trash2 size={20} color={deleting === selected.id ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)'} />
-            </button>
+            <div className="flex items-center gap-1">
+              <button onClick={() => deletePhoto(modalPhoto)} disabled={deleting === modalPhoto.id}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+                <Trash2 size={20} color={deleting === modalPhoto.id ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)'} />
+              </button>
+              <button onClick={closeModal}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
+                <X size={22} color="rgba(255,255,255,0.8)" />
+              </button>
+            </div>
           </div>
-          <div className="flex-1 flex items-center justify-center px-4">
-            {selected.url && (
+
+          {/* 이미지 영역 */}
+          <div className="flex-1 flex items-center justify-center px-4 relative"
+            onClick={e => e.stopPropagation()}>
+            {/* 이전 버튼 */}
+            {canPrev && (
+              <button onClick={goPrev}
+                style={{
+                  position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                  width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', zIndex: 1,
+                }}>
+                <ChevronLeft size={22} color="white" />
+              </button>
+            )}
+
+            {modalPhoto.url && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={selected.url} alt="하객 사진"
-                style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: 12 }}
-                onClick={e => e.stopPropagation()} />
+              <img
+                src={modalPhoto.url}
+                alt="하객 사진"
+                style={{
+                  maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain', borderRadius: 12,
+                  transition: 'opacity 0.15s ease',
+                }}
+              />
+            )}
+
+            {/* 다음 버튼 */}
+            {canNext && (
+              <button onClick={goNext}
+                style={{
+                  position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                  background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
+                  width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', zIndex: 1,
+                }}>
+                <ChevronRight size={22} color="white" />
+              </button>
             )}
           </div>
+
+          {/* 하단 인디케이터 */}
+          {photos.length > 1 && (
+            <div className="flex justify-center gap-1.5 pb-6 pt-3" onClick={e => e.stopPropagation()}>
+              {photos.map((_, i) => (
+                <div key={i}
+                  onClick={() => openModal(photos[i])}
+                  style={{
+                    width: i === currentIndex ? 16 : 6, height: 6,
+                    borderRadius: 3,
+                    backgroundColor: i === currentIndex ? 'white' : 'rgba(255,255,255,0.3)',
+                    transition: 'all 0.2s ease', cursor: 'pointer',
+                  }} />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
       <style jsx global>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes shimmer {
+          0%   { background-position: -200px 0; }
+          100% { background-position: calc(200px + 100%) 0; }
+        }
+        .photo-skeleton {
+          background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+          background-size: 200px 100%;
+          animation: shimmer 1.2s ease-in-out infinite;
+        }
       `}</style>
     </>
   );
 }
+
+/* ── 사진 썸네일 (메모이제이션 + lazy load + skeleton) ─────────── */
+import { memo } from 'react';
+
+const PhotoThumb = memo(function PhotoThumb({ photo, onClick }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div
+      onClick={onClick}
+      style={{
+        aspectRatio: '1', borderRadius: 8, overflow: 'hidden',
+        backgroundColor: 'var(--toss-bg)', cursor: 'pointer', position: 'relative',
+      }}>
+      {/* 로드 전 skeleton */}
+      {!loaded && (
+        <div className="photo-skeleton" style={{ position: 'absolute', inset: 0 }} />
+      )}
+      {photo.url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={photo.url}
+          alt="하객 사진"
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setLoaded(true)}
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover',
+            opacity: loaded ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+          }}
+        />
+      )}
+      {photo.uploader_name && loaded && (
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0, padding: '4px 6px',
+          background: 'linear-gradient(transparent, rgba(0,0,0,0.5))',
+        }}>
+          <p style={{ color: 'white', fontSize: 10, fontWeight: 500 }}>{photo.uploader_name}</p>
+        </div>
+      )}
+    </div>
+  );
+});

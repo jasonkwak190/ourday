@@ -1,10 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
+// Rate limit: IP당 1분에 최대 30회 (랜딩 페이지 새로고침 허용)
+const statsLimiter = createRateLimiter({ windowMs: 60_000, max: 30 });
+
 // GET /api/stats — 공개 통계 (인증 불필요)
-export async function GET() {
+export async function GET(request) {
+  const ip = getClientIp(request);
+  if (!statsLimiter(ip)) {
+    return NextResponse.json({ couples: 0 }); // 차단 시 0 반환 (에러 노출 없이)
+  }
+
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,

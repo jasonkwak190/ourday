@@ -1,8 +1,10 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { copyToClipboard } from '@/lib/clipboard';
 import OnboardingProgress from '@/components/OnboardingProgress';
+import { Share2 } from 'lucide-react';
 
 function generateInviteCode() {
   const array = new Uint8Array(3);
@@ -24,8 +26,11 @@ export default function ConnectPage() {
   const [error,            setError]            = useState('');
   const [userId,           setUserId]           = useState(null);
   const [coupleId,         setCoupleId]         = useState(null);
-  const [partnerConnected, setPartnerConnected] = useState(false); // 상대방이 이미 연동됐는지
-  const [justConnected,    setJustConnected]    = useState(false); // 방금 연동 성공한 경우
+  const [coupleIdRef,      setCoupleIdRef]      = useState(null); // Realtime 구독용
+  const [partnerConnected, setPartnerConnected] = useState(false);
+  const [justConnected,    setJustConnected]    = useState(false);
+  const [canShare,         setCanShare]         = useState(false); // Web Share API 지원 여부
+  const autoSubmitRef = useRef(false); // 자동 submit 중복 방지
 
   useEffect(() => {
     const init = async () => {
@@ -85,16 +90,46 @@ export default function ConnectPage() {
         .eq('id', uid);
 
       setCoupleId(couple.id);
+      setCoupleIdRef(couple.id);
       setMyCode(code);
       setLoading(false);
     };
 
     init();
+    // Web Share API 지원 여부 확인
+    setCanShare(typeof navigator !== 'undefined' && !!navigator.share);
   }, [router]);
+
+  // 6자리 코드 자동 submit
+  useEffect(() => {
+    if (inputCode.length === 6 && !joining && !autoSubmitRef.current) {
+      autoSubmitRef.current = true;
+      handleJoin();
+    }
+    if (inputCode.length < 6) autoSubmitRef.current = false;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputCode]);
+
+  // Realtime — 파트너 연동 감지
+  useEffect(() => {
+    if (!coupleIdRef || partnerConnected) return;
+    const ch = supabase
+      .channel(`connect-${coupleIdRef}`)
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'users', filter: `couple_id=eq.${coupleIdRef}` },
+        async () => {
+          const { count } = await supabase
+            .from('users').select('id', { count: 'exact', head: true }).eq('couple_id', coupleIdRef);
+          if (count >= 2) setPartnerConnected(true);
+        }
+      )
+      .subscribe();
+    return () => supabase.removeChannel(ch);
+  }, [coupleIdRef, partnerConnected]);
 
   async function handleCopy() {
     try {
-      await navigator.clipboard.writeText(myCode);
+      await copyToClipboard(myCode);
     } catch {
       const el = document.createElement('textarea');
       el.value = myCode;
@@ -105,6 +140,17 @@ export default function ConnectPage() {
     }
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  }
+
+  async function handleShare() {
+    try {
+      await navigator.share({
+        title: 'Ourday 커플 연동 코드',
+        text: `Ourday에서 나와 함께 결혼 준비해요! 초대 코드: ${myCode}`,
+      });
+    } catch {
+      // 공유 취소 등 무시
+    }
   }
 
   async function handleJoin() {
@@ -295,9 +341,43 @@ export default function ConnectPage() {
             {myCode}
           </p>
         </div>
-        <button className="btn-outline w-full" onClick={handleCopy}>
-          {copied ? '✅ 복사됨!' : '📋 코드 복사하기'}
-        </button>
+        <div className="flex gap-2">
+          <button className="btn-outline flex-1" onClick={handleCopy}>
+            {copied ? '✅ 복사됨!' : '📋 코드 복사'}
+          </button>
+          {canShare && (
+            <button
+              onClick={handleShare}
+              className="flex items-center justify-center gap-1.5 font-semibold text-sm"
+              style={{
+                height: 48, paddingInline: 16, borderRadius: 12,
+                backgroundColor: 'var(--toss-blue)', color: 'white',
+                border: 'none', cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              <Share2 size={16} />
+              공유
+            </button>
+          )}
+        </div>
+
+        {/* 파트너 연동 대기 상태 */}
+        {!partnerConnected && (
+          <div className="mt-3 flex items-center gap-2 justify-center">
+            <span className="animate-pulse text-base">⏳</span>
+            <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>
+              상대방이 코드를 입력하면 자동으로 연동돼요
+            </p>
+          </div>
+        )}
+        {partnerConnected && (
+          <div className="mt-3 flex items-center gap-2 justify-center">
+            <span className="text-base">💑</span>
+            <p className="text-xs font-semibold" style={{ color: 'var(--toss-green)' }}>
+              상대방이 연동됐어요!
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 구분선 */}

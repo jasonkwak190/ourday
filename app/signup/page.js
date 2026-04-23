@@ -4,31 +4,52 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import OAuthButtons from '@/components/OAuthButtons';
-import { ShieldCheck } from 'lucide-react';
+import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
+
+// Supabase 에러 메시지 → 한국어 변환
+function toKoreanError(msg = '') {
+  const m = msg.toLowerCase();
+  if (m.includes('user already registered') || m.includes('already been registered'))
+    return '이미 가입된 이메일이에요. 로그인해주세요.';
+  if (m.includes('invalid email'))
+    return '올바른 이메일 형식이 아니에요.';
+  if (m.includes('password'))
+    return '비밀번호는 6자 이상이어야 해요.';
+  if (m.includes('email') && m.includes('confirm'))
+    return '이메일 인증이 필요해요. 받은 편지함을 확인해주세요.';
+  if (m.includes('rate limit'))
+    return '요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+  return '가입에 실패했어요. 다시 시도해주세요.';
+}
 
 export default function SignupPage() {
-  const router  = useRouter();
-  const [showEmail, setShowEmail] = useState(false);
-  const [name,    setName]    = useState('');
-  const [email,   setEmail]   = useState('');
-  const [password,setPassword]= useState('');
-  const [role,    setRole]    = useState('groom');
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState('');
-  const [agreed,  setAgreed]  = useState(false);
+  const router   = useRouter();
+  const [showEmail,   setShowEmail]   = useState(false);
+  const [name,        setName]        = useState('');
+  const [email,       setEmail]       = useState('');
+  const [password,    setPassword]    = useState('');
+  const [confirmPw,   setConfirmPw]   = useState('');
+  const [role,        setRole]        = useState('groom');
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState('');
+  const [agreed,      setAgreed]      = useState(false);
+  const [showPw,      setShowPw]      = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   async function handleSignup(e) {
     e.preventDefault();
     setError('');
-    if (!agreed)              { setError('개인정보처리방침에 동의해주세요.'); return; }
-    if (!name.trim())         { setError('이름을 입력해주세요.'); return; }
-    if (password.length < 6)  { setError('비밀번호는 6자 이상이어야 해요.'); return; }
+
+    if (!agreed)                    { setError('개인정보처리방침에 동의해주세요.'); return; }
+    if (!name.trim())               { setError('이름을 입력해주세요.'); return; }
+    if (password.length < 6)        { setError('비밀번호는 6자 이상이어야 해요.'); return; }
+    if (password !== confirmPw)     { setError('비밀번호가 일치하지 않아요.'); return; }
 
     setLoading(true);
     const { data, error: authError } = await supabase.auth.signUp({ email, password });
 
     if (authError) {
-      setError(authError.message);
+      setError(toKoreanError(authError.message));
       setLoading(false);
       return;
     }
@@ -40,7 +61,7 @@ export default function SignupPage() {
         .insert({ id: userId, name: name.trim(), role });
 
       if (insertError) {
-        setError(`프로필 저장 실패: ${insertError.message}`);
+        setError('프로필 저장에 실패했어요. 다시 시도해주세요.');
         setLoading(false);
         return;
       }
@@ -97,8 +118,8 @@ export default function SignupPage() {
         )}
       </label>
 
-      {/* OAuth 버튼 — 메인 */}
-      <div style={{ opacity: agreed ? 1 : 0.45, pointerEvents: agreed ? 'auto' : 'none', transition: 'opacity 0.2s' }}>
+      {/* OAuth 버튼 */}
+      <div style={{ opacity: agreed ? 1 : 0.45, pointerEvents: agreed ? 'auto' : 'none', transition: 'opacity 0.2s', marginTop: 16 }}>
         <OAuthButtons />
       </div>
       {!agreed && (
@@ -124,27 +145,95 @@ export default function SignupPage() {
 
       {showEmail && (
         <form onSubmit={handleSignup} className="flex flex-col gap-4">
+          {/* 이름 */}
           <div>
             <label className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>이름</label>
             <input className="input-field" type="text" placeholder="홍길동"
-              value={name} onChange={e => setName(e.target.value)} required />
+              value={name} onChange={e => setName(e.target.value)} autoComplete="name" required />
           </div>
 
+          {/* 이메일 */}
           <div>
             <label className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>이메일</label>
             <input className="input-field" type="email" placeholder="example@email.com"
-              value={email} onChange={e => setEmail(e.target.value)} required />
+              value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
           </div>
 
+          {/* 비밀번호 */}
           <div>
             <label className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>비밀번호</label>
-            <input className="input-field" type="password" placeholder="6자 이상"
-              value={password} onChange={e => setPassword(e.target.value)} required />
+            <div style={{ position: 'relative' }}>
+              <input
+                className="input-field"
+                type={showPw ? 'text' : 'password'}
+                placeholder="6자 이상"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                autoComplete="new-password"
+                style={{ paddingRight: 48 }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPw(v => !v)}
+                style={{
+                  position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)',
+                  display: 'flex', alignItems: 'center',
+                }}
+              >
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
           </div>
 
+          {/* 비밀번호 확인 */}
+          <div>
+            <label className="text-xs font-semibold block mb-1.5"
+              style={{ color: 'var(--toss-text-secondary)' }}>비밀번호 확인</label>
+            <div style={{ position: 'relative' }}>
+              <input
+                className="input-field"
+                type={showConfirm ? 'text' : 'password'}
+                placeholder="비밀번호를 다시 입력해주세요"
+                value={confirmPw}
+                onChange={e => setConfirmPw(e.target.value)}
+                autoComplete="new-password"
+                style={{
+                  paddingRight: 48,
+                  borderColor: confirmPw && confirmPw !== password ? 'var(--toss-red)' : undefined,
+                }}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(v => !v)}
+                style={{
+                  position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                  background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)',
+                  display: 'flex', alignItems: 'center',
+                }}
+              >
+                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+            {/* 실시간 불일치 피드백 */}
+            {confirmPw && password !== confirmPw && (
+              <p className="text-xs mt-1.5" style={{ color: 'var(--toss-red)' }}>
+                비밀번호가 일치하지 않아요
+              </p>
+            )}
+            {confirmPw && password === confirmPw && (
+              <p className="text-xs mt-1.5" style={{ color: 'var(--toss-green)' }}>
+                ✓ 비밀번호가 일치해요
+              </p>
+            )}
+          </div>
+
+          {/* 역할 */}
           <div>
             <label className="text-xs font-semibold block mb-2"
               style={{ color: 'var(--toss-text-secondary)' }}>나는요</label>
@@ -171,7 +260,8 @@ export default function SignupPage() {
             <p className="text-sm text-center" style={{ color: 'var(--toss-red)' }}>{error}</p>
           )}
 
-          <button type="submit" className="btn-rose w-full" style={{ height: 52 }} disabled={loading || !agreed}>
+          <button type="submit" className="btn-rose w-full" style={{ height: 52 }}
+            disabled={loading || !agreed || (confirmPw.length > 0 && password !== confirmPw)}>
             {loading ? '가입 중...' : '가입하기'}
           </button>
         </form>

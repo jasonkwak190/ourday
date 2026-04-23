@@ -2,6 +2,10 @@ export const dynamic = 'force-dynamic';
 
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+
+// Rate limit: IP당 1분에 최대 10회 (GET + POST 합산)
+const rsvpLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
 
 // Service role — POST 전용 (하객 비인증 insert)
 function serviceClient() {
@@ -25,6 +29,11 @@ function anonClient() {
 // 공개 — 하객 RSVP 폼에서 커플 기본 정보 조회 (anon key, invitations 테이블만)
 export async function GET(request) {
   try {
+    const ip = getClientIp(request);
+    if (!rsvpLimiter(ip)) {
+      return NextResponse.json({ error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const coupleId = searchParams.get('couple_id');
     if (!coupleId) return NextResponse.json({ error: 'couple_id required' }, { status: 400 });
@@ -66,6 +75,11 @@ export async function GET(request) {
 // 참석인 경우 guests 테이블에도 자동 매핑
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    if (!rsvpLimiter(ip)) {
+      return NextResponse.json({ error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { couple_id, name, side, attending, meal_count, phone, message } = body;
 
@@ -76,59 +90,107 @@ export async function POST(request) {
       return NextResponse.json({ error: 'attending required' }, { status: 400 });
     }
 
+    // 입력값 길이 제한
+    const safeName    = String(name).trim().slice(0, 50);
+    const safePhone   = phone ? String(phone).trim().slice(0, 20) : null;
+    const safeMessage = message ? String(message).trim().slice(0, 500) : null;
+    const safeSide    = ['groom', 'bride'].includes(side) ? side : null;
+    const safeMeals   = Math.min(Math.max(Number(meal_count) || 1, 1), 20);
+
     const supabase = serviceClient();
 
-    // 1) rsvp_responses에 저장
-    const { data, error } = await supabase
-      .from('rsvp_responses')
-      .insert({
-        couple_id,
-        name: name.trim(),
-        side: side || null,
-        attending: Boolean(attending),
-        meal_count: Number(meal_count) || 1,
-        phone: phone?.trim() || null,
-        message: message?.trim() || null,
-      })
-      .select()
-      .single();
+    // ── couple_id 유효성 확인 (invitations 또는 couples 존재 여부) ──
+    const { data: coupleCheck } = await supabase
+      .from('couples')
+      .select('id')
+      .eq('id', couple_id)
+      .maybeSingle();
 
-    if (error) {
-      console.error('[rsvp] insert error:', error.message);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (!coupleCheck) {
+      return NextResponse.json({ error: '유효하지 않은 couple_id예요.' }, { status: 400 });
+    }
+
+    // ── 중복 제출 방지: 같은 이름+커플로 기존 RSVP 확인 ──────
+    const { data: existingRsvp } = await supabase
+      .from('rsvp_responses')
+      .select('id')
+      .eq('couple_id', couple_id)
+      .eq('name', safeName)
+      .maybeSingle();
+
+    let data, rsvpError;
+
+    if (existingRsvp) {
+      // 기존 응답 업데이트 (마음이 바뀐 경우)
+      const { data: updated, error: updateErr } = await supabase
+        .from('rsvp_responses')
+        .update({
+          side: safeSide,
+          attending: Boolean(attending),
+          meal_count: safeMeals,
+          phone: safePhone,
+          message: safeMessage,
+        })
+        .eq('id', existingRsvp.id)
+        .select()
+        .single();
+      data = updated;
+      rsvpError = updateErr;
+    } else {
+      // 신규 RSVP 등록
+      const { data: inserted, error: insertErr } = await supabase
+        .from('rsvp_responses')
+        .insert({
+          couple_id,
+          name: safeName,
+          side: safeSide,
+          attending: Boolean(attending),
+          meal_count: safeMeals,
+          phone: safePhone,
+          message: safeMessage,
+        })
+        .select()
+        .single();
+      data = inserted;
+      rsvpError = insertErr;
+    }
+
+    if (rsvpError) {
+      console.error('[rsvp] upsert error:', rsvpError.message);
+      return NextResponse.json({ error: '저장에 실패했어요. 다시 시도해주세요.' }, { status: 500 });
     }
 
     // 2) 참석인 경우 → guests 테이블에 자동 매핑
     if (Boolean(attending)) {
       // 이름+커플ID로 기존 하객 검색
-      const { data: existing } = await supabase
+      const { data: existingGuest } = await supabase
         .from('guests')
         .select('id')
         .eq('couple_id', couple_id)
-        .eq('name', name.trim())
+        .eq('name', safeName)
         .maybeSingle();
 
-      if (existing) {
+      if (existingGuest) {
         // 이미 있으면 식사수·연락처 업데이트
         await supabase
           .from('guests')
           .update({
-            meal_count: Number(meal_count) || 1,
-            phone: phone?.trim() || null,
-            ...(side ? { side } : {}),
+            meal_count: safeMeals,
+            phone: safePhone,
+            ...(safeSide ? { side: safeSide } : {}),
           })
-          .eq('id', existing.id);
+          .eq('id', existingGuest.id);
       } else {
         // 없으면 새로 추가
         await supabase
           .from('guests')
           .insert({
             couple_id,
-            name: name.trim(),
-            side: side || 'groom',
+            name: safeName,
+            side: safeSide || 'groom',
             relation: '지인',
-            meal_count: Number(meal_count) || 1,
-            phone: phone?.trim() || null,
+            meal_count: safeMeals,
+            phone: safePhone,
             memo: 'RSVP 자동 등록',
           });
       }
@@ -136,6 +198,7 @@ export async function POST(request) {
 
     return NextResponse.json({ success: true, data });
   } catch (e) {
-    return NextResponse.json({ error: e.message }, { status: 500 });
+    console.error('[rsvp] unexpected error:', e.message);
+    return NextResponse.json({ error: '서버 오류가 발생했어요.' }, { status: 500 });
   }
 }

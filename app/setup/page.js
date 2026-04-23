@@ -262,6 +262,7 @@ export default function SetupPage() {
             className="input-field"
             type="date"
             value={weddingDate}
+            min={new Date().toISOString().split('T')[0]}
             onChange={(e) => setWeddingDate(e.target.value)}
           />
         </div>

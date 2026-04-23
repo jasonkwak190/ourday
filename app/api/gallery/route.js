@@ -152,7 +152,6 @@ export async function POST(request) {
     return NextResponse.json({ event: newEvent });
   } catch (err) {
     console.error('Gallery POST error:', err);
-    // 디버깅용: 실제 에러 메시지를 응답에 포함
-    return NextResponse.json({ error: String(err?.message || err) }, { status: 500 });
+    return NextResponse.json({ error: '서버 오류가 발생했어요.' }, { status: 500 });
   }
 }

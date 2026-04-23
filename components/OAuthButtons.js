@@ -1,22 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function OAuthButtons() {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingKakao,  setLoadingKakao]  = useState(false);
-  const [redirectTo,    setRedirectTo]    = useState('/auth/callback');
 
-  useEffect(() => {
-    setRedirectTo(`${window.location.origin}/auth/callback`);
-  }, []);
+  // redirectTo를 클릭 시점에 계산 → useEffect 경쟁 조건 제거
+  function getRedirectTo() {
+    return `${window.location.origin}/auth/callback`;
+  }
 
   async function signInWithGoogle() {
     setLoadingGoogle(true);
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo },
+      options: { redirectTo: getRedirectTo() },
     });
   }
 
@@ -24,7 +24,7 @@ export default function OAuthButtons() {
     setLoadingKakao(true);
     await supabase.auth.signInWithOAuth({
       provider: 'kakao',
-      options: { redirectTo },
+      options: { redirectTo: getRedirectTo() },
     });
   }
 
@@ -43,7 +43,6 @@ export default function OAuthButtons() {
           opacity: loadingGoogle ? 0.7 : 1,
         }}
       >
-        {/* Google 로고 SVG */}
         {loadingGoogle ? '연결 중...' : (
           <>
             <svg width="20" height="20" viewBox="0 0 24 24">
@@ -72,7 +71,6 @@ export default function OAuthButtons() {
       >
         {loadingKakao ? '연결 중...' : (
           <>
-            {/* 카카오 로고 SVG */}
             <svg width="20" height="20" viewBox="0 0 24 24" fill="#3C1E1E">
               <path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.7 5.07 4.26 6.45L5.2 21l4.54-2.97C10.44 18.14 11.21 18.2 12 18.2c5.523 0 10-3.477 10-7.8C22 6.477 17.523 3 12 3z"/>
             </svg>

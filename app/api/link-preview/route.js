@@ -1,12 +1,26 @@
+export const dynamic = 'force-dynamic';
+
+// SSRF 방어: 허용할 공개 프로토콜만 허용, 내부망 주소 차단
+const BLOCKED_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i;
+
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 
   if (!url) return Response.json({ error: 'No URL' }, { status: 400 });
 
+  let parsed;
   try {
-    new URL(url); // URL 형식 검증
+    parsed = new URL(url);
   } catch {
+    return Response.json({ error: 'Invalid URL' }, { status: 400 });
+  }
+
+  // SSRF 방어: http/https만 허용, 내부망 차단
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    return Response.json({ error: 'Invalid URL' }, { status: 400 });
+  }
+  if (BLOCKED_HOSTS.test(parsed.hostname)) {
     return Response.json({ error: 'Invalid URL' }, { status: 400 });
   }
 
@@ -78,7 +92,7 @@ export async function GET(request) {
       favicon,
       domain,
     });
-  } catch (e) {
-    return Response.json({ error: e.message }, { status: 500 });
+  } catch {
+    return Response.json({ error: 'Failed to fetch preview' }, { status: 500 });
   }
 }
