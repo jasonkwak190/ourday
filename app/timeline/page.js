@@ -50,8 +50,11 @@ function getPeriodDate(weddingDateStr, period) {
   const d = new Date(weddingDateStr);
   const offset = PERIOD_OFFSET[period];
   if (!offset) return null;
-  if (offset.months) d.setMonth(d.getMonth() + offset.months);
-  if (offset.days)   d.setDate(d.getDate() + offset.days);
+  if (offset.months) {
+    d.setMonth(d.getMonth() + offset.months);
+    d.setDate(1); // 기간 항목은 해당 월 1일로 표시
+  }
+  if (offset.days) d.setDate(d.getDate() + offset.days);
   return d;
 }
 function isSameMonth(d, y, m) {
@@ -883,10 +886,13 @@ export default function TimelinePage() {
                       </span>
                     </div>
                     {dayEvts.length > 0 && (
-                      <div className="flex gap-0.5 mt-0.5">
-                        {dayEvts.slice(0, 3).map((e, i) => (
-                          <div key={i} className="rounded-full" style={{ width: 4, height: 4, backgroundColor: e.color }} />
+                      <div className="flex gap-0.5 mt-0.5 items-center">
+                        {dayEvts.slice(0, 2).map((e, i) => (
+                          <div key={i} className="rounded-full" style={{ width: 6, height: 6, backgroundColor: e.color }} />
                         ))}
+                        {dayEvts.length > 2 && (
+                          <span style={{ fontSize: 8, color: 'var(--stone)', lineHeight: 1 }}>+{dayEvts.length - 2}</span>
+                        )}
                       </div>
                     )}
                   </div>
