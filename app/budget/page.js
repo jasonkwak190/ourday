@@ -546,23 +546,23 @@ export default function BudgetPage() {
                       <div className="flex items-baseline gap-3 mt-2">
                         {vendor.deposit != null && (
                           <div>
-                            <p className="text-xs" style={{ color: 'var(--stone-light)' }}>계약금</p>
-                            <p className="text-xs font-semibold tabular-nums" style={{ color: 'var(--ink-soft)' }}>
+                            <p className="text-xs" style={{ color: 'var(--stone)' }}>계약금</p>
+                            <p className="text-xs font-semibold tabular-nums" style={{ color: 'var(--ink)' }}>
                               {vendor.deposit.toLocaleString()}만원
                             </p>
                           </div>
                         )}
                         {vendor.balance != null && (
                           <div>
-                            <p className="text-xs" style={{ color: 'var(--stone-light)' }}>잔금</p>
-                            <p className="text-xs font-semibold tabular-nums" style={{ color: 'var(--rose)' }}>
+                            <p className="text-xs" style={{ color: 'var(--stone)' }}>잔금</p>
+                            <p className="text-xs font-semibold tabular-nums" style={{ color: 'var(--ink)' }}>
                               {vendor.balance.toLocaleString()}만원
                             </p>
                           </div>
                         )}
                         {vendorTotal > 0 && (
                           <div>
-                            <p className="text-xs" style={{ color: 'var(--stone-light)' }}>합계</p>
+                            <p className="text-xs" style={{ color: 'var(--stone)' }}>합계</p>
                             <p className="text-xs font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
                               {vendorTotal.toLocaleString()}만원
                             </p>
@@ -570,9 +570,9 @@ export default function BudgetPage() {
                         )}
                         {vendor.balance_due && (
                           <div>
-                            <p className="text-xs" style={{ color: 'var(--stone-light)' }}>납부일</p>
+                            <p className="text-xs" style={{ color: 'var(--stone)' }}>납부일</p>
                             <p className="text-xs font-semibold tabular-nums"
-                              style={{ color: balanceDday !== null && balanceDday <= 7 ? 'var(--amber)' : 'var(--ink-soft)' }}>
+                              style={{ color: balanceDday !== null && balanceDday <= 7 ? 'var(--amber)' : 'var(--ink)' }}>
                               {new Date(vendor.balance_due).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                               {balanceDday !== null && (
                                 <span className="ml-1">
