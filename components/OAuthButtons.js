@@ -1,15 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
 export default function OAuthButtons() {
   const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingKakao,  setLoadingKakao]  = useState(false);
+  const [redirectTo,    setRedirectTo]    = useState('/auth/callback');
 
-  const redirectTo = typeof window !== 'undefined'
-    ? `${window.location.origin}/auth/callback`
-    : '/auth/callback';
+  useEffect(() => {
+    setRedirectTo(`${window.location.origin}/auth/callback`);
+  }, []);
 
   async function signInWithGoogle() {
     setLoadingGoogle(true);

@@ -21,7 +21,8 @@ export default function GalleryTab() {
   const [deleting,   setDeleting]   = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const [origin, setOrigin] = useState('');
+  useEffect(() => { setOrigin(window.location.origin); }, []);
 
   function downloadQR() {
     if (!qrRef.current || !event) return;

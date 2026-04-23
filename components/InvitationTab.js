@@ -132,7 +132,8 @@ export default function InvitationTab({ coupleId }) {
   });
   const [accountNames, setAccountNames] = useState({ groom: '', bride: '' });
 
-  const origin   = typeof window !== 'undefined' ? window.location.origin : '';
+  const [origin, setOrigin] = useState('');
+  useEffect(() => { setOrigin(window.location.origin); }, []);
   const shareUrl = inv ? `${origin}/i/${inv.slug}` : '';
 
   useEffect(() => {
