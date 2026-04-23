@@ -108,7 +108,7 @@ export default function SignupPage() {
       )}
 
       {/* 이메일 가입 토글 */}
-      <div className="flex items-center gap-3 my-5">
+      <div className="flex items-center gap-3 mt-8 mb-5">
         <div className="flex-1 h-px" style={{ backgroundColor: 'var(--toss-border)' }} />
         <button
           type="button"
