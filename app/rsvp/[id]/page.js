@@ -271,6 +271,23 @@ export default function RSVPPage({ params }) {
         >
           {submitting ? '전송 중...' : '💌 참석 여부 전달하기'}
         </button>
+
+        {/* 개인정보 수집 고지 */}
+        <p style={{
+          fontSize: 11, color: '#b0b8c1', textAlign: 'center',
+          lineHeight: 1.7, marginTop: 4,
+        }}>
+          입력하신 이름·연락처는 참석 확인 목적으로만 사용되며<br />
+          예식 종료 후 1년 이내 파기됩니다.{' '}
+          <a
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: '#8b95a1', textDecoration: 'underline' }}
+          >
+            개인정보처리방침
+          </a>
+        </p>
       </div>
     </div>
   );

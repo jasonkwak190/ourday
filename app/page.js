@@ -262,6 +262,25 @@ export default function LandingPage() {
           결혼 준비에 필요한 것들을 한 곳에서
         </p>
       </div>
+
+      {/* 푸터 */}
+      <div style={{
+        marginTop: 40, paddingTop: 20,
+        borderTop: '1px solid var(--toss-border)',
+        textAlign: 'center',
+        fontSize: 12, color: 'var(--toss-text-tertiary)',
+        lineHeight: 2,
+      }}>
+        <a href="/privacy" style={{ color: 'var(--toss-text-tertiary)', textDecoration: 'underline' }}>
+          개인정보처리방침
+        </a>
+        <span style={{ margin: '0 8px' }}>·</span>
+        <a href={`mailto:jasonkwak201@gmail.com`} style={{ color: 'var(--toss-text-tertiary)', textDecoration: 'underline' }}>
+          문의하기
+        </a>
+        <br />
+        © 2025 우리의 날. All rights reserved.
+      </div>
     </div>
   );
 }

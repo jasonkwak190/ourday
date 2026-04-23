@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import OAuthButtons from '@/components/OAuthButtons';
+import { ShieldCheck } from 'lucide-react';
 
 export default function SignupPage() {
   const router  = useRouter();
@@ -14,10 +15,12 @@ export default function SignupPage() {
   const [role,    setRole]    = useState('groom');
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
+  const [agreed,  setAgreed]  = useState(false);
 
   async function handleSignup(e) {
     e.preventDefault();
     setError('');
+    if (!agreed)              { setError('개인정보처리방침에 동의해주세요.'); return; }
     if (!name.trim())         { setError('이름을 입력해주세요.'); return; }
     if (password.length < 6)  { setError('비밀번호는 6자 이상이어야 해요.'); return; }
 
@@ -58,8 +61,51 @@ export default function SignupPage() {
         </p>
       </div>
 
+      {/* 개인정보 동의 */}
+      <label
+        style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          padding: '14px 16px', borderRadius: 16, cursor: 'pointer',
+          backgroundColor: agreed ? '#eaf4ff' : 'var(--toss-bg)',
+          border: `1.5px solid ${agreed ? '#3182f6' : 'var(--toss-border)'}`,
+          transition: 'all 0.15s', marginBottom: 4,
+        }}
+      >
+        <input
+          type="checkbox"
+          checked={agreed}
+          onChange={e => setAgreed(e.target.checked)}
+          style={{ marginTop: 2, width: 18, height: 18, accentColor: '#3182f6', flexShrink: 0, cursor: 'pointer' }}
+        />
+        <div style={{ fontSize: 13, lineHeight: 1.6 }}>
+          <span style={{ fontWeight: 700, color: '#191f28' }}>[필수]&nbsp;</span>
+          <span style={{ color: '#4e5968' }}>
+            서비스 이용을 위한{' '}
+            <Link href="/privacy" target="_blank"
+              style={{ color: '#3182f6', fontWeight: 600, textDecoration: 'underline' }}
+              onClick={e => e.stopPropagation()}>
+              개인정보처리방침
+            </Link>
+            에 동의합니다.
+          </span>
+          <p style={{ fontSize: 11, color: '#8b95a1', marginTop: 4 }}>
+            이메일·이름을 수집하며, 탈퇴 시 즉시 파기됩니다.
+          </p>
+        </div>
+        {agreed && (
+          <ShieldCheck size={18} color="#3182f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+        )}
+      </label>
+
       {/* OAuth 버튼 — 메인 */}
-      <OAuthButtons />
+      <div style={{ opacity: agreed ? 1 : 0.45, pointerEvents: agreed ? 'auto' : 'none', transition: 'opacity 0.2s' }}>
+        <OAuthButtons />
+      </div>
+      {!agreed && (
+        <p style={{ fontSize: 12, color: '#8b95a1', textAlign: 'center', marginTop: 4 }}>
+          위 약관에 동의 후 진행할 수 있어요
+        </p>
+      )}
 
       {/* 이메일 가입 토글 */}
       <div className="flex items-center gap-3 my-5">
@@ -125,7 +171,7 @@ export default function SignupPage() {
             <p className="text-sm text-center" style={{ color: 'var(--toss-red)' }}>{error}</p>
           )}
 
-          <button type="submit" className="btn-rose w-full" style={{ height: 52 }} disabled={loading}>
+          <button type="submit" className="btn-rose w-full" style={{ height: 52 }} disabled={loading || !agreed}>
             {loading ? '가입 중...' : '가입하기'}
           </button>
         </form>
