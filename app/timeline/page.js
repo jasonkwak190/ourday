@@ -733,7 +733,7 @@ export default function TimelinePage() {
                   {dateItems.length > 0 && (
                     <div style={{ marginTop: 8 }}>
                       <div className="flex items-center justify-between mb-2" style={{ paddingLeft: 28 }}>
-                        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', letterSpacing: '0.06em' }}>날짜 직접 지정</p>
+                        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', letterSpacing: '0.06em' }}>날짜 직접 지정</p>
                         <p className="text-xs" style={{ color: 'var(--ink-3)' }}>{dateItems.filter(i => i.is_done).length}/{dateItems.length}</p>
                       </div>
                       <div className="card p-0">
@@ -749,8 +749,8 @@ export default function TimelinePage() {
                   {undatedItems.length > 0 && (
                     <div style={{ marginTop: 8 }}>
                       <div className="flex items-center justify-between mb-2" style={{ paddingLeft: 28 }}>
-                        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-4)', letterSpacing: '0.06em' }}>미정</p>
-                        <p className="text-xs" style={{ color: 'var(--ink-4)' }}>{undatedItems.filter(i => i.is_done).length}/{undatedItems.length}</p>
+                        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-3)', letterSpacing: '0.06em' }}>미정</p>
+                        <p className="text-xs" style={{ color: 'var(--ink-3)' }}>{undatedItems.filter(i => i.is_done).length}/{undatedItems.length}</p>
                       </div>
                       <div className="card p-0">
                         <ul className="px-4">{undatedItems.map((item, idx) => renderItem(item, idx === undatedItems.length - 1))}</ul>

@@ -104,7 +104,7 @@ function DonutChart({ vendors }) {
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 4 }}>
                 <span style={{ fontSize: 12, color: 'var(--ink-2)', fontWeight: 500, whiteSpace: 'nowrap' }}>{seg.label}</span>
-                <span style={{ fontSize: 11, color: 'var(--ink-4)', flexShrink: 0 }}>{Math.round(seg.ratio * 100)}%</span>
+                <span style={{ fontSize: 12, color: 'var(--ink-3)', flexShrink: 0 }}>{Math.round(seg.ratio * 100)}%</span>
               </div>
               <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>{seg.total.toLocaleString()}만원</p>
             </div>
@@ -365,7 +365,7 @@ export default function BudgetPage() {
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
       <div className="mb-4">
         <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>예산·업체</h1>
-        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>budget &amp; vendors</p>
+        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>budget &amp; vendors</p>
       </div>
 
       {/* ── 예산 요약 카드 ── */}

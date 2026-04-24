@@ -153,8 +153,8 @@ export default function LoginPage() {
           <span style={{
             fontFamily: 'var(--font-serif-en)',
             fontStyle: 'italic',
-            fontSize: 11,
-            color: 'var(--ink-4)',
+            fontSize: 12,
+            color: 'var(--ink-3)',
             letterSpacing: '0.08em',
           }}>· or ·</span>
           <span style={{ flex: 1, height: 1, background: 'var(--rule-strong)' }} />
@@ -173,7 +173,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             <div style={{ marginBottom: 16 }}>
               <label style={{
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: 600,
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',

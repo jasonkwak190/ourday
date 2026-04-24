@@ -117,30 +117,18 @@ export default function BottomNav({ active }) {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: '6px 4px',
+                padding: '10px 4px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 3,
+                gap: 0,
               }}
             >
               <Icon
                 name={icon}
-                size={22}
+                size={24}
                 color={isActive ? 'var(--champagne-2)' : 'var(--ink-4)'}
               />
-              <span
-                style={{
-                  fontSize: 10,
-                  fontWeight: 500,
-                  fontFamily: 'var(--font-serif-en)',
-                  fontStyle: 'italic',
-                  color: isActive ? 'var(--champagne-2)' : 'var(--ink-4)',
-                  letterSpacing: '0.04em',
-                }}
-              >
-                {label}
-              </span>
             </button>
           );
         })}
@@ -162,21 +150,9 @@ export default function BottomNav({ active }) {
         >
           <Icon
             name="more"
-            size={22}
+            size={24}
             color={isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-4)'}
           />
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 500,
-              fontFamily: 'var(--font-serif-en)',
-              fontStyle: 'italic',
-              color: isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-4)',
-              letterSpacing: '0.04em',
-            }}
-          >
-            more
-          </span>
         </button>
       </nav>
     </>

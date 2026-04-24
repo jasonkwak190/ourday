@@ -261,8 +261,8 @@ export default function DashboardPage() {
           <div style={{
             fontFamily: 'var(--font-serif-en)',
             fontStyle: 'italic',
-            fontSize: 12,
-            color: 'var(--champagne-2)',
+            fontSize: 13,
+            color: 'var(--ink-3)',
             letterSpacing: '0.05em',
             marginBottom: 4,
           }}>
@@ -306,7 +306,7 @@ export default function DashboardPage() {
             }}>
               {dday > 0 ? dday : dday === 0 ? 'Today' : Math.abs(dday)}
             </div>
-            <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-3)', letterSpacing: '0.06em' }}>
+            <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-2)', letterSpacing: '0.06em' }}>
               {dday > 0 ? 'days to go' : dday === 0 ? '오늘이에요!' : 'days ago'}
             </div>
           </>
@@ -389,7 +389,7 @@ export default function DashboardPage() {
             onClick={onClick}
             style={{ background: 'var(--paper)', padding: '14px 10px', textAlign: 'center', border: 'none', cursor: 'pointer' }}
           >
-            <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--champagne-2)', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
+            <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
             <div style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 26, color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em', fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
               {value}
               {unit && <span style={{ fontSize: 14, color: 'var(--champagne-2)', fontWeight: 400, fontStyle: italic ? 'italic' : 'normal' }}>{unit}</span>}
@@ -423,10 +423,9 @@ export default function DashboardPage() {
         <div style={{
           fontFamily: 'var(--font-serif-en)',
           fontStyle: 'italic',
-          fontSize: 10.5,
+          fontSize: 13,
           color: 'var(--champagne)',
           letterSpacing: '0.1em',
-          opacity: 0.7,
           marginBottom: 10,
         }}>
           · our diary ·
@@ -450,9 +449,8 @@ export default function DashboardPage() {
             <div style={{
               fontFamily: 'var(--font-serif-en)',
               fontStyle: 'italic',
-              fontSize: 11,
+              fontSize: 13,
               color: 'var(--champagne)',
-              opacity: 0.6,
             }}>
               {new Date(latestNote.updated_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} · 메모 보기 →
             </div>
