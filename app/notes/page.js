@@ -214,14 +214,18 @@ export default function NotesPage() {
     <div className="page-wrapper" style={{ paddingBottom: 0 }}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
-        <h1 className="text-xl font-semibold flex items-center gap-2" style={{ color: 'var(--toss-text-primary)' }}>
-          <Icon name="paperclip" size={22} color="var(--ink)" />
-          정보 공유
-        </h1>
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
+            함께 쓰는 메모
+          </h1>
+          <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+            shared notes &amp; links
+          </p>
+        </div>
         <button
           onClick={() => setSearching(v => !v)}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 6,
-            color: searching ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)' }}>
+            color: searching ? 'var(--champagne-2)' : 'var(--ink-4)' }}>
           <Search size={20} />
         </button>
       </div>
@@ -246,13 +250,22 @@ export default function NotesPage() {
 
       {/* 역할 배지 */}
       <div className="flex items-center justify-between mb-3">
-        <div className="px-3 py-1 rounded-full text-xs font-semibold"
-          style={{ backgroundColor: isGroom ? 'var(--champagne-wash)' : 'var(--rose-ed-wash)',
-            color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)' }}>
-          {isGroom ? '신랑' : '신부'} 으로 작성 중
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          padding: '4px 12px', borderRadius: 20,
+          backgroundColor: isGroom ? 'var(--champagne-wash)' : 'var(--rose-ed-wash)',
+          border: `1px solid ${isGroom ? 'var(--champagne)' : 'var(--rose-ed)'}`,
+        }}>
+          <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10, color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)', letterSpacing: '0.04em' }}>
+            {isGroom ? 'groom' : 'bride'}
+          </span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', backgroundColor: isGroom ? 'var(--champagne)' : 'var(--rose-ed)', display: 'inline-block' }} />
+          <span style={{ fontSize: 11, fontWeight: 500, color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)' }}>
+            {isGroom ? '신랑' : '신부'} 으로 작성 중
+          </span>
         </div>
-        <span className="text-xs tabular-nums" style={{ color: 'var(--toss-text-tertiary)' }}>
-          {filtered.length}개
+        <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-4)' }}>
+          {filtered.length} notes
         </span>
       </div>
 
@@ -271,13 +284,13 @@ export default function NotesPage() {
               item.type === 'divider' ? (
                 /* ── 날짜 구분선 ── */
                 <div key={item.key} style={{
-                  display: 'flex', alignItems: 'center', gap: 10, margin: '4px 0',
+                  display: 'flex', alignItems: 'center', gap: 10, margin: '8px 0',
                 }}>
-                  <div style={{ flex: 1, height: 1, backgroundColor: 'var(--toss-border)' }} />
-                  <span style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', whiteSpace: 'nowrap', fontWeight: 500 }}>
+                  <div style={{ flex: 1, height: 1, backgroundColor: 'var(--rule-strong)' }} />
+                  <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--champagne-2)', whiteSpace: 'nowrap', letterSpacing: '0.04em' }}>
                     {formatDividerDate(item.date)}
                   </span>
-                  <div style={{ flex: 1, height: 1, backgroundColor: 'var(--toss-border)' }} />
+                  <div style={{ flex: 1, height: 1, backgroundColor: 'var(--rule-strong)' }} />
                 </div>
               ) : (
                 <NoteItem
@@ -357,10 +370,10 @@ export default function NotesPage() {
           <button onClick={handleSend} disabled={!content.trim() || sending}
             style={{ width: 36, height: 36, borderRadius: 10, border: 'none',
               cursor: content.trim() ? 'pointer' : 'not-allowed',
-              backgroundColor: content.trim() ? 'var(--toss-blue)' : 'var(--toss-border)',
+              backgroundColor: content.trim() ? 'var(--ink)' : 'var(--rule-strong)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
               transition: 'background-color 0.15s' }}>
-            <Send size={16} color="white" />
+            <Send size={16} color="var(--ivory)" />
           </button>
         </div>
       </div>
@@ -445,8 +458,8 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
           </div>
         ) : (
           <>
-            <p style={{ fontSize: 14, color: 'var(--toss-text-primary)', lineHeight: 1.6,
-              margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            <p style={{ fontFamily: 'var(--font-serif-ko)', fontSize: 14, color: 'var(--ink)', lineHeight: 1.7,
+              margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontWeight: 400 }}>
               {note.content}
             </p>
 

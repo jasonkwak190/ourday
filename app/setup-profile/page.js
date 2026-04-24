@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import OnboardingProgress from '@/components/OnboardingProgress';
+import Icon from '@/components/Icon';
 
 export default function SetupProfilePage() {
   const router = useRouter();
@@ -89,21 +90,24 @@ export default function SetupProfilePage() {
           </label>
           <div className="flex gap-3">
             {[
-              { value: 'groom', label: '신랑' },
-              { value: 'bride', label: '신부' },
+              { value: 'groom', label: '신랑', icon: 'groom' },
+              { value: 'bride', label: '신부', icon: 'bride' },
             ].map(r => (
               <button
                 key={r.value}
                 type="button"
                 onClick={() => setRole(r.value)}
-                className="flex-1 font-semibold transition-all"
+                className="flex-1 transition-all"
                 style={{
-                  height: 56, borderRadius: 16, fontSize: 15,
-                  backgroundColor: role === r.value ? 'var(--toss-blue)' : 'var(--toss-bg)',
-                  color: role === r.value ? 'white' : 'var(--toss-text-secondary)',
-                  border: role === r.value ? 'none' : '1.5px solid var(--toss-border)',
+                  height: 64, borderRadius: 16, fontSize: 14, fontWeight: 500,
+                  backgroundColor: role === r.value ? 'var(--ink)' : 'var(--paper)',
+                  color: role === r.value ? 'var(--ivory)' : 'var(--ink-3)',
+                  border: `1.5px solid ${role === r.value ? 'var(--ink)' : 'var(--rule)'}`,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center',
+                  justifyContent: 'center', gap: 6, cursor: 'pointer',
                 }}
               >
+                <Icon name={r.icon} size={22} color={role === r.value ? 'var(--ivory)' : 'var(--ink-3)'} />
                 {r.label}
               </button>
             ))}

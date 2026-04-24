@@ -158,6 +158,28 @@
     <circle cx="12" cy="9.5" r="0.8" fill="currentColor" stroke="none"></circle>
   </symbol>
 
+  <!-- 신랑: suit silhouette + bow tie -->
+  <symbol id="groom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="7" r="3"/>
+    <!-- bow tie: left wing -->
+    <path d="M 9.5 11 L 12 12.6 L 9.5 14.2"/>
+    <!-- bow tie: right wing -->
+    <path d="M 14.5 11 L 12 12.6 L 14.5 14.2"/>
+    <!-- bow tie: center knot -->
+    <circle cx="12" cy="12.6" r="0.75" fill="currentColor" stroke="none"/>
+    <!-- suit jacket outline -->
+    <path d="M 9.5 10.5 L 8 13.5 L 5 22 L 19 22 L 16 13.5 L 14.5 10.5"/>
+  </symbol>
+
+  <!-- 신부: veil arch + A-line dress -->
+  <symbol id="bride" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="8.5" r="2.8"/>
+    <!-- veil: arcs over head, trails down right -->
+    <path d="M 8.5 7 C 9 3 10.5 2 12 2 C 13.5 2 15 3 15.5 7 L 17.5 20"/>
+    <!-- A-line dress -->
+    <path d="M 9.3 11.3 C 7.5 15 5.5 18.5 4.5 22 L 19.5 22 C 18.5 18.5 16.5 15 14.7 11.3"/>
+  </symbol>
+
   <symbol id="couple" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
     <circle cx="8" cy="8" r="2.6"></circle>
     <circle cx="16" cy="8" r="2.6"></circle>

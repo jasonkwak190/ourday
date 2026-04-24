@@ -74,12 +74,31 @@ export default function SignupPage() {
 
   return (
     <div className="page-wrapper flex flex-col">
+      {/* 모노그램 헤더 */}
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--toss-blue)' }}>
-          Ourday
-        </h2>
-        <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-          함께 시작하는 첫 걸음 <Icon name="rings" size={14} color="var(--champagne)" style={{ display: 'inline', verticalAlign: 'middle' }} />
+        <div style={{
+          fontFamily: 'var(--font-serif-en)',
+          fontWeight: 500,
+          fontSize: 56,
+          color: 'var(--ink)',
+          letterSpacing: '-0.04em',
+          lineHeight: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          marginBottom: 10,
+        }}>
+          <span>O</span>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: 'var(--champagne)', display: 'inline-block', marginBottom: 4 }} />
+          <span>D</span>
+        </div>
+        <div style={{ fontFamily: 'var(--font-serif-en)', fontSize: 20, color: 'var(--ink)', marginBottom: 4 }}>
+          <span style={{ fontWeight: 500 }}>O</span>
+          <span style={{ fontStyle: 'italic' }}>urday</span>
+        </div>
+        <p style={{ fontFamily: 'var(--font-serif-ko)', fontSize: 13, color: 'var(--ink-3)', margin: 0 }}>
+          함께 시작하는 첫 걸음
         </p>
       </div>
 
@@ -240,17 +259,20 @@ export default function SignupPage() {
               style={{ color: 'var(--toss-text-secondary)' }}>나는요</label>
             <div className="flex gap-3">
               {[
-                { value: 'groom', label: '신랑' },
-                { value: 'bride', label: '신부' },
+                { value: 'groom', label: '신랑', icon: 'groom' },
+                { value: 'bride', label: '신부', icon: 'bride' },
               ].map(r => (
                 <button key={r.value} type="button" onClick={() => setRole(r.value)}
-                  className="flex-1 font-semibold transition-all"
+                  className="flex-1 transition-all"
                   style={{
-                    height: 52, borderRadius: 16, fontSize: 14,
-                    backgroundColor: role === r.value ? 'var(--toss-blue)' : 'var(--toss-bg)',
-                    color: role === r.value ? 'white' : 'var(--toss-text-secondary)',
-                    border: role === r.value ? 'none' : '1.5px solid var(--toss-border)',
+                    height: 64, borderRadius: 16, fontSize: 14, fontWeight: 500,
+                    backgroundColor: role === r.value ? 'var(--ink)' : 'var(--paper)',
+                    color: role === r.value ? 'var(--ivory)' : 'var(--ink-3)',
+                    border: `1.5px solid ${role === r.value ? 'var(--ink)' : 'var(--rule)'}`,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    justifyContent: 'center', gap: 6, cursor: 'pointer',
                   }}>
+                  <Icon name={r.icon} size={22} color={role === r.value ? 'var(--ivory)' : 'var(--ink-3)'} />
                   {r.label}
                 </button>
               ))}

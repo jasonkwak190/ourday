@@ -208,10 +208,10 @@ export default function GuestsPage() {
 
   return (
     <div className="page-wrapper" onClick={() => { setMenuId(null); setGiftEditId(null); }}>
-      <h1 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--ink)' }}>
-        <Icon name="guests" size={22} color="var(--ink)" />
-        하객 관리
-      </h1>
+      <div className="mb-4">
+        <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>하객 관리</h1>
+        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>guests &amp; gifts</p>
+      </div>
 
       {/* 요약 카드 */}
       <div className="card mb-4">
@@ -618,7 +618,7 @@ export default function GuestsPage() {
                         style={{ backgroundColor: r.attending ? 'var(--sage-wash)' : 'var(--ivory-2)' }}>
                         {r.attending
                           ? <Icon name="check" size={16} color="var(--sage)" />
-                          : <span style={{ fontSize: 14, color: 'var(--ink-3)', fontWeight: 600 }}>✕</span>}
+                          : <Icon name="close" size={14} color="var(--ink-3)" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">

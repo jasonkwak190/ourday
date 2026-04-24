@@ -585,18 +585,23 @@ export default function TimelinePage() {
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
       {/* 헤더 + 뷰 토글 */}
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold flex-shrink-0" style={{ color: 'var(--ink)' }}>타임라인</h1>
-        <div className="flex p-1 rounded-xl gap-1" style={{ backgroundColor: 'var(--toss-bg)' }}>
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 22, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
+            체크리스트
+          </h1>
+          <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-3)', letterSpacing: '0.04em', margin: '2px 0 0' }}>
+            · 24주 준비 타임라인 ·
+          </p>
+        </div>
+        <div style={{ display: 'flex', border: '1px solid var(--rule-strong)', borderRadius: 20, overflow: 'hidden', backgroundColor: 'var(--paper-pure)' }}>
           <button onClick={() => setViewMode('list')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{ backgroundColor: viewMode === 'list' ? 'white' : 'transparent', color: viewMode === 'list' ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)', boxShadow: viewMode === 'list' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}>
-            <List size={13} strokeWidth={2.5} /> 리스트
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: viewMode === 'list' ? 'var(--ivory)' : 'var(--ink-3)', backgroundColor: viewMode === 'list' ? 'var(--ink)' : 'transparent', border: 'none', cursor: 'pointer', letterSpacing: '0.04em', borderRight: '1px solid var(--rule)', whiteSpace: 'nowrap' }}>
+            <List size={12} strokeWidth={1.5} /> list
           </button>
           <button onClick={() => setViewMode('calendar')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{ backgroundColor: viewMode === 'calendar' ? 'white' : 'transparent', color: viewMode === 'calendar' ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)', boxShadow: viewMode === 'calendar' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}>
-            <CalendarDays size={13} strokeWidth={2.5} /> 캘린더
+            style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: viewMode === 'calendar' ? 'var(--ivory)' : 'var(--ink-3)', backgroundColor: viewMode === 'calendar' ? 'var(--ink)' : 'transparent', border: 'none', cursor: 'pointer', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+            <CalendarDays size={12} strokeWidth={1.5} /> cal
           </button>
         </div>
       </div>
@@ -659,23 +664,20 @@ export default function TimelinePage() {
           </div>
 
           {/* 탭 필터 */}
-          <div className="flex items-center gap-2 mb-3">
+          <div className="flex items-center gap-2 mb-4">
             <button onClick={() => setActiveTab('current')}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
-              style={{ backgroundColor: activeTab === 'current' ? 'var(--rose)' : 'white', color: activeTab === 'current' ? 'white' : 'var(--stone)', border: `1.5px solid ${activeTab === 'current' ? 'var(--rose)' : 'var(--stone-light)'}` }}>
+              style={{ flexShrink: 0, padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-sans)', cursor: 'pointer', transition: 'all 0.15s', backgroundColor: activeTab === 'current' ? 'var(--ink)' : 'var(--paper)', color: activeTab === 'current' ? 'var(--ivory)' : 'var(--ink-3)', border: `1px solid ${activeTab === 'current' ? 'var(--ink)' : 'var(--rule)'}` }}>
               이번달
             </button>
             <select
               value={typeof activeTab === 'number' ? activeTab : ''}
               onChange={e => e.target.value !== '' && setActiveTab(Number(e.target.value))}
-              className="flex-1 text-sm font-medium rounded-full transition-all"
-              style={{ height: 38, padding: '0 14px', border: `1.5px solid ${typeof activeTab === 'number' ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: typeof activeTab === 'number' ? 'var(--rose-light)' : 'white', color: typeof activeTab === 'number' ? 'var(--rose)' : 'var(--stone)', appearance: 'none', WebkitAppearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: 32 }}>
+              style={{ flex: 1, height: 36, padding: '0 12px', borderRadius: 20, fontSize: 13, fontFamily: 'var(--font-sans)', border: `1px solid ${typeof activeTab === 'number' ? 'var(--ink)' : 'var(--rule)'}`, backgroundColor: typeof activeTab === 'number' ? 'var(--ink)' : 'var(--paper)', color: typeof activeTab === 'number' ? 'var(--ivory)' : 'var(--ink-3)', appearance: 'none', WebkitAppearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A79D90' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', paddingRight: 32, cursor: 'pointer' }}>
               <option value="">{activePeriodLabel ?? '기간 선택'}</option>
               {TIME_PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
             <button onClick={() => setActiveTab('all')}
-              className="flex-shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all"
-              style={{ backgroundColor: activeTab === 'all' ? 'var(--rose)' : 'white', color: activeTab === 'all' ? 'white' : 'var(--stone)', border: `1.5px solid ${activeTab === 'all' ? 'var(--rose)' : 'var(--stone-light)'}` }}>
+              style={{ flexShrink: 0, padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-sans)', cursor: 'pointer', transition: 'all 0.15s', backgroundColor: activeTab === 'all' ? 'var(--ink)' : 'var(--paper)', color: activeTab === 'all' ? 'var(--ivory)' : 'var(--ink-3)', border: `1px solid ${activeTab === 'all' ? 'var(--ink)' : 'var(--rule)'}` }}>
               전체
             </button>
           </div>
@@ -700,36 +702,39 @@ export default function TimelinePage() {
                 </div>
               ) : (
                 <>
-                  {/* 기간 기반 그룹 */}
-                  {TIME_PERIODS.map(period => {
-                    const pItems = periodItems.filter(i => i.due_months_before === period.value);
-                    if (pItems.length === 0) return null;
-                    const periodDate = weddingDate ? getPeriodDate(weddingDate, period.label) : null;
-                    const doneCnt = pItems.filter(i => i.is_done).length;
-                    return (
-                      <div key={period.value}>
-                        <div className="flex items-center justify-between mb-2">
-                          <div>
-                            <p className="text-xs font-semibold" style={{ color: 'var(--stone)' }}>{period.label}</p>
-                            {periodDate && (
-                              <p className="text-xs" style={{ color: 'var(--toss-blue)' }}>{fmtDate(periodDate)}</p>
-                            )}
+                  {/* ── 타임라인 레일 (기간 기반) ── */}
+                  <div className="timeline-rail">
+                    {TIME_PERIODS.map(period => {
+                      const pItems = periodItems.filter(i => i.due_months_before === period.value);
+                      if (pItems.length === 0) return null;
+                      const periodDate = weddingDate ? getPeriodDate(weddingDate, period.label) : null;
+                      const doneCnt   = pItems.filter(i => i.is_done).length;
+                      const allDone   = doneCnt === pItems.length;
+                      return (
+                        <div key={period.value} className={`timeline-node${allDone ? ' is-done' : ''}`}>
+                          <div className="node-date">
+                            {period.label}
+                            {periodDate && ` · ${fmtDate(periodDate)}`}
+                            <span style={{ float: 'right', fontStyle: 'normal', letterSpacing: 0, color: 'var(--ink-4)' }}>
+                              {doneCnt}/{pItems.length}
+                            </span>
                           </div>
-                          <p className="text-xs" style={{ color: 'var(--stone)' }}>{doneCnt}/{pItems.length}</p>
+                          <div className="node-card">
+                            <ul style={{ padding: 0, margin: 0, listStyle: 'none' }}>
+                              {pItems.map((item, idx) => renderItem(item, idx === pItems.length - 1))}
+                            </ul>
+                          </div>
                         </div>
-                        <div className="card p-0">
-                          <ul className="px-4">{pItems.map((item, idx) => renderItem(item, idx === pItems.length - 1))}</ul>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
+                  </div>
 
                   {/* 날짜 직접 지정 그룹 */}
                   {dateItems.length > 0 && (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold" style={{ color: 'var(--toss-blue)' }}>날짜 직접 지정</p>
-                        <p className="text-xs" style={{ color: 'var(--stone)' }}>{dateItems.filter(i => i.is_done).length}/{dateItems.length}</p>
+                    <div style={{ marginTop: 8 }}>
+                      <div className="flex items-center justify-between mb-2" style={{ paddingLeft: 28 }}>
+                        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', letterSpacing: '0.06em' }}>날짜 직접 지정</p>
+                        <p className="text-xs" style={{ color: 'var(--ink-3)' }}>{dateItems.filter(i => i.is_done).length}/{dateItems.length}</p>
                       </div>
                       <div className="card p-0">
                         <ul className="px-4">
@@ -742,10 +747,10 @@ export default function TimelinePage() {
 
                   {/* 미정 그룹 */}
                   {undatedItems.length > 0 && (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="text-xs font-semibold" style={{ color: 'var(--stone)' }}>미정 (시기 미설정)</p>
-                        <p className="text-xs" style={{ color: 'var(--stone)' }}>{undatedItems.filter(i => i.is_done).length}/{undatedItems.length}</p>
+                    <div style={{ marginTop: 8 }}>
+                      <div className="flex items-center justify-between mb-2" style={{ paddingLeft: 28 }}>
+                        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-4)', letterSpacing: '0.06em' }}>미정</p>
+                        <p className="text-xs" style={{ color: 'var(--ink-4)' }}>{undatedItems.filter(i => i.is_done).length}/{undatedItems.length}</p>
                       </div>
                       <div className="card p-0">
                         <ul className="px-4">{undatedItems.map((item, idx) => renderItem(item, idx === undatedItems.length - 1))}</ul>

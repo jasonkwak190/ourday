@@ -363,7 +363,10 @@ export default function BudgetPage() {
 
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
-      <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>예산·업체</h1>
+      <div className="mb-4">
+        <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>예산·업체</h1>
+        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>budget &amp; vendors</p>
+      </div>
 
       {/* ── 예산 요약 카드 ── */}
       <div className="card mb-4">

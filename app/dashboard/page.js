@@ -39,9 +39,12 @@ export default function DashboardPage() {
   const [budgetItems, setBudgetItems] = useState([]);
   const [vendors,     setVendors]     = useState([]);
   const [guestbook,   setGuestbook]   = useState([]);
+  const [latestNote,  setLatestNote]  = useState(null);
   const [error,       setError]       = useState('');
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
   const [coupleId, setCoupleId] = useState(null);
+  const [userName, setUserName] = useState('');
+  const [userRole, setUserRole] = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -50,7 +53,7 @@ export default function DashboardPage() {
 
       const { data: user } = await supabase
         .from('users')
-        .select('couple_id, onboarding_dismissed')
+        .select('couple_id, onboarding_dismissed, name, role')
         .eq('id', session.user.id)
         .single();
 
@@ -59,13 +62,16 @@ export default function DashboardPage() {
       const cId = user.couple_id;
       setCoupleId(cId);
       if (user.onboarding_dismissed) setOnboardingDismissed(true);
-      const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes] = await Promise.all([
+      if (user.name) setUserName(user.name);
+      if (user.role) setUserRole(user.role);
+      const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes, noteRes] = await Promise.all([
         supabase.from('couples').select('*').eq('id', cId).single(),
         supabase.from('checklist_items').select('*').eq('couple_id', cId),
         supabase.from('decisions').select('id, title, status').eq('couple_id', cId),
         supabase.from('budget_items').select('estimated_amount, actual_amount, category, name').eq('couple_id', cId),
         supabase.from('vendors').select('id, name, type, balance, balance_due, contract_status').eq('couple_id', cId),
         supabase.from('invitations').select('id').eq('couple_id', cId).maybeSingle(),
+        supabase.from('couple_notes').select('content, updated_at').eq('couple_id', cId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
       ]);
 
       if (coupleRes.error) { setError('데이터를 불러오지 못했어요.'); }
@@ -75,6 +81,7 @@ export default function DashboardPage() {
         setDecisions(decisionsRes.data || []);
         setBudgetItems(budgetRes.data || []);
         setVendors(vendorsRes.data || []);
+        if (noteRes.data?.content) setLatestNote(noteRes.data);
 
         const invId = invRes.data?.id || null;
         if (invId) {
@@ -248,6 +255,33 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {/* ── 인사말 섹션 ── */}
+      {userName && (
+        <div style={{ padding: '4px 4px 14px' }}>
+          <div style={{
+            fontFamily: 'var(--font-serif-en)',
+            fontStyle: 'italic',
+            fontSize: 12,
+            color: 'var(--champagne-2)',
+            letterSpacing: '0.05em',
+            marginBottom: 4,
+          }}>
+            · {userRole === 'groom' ? 'good morning, groom' : userRole === 'bride' ? 'good morning, bride' : 'good morning'} ·
+          </div>
+          <div style={{
+            fontFamily: 'var(--font-serif-ko)',
+            fontWeight: 500,
+            fontSize: 20,
+            color: 'var(--ink)',
+            letterSpacing: '-0.01em',
+          }}>
+            {userName} 님,{' '}
+            <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', color: 'var(--champagne-2)', fontSize: 18 }}>오늘도</span>
+            {' '}한 걸음.
+          </div>
+        </div>
+      )}
+
       {/* D-day 히어로 카드 */}
       <div className="card-hero text-center mb-4">
         <div className="t-kicker mb-2">· OUR WEDDING DAY ·</div>
@@ -262,13 +296,13 @@ export default function DashboardPage() {
           <>
             <div style={{
               fontFamily: 'var(--font-serif-en)',
-              fontSize: dday === 0 ? 72 : 120,
-              fontWeight: 400,
+              fontSize: dday === 0 ? 72 : 140,
+              fontWeight: 500,
               lineHeight: 0.92,
               letterSpacing: '-0.04em',
               color: 'var(--ink)',
-              margin: '12px 0 6px',
-              fontFeatureSettings: '"onum" 1, "pnum" 1',
+              margin: '16px 0 6px',
+              fontFeatureSettings: '"lnum" 1, "tnum" 1',
             }}>
               {dday > 0 ? dday : dday === 0 ? 'Today' : Math.abs(dday)}
             </div>
@@ -346,23 +380,106 @@ export default function DashboardPage() {
         border: '1px solid var(--rule)', borderRadius: 10, overflow: 'hidden',
       }}>
         {[
-          { label: 'tasks', value: `${totalDone}`, unit: `/${totalCount}`, onClick: () => router.push('/timeline') },
-          { label: 'budget', value: `${budgetPct}`, unit: '%', onClick: () => router.push('/budget') },
-          { label: '미결정', value: `${undecided.length}`, unit: '', onClick: () => router.push('/decisions') },
-        ].map(({ label, value, unit, onClick }) => (
+          { label: 'tasks',  value: totalDone,        unit: `/${totalCount}`,      italic: false, onClick: () => router.push('/timeline') },
+          { label: 'budget', value: budgetPct,         unit: '%',                  italic: true,  onClick: () => router.push('/budget') },
+          { label: '미결정', value: undecided.length,  unit: '',                   italic: false, onClick: () => router.push('/decisions') },
+        ].map(({ label, value, unit, italic, onClick }) => (
           <button
             key={label}
             onClick={onClick}
             style={{ background: 'var(--paper)', padding: '14px 10px', textAlign: 'center', border: 'none', cursor: 'pointer' }}
           >
             <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--champagne-2)', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
-            <div style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 26, color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+            <div style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 26, color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em', fontFeatureSettings: '"lnum" 1, "tnum" 1' }}>
               {value}
-              {unit && <span style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 400 }}>{unit}</span>}
+              {unit && <span style={{ fontSize: 14, color: 'var(--champagne-2)', fontWeight: 400, fontStyle: italic ? 'italic' : 'normal' }}>{unit}</span>}
             </div>
           </button>
         ))}
       </div>
+
+      {/* ── 다이어리 카드 (letterpress) ── */}
+      <button
+        className="w-full text-left mb-4"
+        onClick={() => router.push('/notes')}
+        style={{
+          background: 'var(--ink)',
+          borderRadius: 10,
+          padding: '22px 20px 20px',
+          position: 'relative',
+          overflow: 'hidden',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'block',
+        }}
+      >
+        {/* inner champagne border */}
+        <div style={{
+          position: 'absolute', inset: 5,
+          border: '1px solid var(--champagne)',
+          opacity: 0.35, borderRadius: 6,
+          pointerEvents: 'none',
+        }} />
+        <div style={{
+          fontFamily: 'var(--font-serif-en)',
+          fontStyle: 'italic',
+          fontSize: 10.5,
+          color: 'var(--champagne)',
+          letterSpacing: '0.1em',
+          opacity: 0.7,
+          marginBottom: 10,
+        }}>
+          · our diary ·
+        </div>
+        {latestNote ? (
+          <>
+            <p style={{
+              fontFamily: 'var(--font-serif-ko)',
+              fontSize: 14,
+              color: 'var(--ivory)',
+              lineHeight: 1.7,
+              margin: '0 0 12px',
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              wordBreak: 'keep-all',
+            }}>
+              {latestNote.content}
+            </p>
+            <div style={{
+              fontFamily: 'var(--font-serif-en)',
+              fontStyle: 'italic',
+              fontSize: 11,
+              color: 'var(--champagne)',
+              opacity: 0.6,
+            }}>
+              {new Date(latestNote.updated_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })} · 메모 보기 →
+            </div>
+          </>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '10px 0' }}>
+            <p style={{
+              fontFamily: 'var(--font-serif-ko)',
+              fontSize: 13,
+              color: 'var(--ivory)',
+              opacity: 0.5,
+              margin: '0 0 8px',
+            }}>
+              아직 함께 쓴 메모가 없어요
+            </p>
+            <p style={{
+              fontFamily: 'var(--font-serif-en)',
+              fontStyle: 'italic',
+              fontSize: 11,
+              color: 'var(--champagne)',
+              opacity: 0.6,
+            }}>
+              tap to start writing together →
+            </p>
+          </div>
+        )}
+      </button>
 
       {/* 🔴 긴급 — 이번 주 마감 or 지난 항목 */}
       {urgentItems.length > 0 && (

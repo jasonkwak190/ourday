@@ -197,10 +197,14 @@ export default function DecisionsPage() {
         </div>
       )}
 
-      <h1 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--ink)' }}>
-        <Icon name="chat" size={22} color="var(--ink)" />
-        의사결정 보드
-      </h1>
+      <div className="mb-4">
+        <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
+          의사결정 보드
+        </h1>
+        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>
+          together we decide
+        </p>
+      </div>
 
       {/* 필터 탭 */}
       <div className="flex gap-2 mb-4">
@@ -208,11 +212,13 @@ export default function DecisionsPage() {
           <button
             key={f.key}
             onClick={() => setFilter(f.key)}
-            className="flex-1 py-2 rounded-full text-sm font-medium transition-all"
+            className="flex-1 py-2 text-sm font-medium transition-all"
             style={{
-              backgroundColor: filter === f.key ? 'var(--rose)' : 'white',
-              color: filter === f.key ? 'white' : 'var(--stone)',
-              border: `1.5px solid ${filter === f.key ? 'var(--rose)' : 'var(--stone-light)'}`,
+              borderRadius: 20,
+              backgroundColor: filter === f.key ? 'var(--ink)' : 'transparent',
+              color: filter === f.key ? 'var(--ivory)' : 'var(--ink-3)',
+              border: `1.5px solid ${filter === f.key ? 'var(--ink)' : 'var(--rule-strong)'}`,
+              fontFamily: 'var(--font-sans)',
             }}
           >
             {f.label}
@@ -299,8 +305,10 @@ export default function DecisionsPage() {
                 {/* 의견 박스 */}
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   {/* 신랑 */}
-                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--beige)' }}>
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신랑</p>
+                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--champagne-wash)' }}>
+                    <p className="text-xs font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--champagne-2)' }}>
+                      <Icon name="groom" size={13} color="var(--champagne-2)" />신랑
+                    </p>
                     {d.groom_opinion ? (
                       <div>
                         <p className="text-xs" style={{ color: 'var(--ink)' }}>{d.groom_opinion}</p>
@@ -328,8 +336,10 @@ export default function DecisionsPage() {
                   </div>
 
                   {/* 신부 */}
-                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--rose-light)' }}>
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신부</p>
+                  <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--rose-ed-wash)' }}>
+                    <p className="text-xs font-medium mb-1 flex items-center gap-1" style={{ color: 'var(--rose-ed)' }}>
+                      <Icon name="bride" size={13} color="var(--rose-ed)" />신부
+                    </p>
                     {d.bride_opinion ? (
                       <div>
                         <p className="text-xs" style={{ color: 'var(--ink)' }}>{d.bride_opinion}</p>

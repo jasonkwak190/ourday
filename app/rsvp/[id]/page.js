@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { Heart, Check } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 const FONT = "'Pretendard Variable','Pretendard',-apple-system,sans-serif";
 
@@ -77,7 +78,7 @@ export default function RSVPPage({ params }) {
   if (notFound) {
     return (
       <div style={centered}>
-        <p style={{ fontSize: 32, marginBottom: 12 }}>💌</p>
+        <Icon name="invite" size={36} color="#d4879a" style={{ marginBottom: 12 }} />
         <p style={{ fontSize: 16, color: '#4e5968', fontWeight: 600 }}>잘못된 링크예요</p>
         <p style={{ fontSize: 13, color: '#b0b8c1', marginTop: 6 }}>청첩장에서 받은 링크를 다시 확인해주세요</p>
       </div>
@@ -152,7 +153,8 @@ export default function RSVPPage({ params }) {
         )}
         {info?.venue_name && (
           <p style={{ fontSize: 13, color: '#8b95a1', margin: '8px 0 0' }}>
-            📍 {info.venue_name}
+            <Icon name="venue" size={13} color="#8b95a1" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+            {info.venue_name}
             {info.venue_address ? ` · ${info.venue_address}` : ''}
           </p>
         )}
@@ -162,7 +164,7 @@ export default function RSVPPage({ params }) {
           borderRadius: 12,
           fontSize: 13, color: '#6b3549', lineHeight: 1.6,
         }}>
-          참석 여부를 알려주시면<br />자리를 미리 준비할 수 있어요 🙏
+          참석 여부를 알려주시면<br />자리를 미리 준비할 수 있어요
         </div>
       </div>
 
@@ -187,13 +189,13 @@ export default function RSVPPage({ params }) {
             <SideBtn
               selected={side === 'groom'}
               onClick={() => setSide('groom')}
-              emoji="🤵"
+              icon="groom"
               label={`${groomName}측`}
             />
             <SideBtn
               selected={side === 'bride'}
               onClick={() => setSide('bride')}
-              emoji="👰"
+              icon="bride"
               label={`${brideName}측`}
             />
           </div>
@@ -205,7 +207,7 @@ export default function RSVPPage({ params }) {
             <AttendBtn
               selected={attending === true}
               onClick={() => setAttending(true)}
-              emoji="🎉"
+              icon="rings"
               label="참석할게요"
               color="#3182f6"
               bg="#eaf4ff"
@@ -213,7 +215,7 @@ export default function RSVPPage({ params }) {
             <AttendBtn
               selected={attending === false}
               onClick={() => setAttending(false)}
-              emoji="🙏"
+              icon="close"
               label="참석이 어려워요"
               color="#8b95a1"
               bg="#f2f4f6"
@@ -289,7 +291,7 @@ function Section({ title, children }) {
   );
 }
 
-function SideBtn({ selected, onClick, emoji, label }) {
+function SideBtn({ selected, onClick, icon, label }) {
   return (
     <button
       onClick={onClick}
@@ -303,13 +305,13 @@ function SideBtn({ selected, onClick, emoji, label }) {
         transition: 'all 0.15s',
       }}
     >
-      <span style={{ fontSize: 20 }}>{emoji}</span>
+      <Icon name={icon} size={20} color={selected ? '#6b3549' : '#8b95a1'} />
       <span style={{ fontSize: 13, fontWeight: 600, color: selected ? '#6b3549' : '#8b95a1' }}>{label}</span>
     </button>
   );
 }
 
-function AttendBtn({ selected, onClick, emoji, label, color, bg }) {
+function AttendBtn({ selected, onClick, icon, label, color, bg }) {
   return (
     <button
       onClick={onClick}
@@ -322,7 +324,7 @@ function AttendBtn({ selected, onClick, emoji, label, color, bg }) {
         transition: 'all 0.15s',
       }}
     >
-      <span style={{ fontSize: 24 }}>{emoji}</span>
+      <Icon name={icon} size={24} color={selected ? color : '#8b95a1'} />
       <span style={{ fontSize: 13, fontWeight: 600, color: selected ? color : '#8b95a1' }}>{label}</span>
     </button>
   );

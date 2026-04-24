@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, use } from 'react';
 import { Heart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 const SLIDE_INTERVAL = 4000; // 4초
 
@@ -69,7 +70,7 @@ export default function LiveSlideshowPage({ params }) {
   if (error) {
     return (
       <div style={fullscreenStyle('#0a0a0a')}>
-        <p style={{ fontSize: 32, marginBottom: 12 }}>🔗</p>
+        <Icon name="paperclip" size={36} color="rgba(255,255,255,0.5)" style={{ marginBottom: 12 }} />
         <p style={{ color: 'white', fontSize: 16, fontWeight: 600, marginBottom: 6 }}>링크를 확인해주세요</p>
         <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>{error}</p>
       </div>
@@ -80,7 +81,7 @@ export default function LiveSlideshowPage({ params }) {
   if (photos.length === 0) {
     return (
       <div style={fullscreenStyle('#0a0a0a')}>
-        <p style={{ fontSize: 40, marginBottom: 16 }}>📷</p>
+        <Icon name="camera" size={40} color="rgba(255,255,255,0.5)" style={{ marginBottom: 16 }} />
         <p style={{ color: 'white', fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
           {event?.title || '라이브 갤러리'}
         </p>
@@ -131,7 +132,8 @@ export default function LiveSlideshowPage({ params }) {
           </p>
           {photo.uploader_name && (
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: '2px 0 0' }}>
-              📸 {photo.uploader_name}
+              <Icon name="camera" size={12} color="rgba(255,255,255,0.6)" style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+              {photo.uploader_name}
             </p>
           )}
         </div>

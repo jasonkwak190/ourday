@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useRef, useCallback, use } from 'react';
-import { Camera, Upload, Check, X, ImagePlus, Loader2 } from 'lucide-react';
+import { Upload, Check, X, ImagePlus, Loader2 } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 export default function GuestUploadPage({ params }) {
   const { code } = use(params);
@@ -106,7 +107,7 @@ export default function GuestUploadPage({ params }) {
     }}>
       {/* 헤더 */}
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <p style={{ fontSize: 28, marginBottom: 8 }}>📷</p>
+        <Icon name="camera" size={36} color="var(--champagne)" style={{ margin: '0 auto 8px', display: 'block' }} />
         <p style={{ fontSize: 20, fontWeight: 700, color: '#191f28', marginBottom: 6 }}>
           사진 공유하기
         </p>

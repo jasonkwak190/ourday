@@ -203,7 +203,7 @@ body {
   background-color: var(--ink);
   color: var(--ivory);
   border: 1px solid var(--ink);
-  border-radius: var(--r-md);
+  border-radius: 28px;
   padding: 0 24px;
   height: 52px;
   font-weight: 500;
@@ -226,7 +226,7 @@ body {
 .btn-rose {
   background-color: var(--ink);
   color: var(--ivory);
-  border-radius: var(--r-md);
+  border-radius: 28px;
   padding: 0 24px;
   height: 52px;
   font-weight: 500;
@@ -237,7 +237,7 @@ body {
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  border: none;
+  border: 1px solid var(--ink);
   transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
   letter-spacing: var(--tr-tight);
   width: 100%;
@@ -248,8 +248,8 @@ body {
 
 .btn-champagne {
   background-color: var(--champagne);
-  color: var(--paper-pure);
-  border-radius: var(--r-md);
+  color: var(--ink);
+  border-radius: 28px;
   padding: 0 24px;
   height: 52px;
   font-weight: 500;
@@ -260,19 +260,19 @@ body {
   justify-content: center;
   gap: 8px;
   cursor: pointer;
-  border: none;
+  border: 1px solid var(--champagne);
   transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
   letter-spacing: var(--tr-tight);
   width: 100%;
 }
-.btn-champagne:hover  { background-color: var(--champagne-2); }
+.btn-champagne:hover  { background-color: var(--champagne-2); border-color: var(--champagne-2); }
 .btn-champagne:active { transform: scale(0.97); }
 
 .btn-outline {
   background-color: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
-  border-radius: var(--r-md);
+  border-radius: 28px;
   padding: 0 24px;
   height: 52px;
   font-weight: 500;
@@ -295,7 +295,7 @@ body {
   background-color: transparent;
   color: var(--ink-2);
   border: none;
-  border-radius: var(--r-md);
+  border-radius: 28px;
   padding: 0 24px;
   height: 52px;
   font-weight: 500;
@@ -378,15 +378,14 @@ body {
   padding: 20px;
 }
 
-/* Corner-frame hero card */
+/* Corner-frame hero card — editorial near-square */
 .card-hero {
   background-color: var(--paper);
-  border-radius: var(--r-xl);
-  border: 1px solid var(--rule);
-  box-shadow: var(--shadow-sm);
-  padding: 28px 24px;
+  border-radius: 4px;
+  border: 1px solid var(--rule-strong);
+  padding: 32px 22px 26px;
   position: relative;
-  overflow: hidden;
+  text-align: center;
 }
 .card-hero::before,
 .card-hero::after {
@@ -396,9 +395,10 @@ body {
   height: 14px;
   border-color: var(--champagne);
   border-style: solid;
+  opacity: 0.6;
 }
-.card-hero::before { top: 10px; left: 10px; border-width: 1px 0 0 1px; }
-.card-hero::after  { bottom: 10px; right: 10px; border-width: 0 1px 1px 0; }
+.card-hero::before { top: -1px; left: -1px; border-width: 1px 0 0 1px; }
+.card-hero::after  { bottom: -1px; right: -1px; border-width: 0 1px 1px 0; }
 
 /* ─── Tags ─── */
 .tag {
@@ -424,24 +424,27 @@ body {
 .tag-stone     { background-color: var(--ivory-2);         color: var(--ink-2); }
 .tag-red       { background-color: var(--clay-wash);       color: var(--clay); }
 
-/* ─── Bottom nav ─── */
+/* ─── Bottom nav — floating pill ─── */
 .nav-bottom {
   position: fixed;
-  bottom: 0;
+  bottom: calc(12px + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: 100%;
-  max-width: 430px;
-  background-color: var(--paper);
-  box-shadow: 0 -1px 0 var(--rule);
+  width: calc(100% - 32px);
+  max-width: calc(430px - 32px);
+  height: 64px;
+  background-color: var(--paper-pure);
+  border: 1px solid var(--rule);
+  border-radius: 32px;
+  box-shadow: 0 8px 28px -8px rgba(26, 22, 19, 0.16), 0 2px 8px rgba(26, 22, 19, 0.06);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
+  padding: 0 8px;
   z-index: 50;
 }
+
+/* ─── Page wrapper — extra bottom padding for floating nav ─── */
 
 /* ─── Progress ─── */
 .progress-bar {
@@ -463,7 +466,7 @@ body {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 24px 20px calc(80px + env(safe-area-inset-bottom));
+  padding: 24px 20px calc(96px + env(safe-area-inset-bottom));
   background-color: var(--ivory);
 }
 
@@ -489,3 +492,100 @@ body {
 .dot-rose      { width: 6px; height: 6px; border-radius: 50%; background-color: var(--rose-ed); flex-shrink: 0; }
 .dot-ochre     { width: 6px; height: 6px; border-radius: 50%; background-color: var(--ochre); flex-shrink: 0; }
 .dot-clay      { width: 6px; height: 6px; border-radius: 50%; background-color: var(--clay); flex-shrink: 0; }
+
+/* ─── Timeline node design (Stage 09-B) ─── */
+.timeline-rail {
+  position: relative;
+  padding-left: 28px;
+}
+.timeline-rail::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 12px;
+  bottom: 12px;
+  width: 1px;
+  background-color: var(--rule-strong);
+}
+.timeline-node {
+  position: relative;
+  margin-bottom: 20px;
+}
+.timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -24px;
+  top: 11px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background-color: var(--paper-pure);
+  border: 1px solid var(--champagne);
+  z-index: 1;
+}
+.timeline-node.is-done::before {
+  background-color: var(--champagne);
+}
+.timeline-node.is-now::before {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  box-shadow: 0 0 0 4px var(--champagne-wash);
+}
+.timeline-node .node-date {
+  font-family: var(--font-serif-en);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--champagne-2);
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.timeline-node .node-card {
+  background-color: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.timeline-node.is-now .node-card {
+  border-color: var(--champagne);
+  background-color: var(--paper-pure);
+}
+.timeline-node.is-done .node-card {
+  background-color: transparent;
+  border-style: dashed;
+}
+.timeline-node .node-title {
+  font-family: var(--font-serif-ko);
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink);
+  word-break: keep-all;
+}
+.timeline-node.is-done .node-title {
+  color: var(--ink-3);
+  text-decoration: line-through;
+  text-decoration-color: var(--champagne);
+}
+.timeline-node .node-sub {
+  font-family: var(--font-serif-en);
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Dashboard flourish divider ─── */
+.flourish {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--champagne);
+}
+.flourish .fl-line { flex: 1; height: 1px; background: currentColor; opacity: 0.6; }
+.flourish .fl-diamond {
+  width: 6px;
+  height: 6px;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}

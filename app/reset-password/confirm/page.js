@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Lock, CheckCircle, Eye, EyeOff } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 export default function ResetPasswordConfirmPage() {
   const router = useRouter();
@@ -150,7 +151,9 @@ export default function ResetPasswordConfirmPage() {
               <p className="text-xs mt-1.5" style={{ color: 'var(--toss-red)' }}>비밀번호가 일치하지 않아요</p>
             )}
             {password2 && password === password2 && (
-              <p className="text-xs mt-1.5" style={{ color: 'var(--toss-green)' }}>✓ 비밀번호가 일치해요</p>
+              <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: 'var(--toss-green)' }}>
+                <Icon name="check" size={12} color="currentColor" /> 비밀번호가 일치해요
+              </p>
             )}
           </div>
 
