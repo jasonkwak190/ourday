@@ -6,6 +6,11 @@ import { copyToClipboard } from '@/lib/clipboard';
 import EmptyState from '@/components/EmptyState';
 import QRCodeSVG from 'react-qr-code';
 
+// ── 세션 캐시: 탭 재진입 시 signed URL 재발급 안 함 ──────────────
+// { eventId: string, photos: array, fetchedAt: string }
+let _galleryCache = null;
+const CACHE_TTL_MS = 50 * 60 * 1000; // 50분 (signed URL 55분 유효)
+
 export default function GalleryTab() {
   const qrRef = useRef(null);
 
@@ -83,27 +88,39 @@ export default function GalleryTab() {
   }
 
   // ── 데이터 로드 ──────────────────────────────────────────────
-  const loadGallery = useCallback(async (eventId) => {
+  // forceRefresh=true 이면 캐시 무시하고 전체 재발급
+  const loadGallery = useCallback(async (forceRefresh = false) => {
     setRefreshing(true);
-    const res  = await fetch(`/api/gallery?event_id=${eventId}`);
+
+    // 캐시 유효하면 바로 사용 (탭 재진입 속도 향상)
+    if (!forceRefresh && _galleryCache) {
+      const age = Date.now() - new Date(_galleryCache.fetchedAt).getTime();
+      if (age < CACHE_TTL_MS) {
+        setEvent(_galleryCache.event);
+        setPhotos(_galleryCache.photos);
+        setRefreshing(false);
+        setLoading(false);
+        return;
+      }
+    }
+
+    // API 1번 호출로 이벤트 생성/조회 + 사진 + signed URL 전부 처리
+    const res  = await fetch('/api/gallery');
     const data = await res.json();
-    if (data.photos) setPhotos(data.photos);
+
+    if (data.event) {
+      _galleryCache = { event: data.event, photos: data.photos || [], fetchedAt: data.fetchedAt };
+      setEvent(data.event);
+      setPhotos(data.photos || []);
+    } else {
+      setLoadFailed(true);
+    }
     setRefreshing(false);
+    setLoading(false);
   }, []);
 
   useEffect(() => {
-    const init = async () => {
-      const res  = await fetch('/api/gallery', { method: 'POST' });
-      const data = await res.json();
-      if (data.event) {
-        setEvent(data.event);
-        await loadGallery(data.event.id);
-      } else {
-        setLoadFailed(true);
-      }
-      setLoading(false);
-    };
-    init();
+    loadGallery(false);
   }, [loadGallery]);
 
   async function copyLink() {
@@ -116,7 +133,9 @@ export default function GalleryTab() {
     if (!confirm('이 사진을 삭제할까요?')) return;
     setDeleting(photo.id);
     await fetch(`/api/gallery?photo_id=${photo.id}`, { method: 'DELETE' });
-    setPhotos(prev => prev.filter(p => p.id !== photo.id));
+    const updated = (photos).filter(p => p.id !== photo.id);
+    setPhotos(updated);
+    if (_galleryCache) _galleryCache = { ..._galleryCache, photos: updated }; // 캐시 동기화
     setDeleting(null);
     if (modalPhoto?.id === photo.id) closeModal();
   }
@@ -222,7 +241,7 @@ export default function GalleryTab() {
             <span className="text-sm font-bold" style={{ color: 'var(--toss-text-primary)' }}>수집된 사진</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => event && loadGallery(event.id)} disabled={refreshing}
+            <button onClick={() => loadGallery(true)} disabled={refreshing}
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
               <RefreshCw size={16} color="var(--toss-text-tertiary)"
                 style={{ animation: refreshing ? 'spin 1s linear infinite' : 'none' }} />
@@ -375,8 +394,23 @@ export default function GalleryTab() {
 /* ── 사진 썸네일 (메모이제이션 + lazy load + skeleton) ─────────── */
 import { memo } from 'react';
 
+// signed URL에 Supabase 이미지 변환 파라미터 추가 (썸네일 최적화)
+// 그리드: 200px 정사각형, 풀뷰: 원본
+function thumbUrl(url) {
+  if (!url) return url;
+  try {
+    const u = new URL(url);
+    u.searchParams.set('width',  '200');
+    u.searchParams.set('height', '200');
+    u.searchParams.set('resize', 'cover');
+    u.searchParams.set('quality', '75');
+    return u.toString();
+  } catch { return url; }
+}
+
 const PhotoThumb = memo(function PhotoThumb({ photo, onClick }) {
   const [loaded, setLoaded] = useState(false);
+  const src = thumbUrl(photo.url);
 
   return (
     <div
@@ -389,10 +423,10 @@ const PhotoThumb = memo(function PhotoThumb({ photo, onClick }) {
       {!loaded && (
         <div className="photo-skeleton" style={{ position: 'absolute', inset: 0 }} />
       )}
-      {photo.url && (
+      {src && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
-          src={photo.url}
+          src={src}
           alt="하객 사진"
           loading="lazy"
           decoding="async"

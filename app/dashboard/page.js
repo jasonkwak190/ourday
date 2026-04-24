@@ -577,8 +577,8 @@ export default function DashboardPage() {
             className="rounded-2xl p-4 text-left"
             style={{ backgroundColor: color, border: 'none', cursor: 'pointer' }}
           >
-            <p className="text-sm font-bold mb-1" style={{ color: textColor }}>{label}</p>
-            <p className="text-xs" style={{ color: 'var(--toss-text-secondary)' }}>{desc}</p>
+            <p className="text-sm font-bold mb-1" style={{ color: textColor, whiteSpace: 'nowrap' }}>{label}</p>
+            <p className="text-xs" style={{ color: 'var(--toss-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc}</p>
           </button>
         ))}
       </div>

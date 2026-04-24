@@ -92,9 +92,9 @@ export default function SettingsPage() {
             <span className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>이름</span>
             <span className="text-sm font-semibold" style={{ color: 'var(--toss-text-primary)' }}>{user?.name}</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex flex-col gap-0.5">
             <span className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>이메일</span>
-            <span className="text-sm font-medium" style={{ color: 'var(--toss-text-primary)', maxWidth: 180, textAlign: 'right', wordBreak: 'break-all' }}>
+            <span className="text-sm font-medium" style={{ color: 'var(--toss-text-primary)', wordBreak: 'break-all' }}>
               {user?.email}
             </span>
           </div>

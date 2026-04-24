@@ -266,6 +266,7 @@ export default function GuestsPage() {
               background: tab === t.key ? 'white' : 'none',
               color: tab === t.key ? 'var(--rose)' : 'var(--stone)',
               border: 'none', cursor: 'pointer', borderRadius: '1rem', margin: '4px',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}
           >{t.label}</button>
         ))}

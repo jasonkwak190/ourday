@@ -574,16 +574,16 @@ export default function TimelinePage() {
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
       {/* 헤더 + 뷰 토글 */}
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--ink)' }}>타임라인</h1>
+        <h1 className="text-xl font-semibold flex-shrink-0" style={{ color: 'var(--ink)' }}>타임라인</h1>
         <div className="flex p-1 rounded-xl gap-1" style={{ backgroundColor: 'var(--toss-bg)' }}>
           <button onClick={() => setViewMode('list')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{ backgroundColor: viewMode === 'list' ? 'white' : 'transparent', color: viewMode === 'list' ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)', boxShadow: viewMode === 'list' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>
+            style={{ backgroundColor: viewMode === 'list' ? 'white' : 'transparent', color: viewMode === 'list' ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)', boxShadow: viewMode === 'list' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}>
             <List size={13} strokeWidth={2.5} /> 리스트
           </button>
           <button onClick={() => setViewMode('calendar')}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{ backgroundColor: viewMode === 'calendar' ? 'white' : 'transparent', color: viewMode === 'calendar' ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)', boxShadow: viewMode === 'calendar' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>
+            style={{ backgroundColor: viewMode === 'calendar' ? 'white' : 'transparent', color: viewMode === 'calendar' ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)', boxShadow: viewMode === 'calendar' ? '0 1px 4px rgba(0,0,0,0.08)' : 'none', whiteSpace: 'nowrap' }}>
             <CalendarDays size={13} strokeWidth={2.5} /> 캘린더
           </button>
         </div>
