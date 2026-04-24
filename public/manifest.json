@@ -4,8 +4,8 @@
   "description": "커플이 함께하는 결혼 준비 앱",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#3182f6",
+  "background_color": "#FAF8F5",
+  "theme_color": "#1A1613",
   "orientation": "portrait",
   "lang": "ko",
   "icons": [

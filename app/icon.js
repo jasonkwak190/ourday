@@ -10,9 +10,13 @@ export default function Icon() {
       <div style={{
         width: '100%', height: '100%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#3182f6', borderRadius: 8,
+        background: '#1A1613',
       }}>
-        <div style={{ color: 'white', fontSize: 20, display: 'flex' }}>♥</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <span style={{ color: '#FAF8F5', fontSize: 17, fontFamily: 'serif', fontWeight: 700, lineHeight: 1 }}>O</span>
+          <span style={{ width: 3, height: 3, borderRadius: '50%', background: '#C9A96E', marginBottom: 2, flexShrink: 0 }} />
+          <span style={{ color: '#FAF8F5', fontSize: 17, fontFamily: 'serif', fontWeight: 700, lineHeight: 1 }}>D</span>
+        </div>
       </div>
     ),
     { ...size }

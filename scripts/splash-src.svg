@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2160 2160" width="2160" height="2160">
+  <!-- 배경 (ivory/paper) -->
+  <rect width="2160" height="2160" fill="#FAF8F5"/>
+
+  <!-- 중앙 O·D 모노그램 -->
+  <!-- O 글자 -->
+  <ellipse cx="980" cy="1020" rx="190" ry="230" fill="none" stroke="#1A1613" stroke-width="46"/>
+  <!-- O 세리프 상단 -->
+  <rect x="920" y="783" width="120" height="14" rx="7" fill="#1A1613"/>
+  <!-- O 세리프 하단 -->
+  <rect x="920" y="1237" width="120" height="14" rx="7" fill="#1A1613"/>
+
+  <!-- 샴페인 중앙 점 -->
+  <circle cx="1080" cy="1020" r="18" fill="#C9A96E"/>
+
+  <!-- D 글자 -->
+  <rect x="1140" y="783" width="46" height="468" rx="8" fill="#1A1613"/>
+  <path d="M1186 783 Q1400 783 1400 1017 Q1400 1251 1186 1251" fill="none" stroke="#1A1613" stroke-width="46" stroke-linecap="round"/>
+  <!-- D 세리프 상단 -->
+  <rect x="1120" y="783" width="110" height="14" rx="7" fill="#1A1613"/>
+  <!-- D 세리프 하단 -->
+  <rect x="1120" y="1237" width="110" height="14" rx="7" fill="#1A1613"/>
+
+  <!-- Ourday 워드마크 -->
+  <!-- "Ourday" 텍스트를 기하학적으로 표현 — 작은 플러리시 라인 -->
+  <line x1="900" y1="1360" x2="1260" y2="1360" stroke="#C9A96E" stroke-width="1" opacity="0.6"/>
+  <rect x="1075" y="1354" width="10" height="10" rx="1" fill="#C9A96E" transform="rotate(45 1080 1359)" opacity="0.6"/>
+  <line x1="900" y1="1360" x2="1070" y2="1360" stroke="#C9A96E" stroke-width="1" opacity="0.6"/>
+  <line x1="1090" y1="1360" x2="1260" y2="1360" stroke="#C9A96E" stroke-width="1" opacity="0.6"/>
+
+  <!-- "우리의 날" 작은 텍스트 역할 — 점 3개 -->
+  <circle cx="1057" cy="1420" r="3" fill="#C9A96E" opacity="0.5"/>
+  <circle cx="1080" cy="1420" r="3" fill="#C9A96E" opacity="0.5"/>
+  <circle cx="1103" cy="1420" r="3" fill="#C9A96E" opacity="0.5"/>
+</svg>

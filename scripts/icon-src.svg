@@ -1,17 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <!-- 배경 -->
   <rect width="512" height="512" fill="#1A1613"/>
-  <!-- 내부 샴페인 보더 -->
+
+  <!-- 내부 샴페인 보더 (약한 내부 프레임) -->
   <rect x="18" y="18" width="476" height="476" fill="none" stroke="#C9A96E" stroke-width="1" opacity="0.35"/>
-  <!-- O 글자 -->
+
+  <!-- O 글자 (직접 그린 세리프 O) -->
+  <!-- 두꺼운 타원 -->
   <ellipse cx="175" cy="256" rx="90" ry="110" fill="none" stroke="#FAF8F5" stroke-width="22"/>
+  <!-- 세리프 장식 (상단) -->
   <rect x="145" y="143" width="60" height="7" rx="3.5" fill="#FAF8F5"/>
+  <!-- 세리프 장식 (하단) -->
   <rect x="145" y="362" width="60" height="7" rx="3.5" fill="#FAF8F5"/>
+
   <!-- 샴페인 중앙 점 -->
   <circle cx="256" cy="256" r="9" fill="#C9A96E"/>
-  <!-- D 글자 -->
+
+  <!-- D 글자 (직접 그린 세리프 D) -->
+  <!-- 세로 기둥 -->
   <rect x="299" y="146" width="22" height="220" rx="4" fill="#FAF8F5"/>
+  <!-- 커브 (오른쪽) -->
   <path d="M321 146 Q420 146 420 256 Q420 366 321 366" fill="none" stroke="#FAF8F5" stroke-width="22" stroke-linecap="round"/>
+  <!-- 세리프 장식 (D 상단) -->
   <rect x="285" y="143" width="52" height="7" rx="3.5" fill="#FAF8F5"/>
+  <!-- 세리프 장식 (D 하단) -->
   <rect x="285" y="362" width="52" height="7" rx="3.5" fill="#FAF8F5"/>
 </svg>
