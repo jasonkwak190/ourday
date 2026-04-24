@@ -158,6 +158,12 @@ export default function GuestsPage() {
 
   // ── RSVP 응답을 명단에 추가 ──
   async function addRsvpToGuests(rsvp) {
+    // 이름 중복 체크
+    const duplicate = guests.find(g => g.name.trim() === rsvp.name.trim());
+    if (duplicate) {
+      alert(`'${rsvp.name}'은 이미 명단에 있어요.\n중복 추가는 되지 않아요.`);
+      return;
+    }
     setAddingRsvpId(rsvp.id);
     const { data, error: e } = await supabase.from('guests').insert({
       couple_id: coupleId,

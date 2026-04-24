@@ -340,11 +340,11 @@ export default function BudgetPage() {
   const budgetPct     = totalBudget > 0 ? Math.min(Math.round((totalExpected / totalBudget) * 100), 100) : 0;
   const remaining     = totalBudget - totalExpected;
 
-  // 잔금 임박 (7일 이내)
+  // 잔금 임박 (7일 이내) + 연체 (이미 지남)
   const urgentVendors = vendors.filter(v => {
     if (!v.balance_due || v.contract_status === 'done') return false;
     const diff = Math.ceil((new Date(v.balance_due) - today) / (1000 * 60 * 60 * 24));
-    return diff >= 0 && diff <= 7;
+    return diff <= 7; // 연체(음수) 포함
   });
 
   // 필터 적용
@@ -445,24 +445,31 @@ export default function BudgetPage() {
       {/* ── 도넛 차트 ── */}
       <DonutChart vendors={vendors} />
 
-      {/* ── 잔금 임박 알림 ── */}
-      {urgentVendors.length > 0 && (
-        <div className="rounded-2xl px-4 py-3 mb-4 flex items-start gap-3"
-          style={{ backgroundColor: 'var(--amber-light)', border: '1.5px solid var(--amber)' }}>
-          <AlertTriangle size={16} color="var(--amber)" strokeWidth={2} style={{ flexShrink: 0, marginTop: 2 }} />
-          <div>
-            <p className="text-xs font-semibold mb-1" style={{ color: 'var(--amber)' }}>잔금 납부 임박</p>
-            {urgentVendors.map(v => {
-              const diff = Math.ceil((new Date(v.balance_due) - today) / (1000 * 60 * 60 * 24));
-              return (
-                <p key={v.id} className="text-xs" style={{ color: 'var(--ink-soft)' }}>
-                  {v.name} — {diff === 0 ? '오늘!' : `D-${diff}`} ({(v.balance || 0).toLocaleString()}만원)
-                </p>
-              );
-            })}
+      {/* ── 잔금 임박·연체 알림 ── */}
+      {urgentVendors.length > 0 && (() => {
+        const overdue  = urgentVendors.filter(v => Math.ceil((new Date(v.balance_due) - today) / 86400000) < 0);
+        const hasOverdue = overdue.length > 0;
+        return (
+          <div className="rounded-2xl px-4 py-3 mb-4 flex items-start gap-3"
+            style={{ backgroundColor: hasOverdue ? 'var(--rose-light)' : 'var(--amber-light)', border: `1.5px solid ${hasOverdue ? 'var(--rose)' : 'var(--amber)'}` }}>
+            <AlertTriangle size={16} color={hasOverdue ? 'var(--rose)' : 'var(--amber)'} strokeWidth={2} style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <p className="text-xs font-semibold mb-1" style={{ color: hasOverdue ? 'var(--rose)' : 'var(--amber)' }}>
+                {hasOverdue ? `잔금 연체 ${overdue.length}건 포함` : '잔금 납부 임박'}
+              </p>
+              {urgentVendors.map(v => {
+                const diff = Math.ceil((new Date(v.balance_due) - today) / 86400000);
+                const isLate = diff < 0;
+                return (
+                  <p key={v.id} className="text-xs" style={{ color: isLate ? 'var(--rose)' : 'var(--ink-soft)', fontWeight: isLate ? 600 : 400 }}>
+                    {v.name} — {isLate ? `${Math.abs(diff)}일 연체` : diff === 0 ? '오늘 마감!' : `D-${diff}`} ({(v.balance || 0).toLocaleString()}만원)
+                  </p>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ── 필터 ── */}
       {vendors.length > 0 && (

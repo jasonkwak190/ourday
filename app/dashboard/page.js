@@ -39,6 +39,8 @@ export default function DashboardPage() {
   const [vendors,     setVendors]     = useState([]);
   const [guestbook,   setGuestbook]   = useState([]);
   const [error,       setError]       = useState('');
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
+  const [coupleId, setCoupleId] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -54,6 +56,11 @@ export default function DashboardPage() {
       if (!user?.couple_id) { setLoading(false); return; }
 
       const cId = user.couple_id;
+      setCoupleId(cId);
+      // 온보딩 배너 dismissed 상태 복원
+      try {
+        if (localStorage.getItem(`onboarding-dismissed-${cId}`)) setOnboardingDismissed(true);
+      } catch {}
       const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes] = await Promise.all([
         supabase.from('couples').select('*').eq('id', cId).single(),
         supabase.from('checklist_items').select('*').eq('couple_id', cId),
@@ -260,12 +267,21 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ── 첫 시작 온보딩 배너 (체크리스트 0개일 때만) ── */}
-      {items.length === 0 && (
+      {/* ── 첫 시작 온보딩 배너 (체크리스트 0개 + 아직 dismiss 안 했을 때) ── */}
+      {items.length === 0 && !onboardingDismissed && (
         <div className="card mb-5" style={{ background: 'linear-gradient(135deg, #eaf4ff 0%, #f0f8ff 100%)', border: '1.5px solid var(--toss-blue-light)' }}>
-          <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-blue)', letterSpacing: '0.06em' }}>
-            🎉 결혼 준비를 시작해봐요!
-          </p>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold" style={{ color: 'var(--toss-blue)', letterSpacing: '0.06em' }}>
+              🎉 결혼 준비를 시작해봐요!
+            </p>
+            <button
+              onClick={() => {
+                setOnboardingDismissed(true);
+                try { if (coupleId) localStorage.setItem(`onboarding-dismissed-${coupleId}`, '1'); } catch {}
+              }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)', fontSize: 18, lineHeight: 1, padding: '0 2px' }}
+            >×</button>
+          </div>
           <div className="flex flex-col gap-2">
             {[
               { step: 1, done: !!couple?.wedding_date, label: '결혼 날짜 설정', sub: couple?.wedding_date ? '완료' : '날짜를 설정하면 D-day가 표시돼요', path: '/setup' },
