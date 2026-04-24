@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
+import KakaoShareButton from '@/components/KakaoShareButton';
 
 // ─── 날짜 포매터 ────────────────────────────────────────────────────
 export function formatDate(dateStr) {
@@ -64,6 +65,12 @@ export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccoun
         {copied ? <Check size={18} color="#27b97c" /> : <Copy size={18} />}
         {copied ? '복사됐어요!' : '청첩장 링크 복사'}
       </button>
+      <KakaoShareButton
+        title={`💍 ${inv.groom_name || '신랑'} & ${inv.bride_name || '신부'} 결혼합니다`}
+        description={inv.wedding_date ? `${inv.wedding_date.replace(/-/g, '.')} · ${inv.venue_name || ''}` : '청첩장을 확인해주세요'}
+        imageUrl={inv.cover_image_url || ''}
+        style={{ height: 52, width: '100%', borderRadius: 14, fontSize: 15 }}
+      />
     </div>
   );
 }

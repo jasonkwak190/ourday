@@ -329,7 +329,11 @@ export default function TimelinePage() {
       due_months_before: t.due_months_before, assigned_to: t.assigned_to, is_done: false,
     }));
     const { data, error } = await supabase.from('checklist_items').insert(rows).select();
-    if (!error && data) { setItems(prev => [...prev, ...data]); setTemplateDone(true); }
+    if (!error && data) {
+      setItems(prev => [...prev, ...data]);
+      setTemplateDone(true);
+      setActiveTab('all');
+    }
     setLoadingTemplate(false);
   }
 

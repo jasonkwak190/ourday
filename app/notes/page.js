@@ -71,7 +71,12 @@ function useLinkPreview(url) {
         }
         setLoading(false);
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {
+        if (!cancelled) {
+          previewCache.set(url, null);
+          setLoading(false);
+        }
+      });
     return () => { cancelled = true; };
   }, [url]);
 

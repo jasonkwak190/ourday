@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Copy, Check, Eye, Save, X, ExternalLink } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
+import KakaoShareButton from '@/components/KakaoShareButton';
 
 const TEMPLATES = [
   { key: 'minimal', label: '미니멀',  emoji: '🤍', desc: '깔끔하고 모던한 스타일' },
@@ -397,7 +398,7 @@ export default function InvitationTab({ coupleId }) {
             style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text-secondary)', wordBreak: 'break-all', lineHeight: 1.6 }}>
             {shareUrl}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-2">
             <button
               onClick={copyLink}
               className="flex items-center justify-center gap-2"
@@ -424,6 +425,13 @@ export default function InvitationTab({ coupleId }) {
               실제 청첩장
             </button>
           </div>
+          <KakaoShareButton
+            url={shareUrl}
+            title={`💍 ${form.groom_name || '신랑'} & ${form.bride_name || '신부'} 결혼합니다`}
+            description={form.wedding_date ? `${form.wedding_date.replace(/-/g, '.')} · ${form.venue_name || ''}` : '청첩장을 확인해주세요'}
+            imageUrl={form.cover_image_url || ''}
+            style={{ width: '100%', height: 48 }}
+          />
         </div>
       )}
     </>
