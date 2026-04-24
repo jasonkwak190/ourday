@@ -38,6 +38,13 @@ export default function DecisionsPage() {
   // 결정 철회 확인
   const [confirmClearId, setConfirmClearId] = useState(null);
 
+  // 저장 피드백 토스트
+  const [toast, setToast] = useState('');
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2000);
+  }
+
   // 항목 추가
   const [adding, setAdding] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -131,6 +138,7 @@ export default function DecisionsPage() {
       setDecisions((prev) => prev.map((d) =>
         d.id === decisionId ? { ...d, [field]: opinionText.trim(), status: 'discussing' } : d
       ));
+      showToast('의견이 저장됐어요 ✓');
     }
     setEditingOpinion(null);
     setOpinionText('');
@@ -146,6 +154,7 @@ export default function DecisionsPage() {
       setDecisions((prev) => prev.map((d) =>
         d.id === decisionId ? { ...d, final_decision: finalText.trim(), status: 'decided' } : d
       ));
+      showToast('최종 결정이 저장됐어요 ✓');
     }
     setEditingFinal(null);
     setFinalText('');
@@ -179,6 +188,14 @@ export default function DecisionsPage() {
 
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
+      {/* 저장 토스트 */}
+      {toast && (
+        <div className="fixed left-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg"
+          style={{ bottom: 96, transform: 'translateX(-50%)', backgroundColor: 'var(--ink)', color: 'white', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+          {toast}
+        </div>
+      )}
+
       <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
         💬 의사결정 보드
       </h1>
@@ -427,7 +444,7 @@ export default function DecisionsPage() {
                         className="mt-2 text-xs"
                         style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
                       >
-                        결정 철회 (논의 중으로 되돌리기)
+                        결정 철회하기
                       </button>
                     )}
                   </div>

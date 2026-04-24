@@ -217,9 +217,10 @@ export default function BudgetPage() {
   const [error,    setError]    = useState('');
 
   // 업체 수정/삭제
-  const [menuId,     setMenuId]     = useState(null);
-  const [editingId,  setEditingId]  = useState(null);
-  const [editForm,   setEditForm]   = useState(EMPTY_FORM);
+  const [menuId,         setMenuId]         = useState(null);
+  const [editingId,      setEditingId]      = useState(null);
+  const [editForm,       setEditForm]       = useState(EMPTY_FORM);
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   // 필터
   const [filterType,   setFilterType]   = useState('all');
@@ -318,6 +319,7 @@ export default function BudgetPage() {
     setVendors(prev => prev.filter(v => v.id !== id));
     await supabase.from('vendors').delete().eq('id', id);
     setMenuId(null);
+    setDeleteConfirmId(null);
   }
 
   /* ─ 계산 ─ */
@@ -609,9 +611,29 @@ export default function BudgetPage() {
                     <div style={{ height: 1, backgroundColor: 'var(--beige)' }} />
                     <button className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium"
                       style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
-                      onClick={() => deleteVendor(vendor.id)}>
+                      onClick={() => { setDeleteConfirmId(vendor.id); setMenuId(null); }}>
                       <Store size={14} /> 삭제
                     </button>
+                  </div>
+                )}
+
+                {/* 삭제 확인 모달 */}
+                {deleteConfirmId === vendor.id && (
+                  <div className="absolute right-0 left-0 z-20 rounded-2xl p-4"
+                    style={{ top: 0, backgroundColor: 'white', border: '1.5px solid var(--rose-light)', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}
+                    onClick={e => e.stopPropagation()}>
+                    <p className="text-sm font-semibold mb-1" style={{ color: 'var(--ink)' }}>업체를 삭제할까요?</p>
+                    <p className="text-xs mb-3" style={{ color: 'var(--stone)' }}>
+                      <span className="font-medium">{vendor.name}</span> 정보가 영구 삭제돼요
+                    </p>
+                    <div className="flex gap-2">
+                      <button className="btn-outline flex-1 text-sm"
+                        style={{ height: 40 }}
+                        onClick={() => setDeleteConfirmId(null)}>취소</button>
+                      <button className="flex-1 text-sm font-semibold rounded-xl"
+                        style={{ height: 40, backgroundColor: 'var(--rose)', color: 'white', border: 'none', cursor: 'pointer' }}
+                        onClick={() => deleteVendor(vendor.id)}>삭제</button>
+                    </div>
                   </div>
                 )}
               </div>

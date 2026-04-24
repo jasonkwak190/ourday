@@ -240,6 +240,7 @@ export default function TimelinePage() {
   const [expandedMemo, setExpandedMemo] = useState(null);
   const [showVenueTour,setShowVenueTour]= useState(false);
   const [venueChecked, setVenueChecked] = useState({});
+  const venueStorageKey = coupleId ? `venue-tour-${coupleId}` : null;
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [templateDone,    setTemplateDone]    = useState(false);
 
@@ -270,6 +271,15 @@ export default function TimelinePage() {
     };
     load();
   }, [router]);
+
+  /* ─ 웨딩홀 투어 체크 localStorage 복원 ─ */
+  useEffect(() => {
+    if (!coupleId) return;
+    try {
+      const saved = localStorage.getItem(`venue-tour-${coupleId}`);
+      if (saved) setVenueChecked(JSON.parse(saved));
+    } catch {}
+  }, [coupleId]);
 
   /* ─ Realtime ─ */
   useEffect(() => {
@@ -623,7 +633,11 @@ export default function TimelinePage() {
                       const checked = !!venueChecked[key];
                       return (
                         <div key={it} className="flex items-start gap-2 py-1 cursor-pointer"
-                          onClick={() => setVenueChecked(p => ({ ...p, [key]: !p[key] }))}>
+                          onClick={() => setVenueChecked(p => {
+                            const next = { ...p, [key]: !p[key] };
+                            if (coupleId) { try { localStorage.setItem(`venue-tour-${coupleId}`, JSON.stringify(next)); } catch {} }
+                            return next;
+                          })}>
                           <div className="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center mt-0.5 transition-all"
                             style={{ border: `2px solid ${checked ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: checked ? 'var(--rose)' : 'white' }}>
                             {checked && <span className="text-white" style={{ fontSize: 9 }}>✓</span>}
@@ -637,7 +651,7 @@ export default function TimelinePage() {
                   </div>
                 ))}
                 <button className="text-xs mt-1" style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
-                  onClick={() => setVenueChecked({})}>초기화</button>
+                  onClick={() => { setVenueChecked({}); if (coupleId) { try { localStorage.removeItem(`venue-tour-${coupleId}`); } catch {} } }}>초기화</button>
               </div>
             )}
           </div>
