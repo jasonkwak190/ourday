@@ -126,9 +126,14 @@ export default function BottomNav({ active }) {
             >
               <Icon
                 name={icon}
-                size={24}
-                color={isActive ? 'var(--champagne-2)' : 'var(--ink-4)'}
+                size={26}
+                color={isActive ? 'var(--champagne-2)' : 'var(--ink-3)'}
               />
+              <span style={{
+                width: 4, height: 4, borderRadius: '50%',
+                backgroundColor: isActive ? 'var(--champagne)' : 'transparent',
+                marginTop: 3,
+              }} />
             </button>
           );
         })}
@@ -150,9 +155,14 @@ export default function BottomNav({ active }) {
         >
           <Icon
             name="more"
-            size={24}
-            color={isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-4)'}
+            size={26}
+            color={isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-3)'}
           />
+          <span style={{
+            width: 4, height: 4, borderRadius: '50%',
+            backgroundColor: isMoreActive || showMore ? 'var(--champagne)' : 'transparent',
+            marginTop: 3,
+          }} />
         </button>
       </nav>
     </>

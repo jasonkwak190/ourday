@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Send, Link2, Edit2, Trash2, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
+import { openExternalUrl } from '@/lib/openUrl';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
@@ -465,8 +466,13 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
 
             {/* 링크 미리보기 */}
             {note.link_url && (
-              <a href={note.link_url} target="_blank" rel="noreferrer"
-                style={{ display: 'block', textDecoration: 'none', marginTop: 8 }}>
+              <div
+                role="link"
+                tabIndex={0}
+                onClick={() => openExternalUrl(note.link_url)}
+                onKeyDown={e => e.key === 'Enter' && openExternalUrl(note.link_url)}
+                style={{ display: 'block', textDecoration: 'none', marginTop: 8, cursor: 'pointer' }}
+              >
                 {previewLoading ? (
                   /* 로딩 스켈레톤 */
                   <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)',
@@ -476,41 +482,44 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
                   </div>
                 ) : preview ? (
                   /* 미리보기 카드 */
-                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)',
-                    backgroundColor: 'rgba(255,255,255,0.7)' }}>
+                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.12)',
+                    backgroundColor: 'rgba(255,255,255,0.85)' }}>
                     {preview.image && (
                       <img src={preview.image} alt=""
-                        style={{ width: '100%', maxHeight: 120, objectFit: 'cover', display: 'block' }}
+                        style={{ width: '100%', maxHeight: 130, objectFit: 'cover', display: 'block' }}
                         onError={e => { e.target.style.display = 'none'; }} />
                     )}
-                    <div style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                       <img src={preview.favicon} alt=""
-                        style={{ width: 16, height: 16, borderRadius: 4, flexShrink: 0 }}
+                        style={{ width: 18, height: 18, borderRadius: 4, flexShrink: 0 }}
                         onError={e => { e.target.style.display = 'none'; }} />
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {preview.title && (
-                          <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--toss-text-primary)',
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--ink)',
                             margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {preview.title}
                           </p>
                         )}
-                        <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', margin: '1px 0 0' }}>
+                        <p style={{ fontSize: 12, color: 'var(--ink-3)', margin: '2px 0 0' }}>
                           {preview.domain}
                         </p>
                       </div>
-                      <ExternalLink size={11} color="var(--toss-text-tertiary)" style={{ flexShrink: 0 }} />
+                      <ExternalLink size={13} color="var(--ink-3)" style={{ flexShrink: 0 }} />
                     </div>
                   </div>
                 ) : (
                   /* 파싱 실패 — 일반 링크 */
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2,
-                    fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all' }}>
-                    <Link2 size={11} />
-                    {note.link_url.length > 40 ? note.link_url.slice(0, 40) + '…' : note.link_url}
-                    <ExternalLink size={10} style={{ flexShrink: 0 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
+                    padding: '8px 10px', borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.6)',
+                    border: '1px solid rgba(0,0,0,0.08)' }}>
+                    <Link2 size={13} color={bubbleColor.text} style={{ flexShrink: 0 }} />
+                    <span style={{ fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all', flex: 1 }}>
+                      {note.link_url.length > 40 ? note.link_url.slice(0, 40) + '…' : note.link_url}
+                    </span>
+                    <ExternalLink size={12} color={bubbleColor.text} style={{ flexShrink: 0 }} />
                   </div>
                 )}
-              </a>
+              </div>
             )}
           </>
         )}

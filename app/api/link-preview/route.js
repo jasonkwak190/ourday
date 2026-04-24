@@ -71,23 +71,27 @@ export async function GET(request) {
     const titleMatch = html.match(/<title[^>]*>([^<]{1,200})<\/title>/i);
     const pageTitle = titleMatch?.[1]?.trim() || null;
 
-    const domain = new URL(url).hostname.replace(/^www\./, '');
+    const base   = new URL(url);
+    const domain = base.hostname.replace(/^www\./, '');
+
+    // 상대경로 → 절대경로 변환 헬퍼
+    function toAbsUrl(src) {
+      if (!src) return null;
+      if (src.startsWith('http://') || src.startsWith('https://')) return src;
+      if (src.startsWith('//')) return `${base.protocol}${src}`;
+      if (src.startsWith('/')) return `${base.protocol}//${base.host}${src}`;
+      return `${base.protocol}//${base.host}/${src}`;
+    }
 
     // favicon URL 구성
     const faviconRe = html.match(/<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]+href=["']([^"']+)["']/i);
-    let favicon = faviconRe?.[1] || null;
-    if (favicon && favicon.startsWith('/')) {
-      const base = new URL(url);
-      favicon = `${base.protocol}//${base.host}${favicon}`;
-    }
-    if (!favicon) {
-      favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    }
+    const favicon = toAbsUrl(faviconRe?.[1]) ||
+      `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
     return Response.json({
       title:       getOg('title')       || pageTitle,
       description: getOg('description') || getMeta('description'),
-      image:       getOg('image'),
+      image:       toAbsUrl(getOg('image')),
       site_name:   getOg('site_name')   || domain,
       favicon,
       domain,
