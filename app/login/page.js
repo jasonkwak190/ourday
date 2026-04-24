@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import OAuthButtons from '@/components/OAuthButtons';
-import { Eye, EyeOff } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -27,7 +27,6 @@ export default function LoginPage() {
       return;
     }
 
-    // couple_id 확인해서 적절한 페이지로 라우팅
     const userId = data.user?.id;
     if (userId) {
       const { data: userRecord } = await supabase
@@ -37,12 +36,10 @@ export default function LoginPage() {
         .maybeSingle();
 
       if (!userRecord?.name) {
-        // users 레코드 자체가 없음 (OAuth 신규 유저 엣지 케이스)
         router.push('/setup-profile');
         return;
       }
       if (!userRecord?.couple_id) {
-        // 이름은 있지만 커플 연동 안 됨
         router.push('/connect');
         return;
       }
@@ -53,35 +50,49 @@ export default function LoginPage() {
 
   return (
     <div className="page-wrapper flex flex-col">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-extrabold tracking-tight" style={{ color: 'var(--toss-blue)' }}>
-          Ourday
-        </h2>
-        <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-          다시 만나서 반가워요 💍
+      {/* 로고 */}
+      <div className="text-center mb-10 mt-4">
+        <Icon name="rings" size={40} color="var(--champagne)" style={{ margin: '0 auto 14px' }} />
+        <h1 style={{
+          fontFamily: 'var(--font-serif-en)',
+          fontSize: 32,
+          fontWeight: 400,
+          color: 'var(--ink)',
+          letterSpacing: '-0.02em',
+          margin: '0 0 6px',
+        }}>
+          <span style={{ fontWeight: 500 }}>O</span>urday
+        </h1>
+        <p style={{
+          fontFamily: 'var(--font-serif-en)',
+          fontStyle: 'italic',
+          fontSize: 13,
+          color: 'var(--ink-3)',
+          letterSpacing: '0.05em',
+        }}>
+          다시 만나서 반가워요
         </p>
       </div>
 
-      {/* OAuth 버튼 — 메인 */}
+      {/* OAuth 버튼 */}
       <OAuthButtons />
 
-      <div className="flex items-center gap-3 my-5">
-        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--toss-border)' }} />
-        <span className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>이메일로 로그인</span>
-        <div className="flex-1 h-px" style={{ backgroundColor: 'var(--toss-border)' }} />
+      <div className="flex items-center gap-3 my-6">
+        <div className="flex-1" style={{ height: 1, backgroundColor: 'var(--rule)' }} />
+        <span style={{ fontSize: 11, color: 'var(--ink-4)', letterSpacing: '0.06em', fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>or email</span>
+        <div className="flex-1" style={{ height: 1, backgroundColor: 'var(--rule)' }} />
       </div>
 
       {/* 이메일 폼 */}
-      <form onSubmit={handleLogin} className="flex flex-col gap-4">
+      <form onSubmit={handleLogin} className="flex flex-col gap-5">
         <div>
-          <label className="text-xs font-semibold block mb-1.5"
-            style={{ color: 'var(--toss-text-secondary)' }}>
+          <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)', display: 'block', marginBottom: 6 }}>
             이메일
           </label>
           <input
             className="input-field"
             type="email"
-            placeholder="example@email.com"
+            placeholder="your@email.com"
             value={email}
             onChange={e => setEmail(e.target.value)}
             autoComplete="email"
@@ -90,54 +101,65 @@ export default function LoginPage() {
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-xs font-semibold"
-              style={{ color: 'var(--toss-text-secondary)' }}>
+          <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
+            <label style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>
               비밀번호
             </label>
-            <Link href="/reset-password" className="text-xs"
-              style={{ color: 'var(--toss-blue)', fontWeight: 500 }}>
-              비밀번호 찾기
+            <Link href="/reset-password" style={{
+              fontSize: 12,
+              color: 'var(--champagne-2)',
+              fontFamily: 'var(--font-serif-en)',
+              fontStyle: 'italic',
+              textDecoration: 'none',
+              borderBottom: '1px solid var(--champagne)',
+              paddingBottom: 1,
+            }}>
+              찾기
             </Link>
           </div>
           <div style={{ position: 'relative' }}>
             <input
               className="input-field"
               type={showPw ? 'text' : 'password'}
-              placeholder="비밀번호 입력"
+              placeholder="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               autoComplete="current-password"
-              style={{ paddingRight: 48 }}
+              style={{ paddingRight: 44 }}
               required
             />
             <button
               type="button"
               onClick={() => setShowPw(v => !v)}
               style={{
-                position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)',
-                display: 'flex', alignItems: 'center',
+                position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
+                background: 'none', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', padding: 4,
               }}
             >
-              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+              <Icon name={showPw ? 'eye-off' : 'eye'} size={18} color="var(--ink-4)" />
             </button>
           </div>
         </div>
 
         {error && (
-          <p className="text-sm text-center" style={{ color: 'var(--toss-red)' }}>{error}</p>
+          <p style={{ fontSize: 13, textAlign: 'center', color: 'var(--clay)', fontFamily: 'var(--font-serif-ko)' }}>{error}</p>
         )}
 
-        <button type="submit" className="btn-rose w-full" disabled={loading}
-          style={{ height: 52 }}>
-          {loading ? '로그인 중...' : '로그인'}
+        <button type="submit" className="btn-primary" disabled={loading}>
+          {loading ? '로그인 중…' : '로그인'}
         </button>
       </form>
 
-      <p className="text-center text-xs mt-6" style={{ color: 'var(--toss-text-tertiary)' }}>
+      <p style={{ textAlign: 'center', fontSize: 12, marginTop: 24, color: 'var(--ink-3)' }}>
         계정이 없어요?{' '}
-        <Link href="/signup" style={{ color: 'var(--toss-blue)', fontWeight: 600 }}>
+        <Link href="/signup" style={{
+          color: 'var(--ink)',
+          fontWeight: 500,
+          borderBottom: '1px solid var(--champagne)',
+          paddingBottom: 1,
+          textDecoration: 'none',
+        }}>
           가입하기
         </Link>
       </p>
