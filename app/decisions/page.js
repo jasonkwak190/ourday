@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
-import { MessageSquarePlus } from 'lucide-react';
+import { MessageSquarePlus, Pencil, Trash2 } from 'lucide-react';
 import Icon from '@/components/Icon';
 
 const FILTERS = [
@@ -139,7 +139,7 @@ export default function DecisionsPage() {
       setDecisions((prev) => prev.map((d) =>
         d.id === decisionId ? { ...d, [field]: opinionText.trim(), status: 'discussing' } : d
       ));
-      showToast('의견이 저장됐어요 ✓');
+      showToast('의견이 저장됐어요');
     }
     setEditingOpinion(null);
     setOpinionText('');
@@ -155,7 +155,7 @@ export default function DecisionsPage() {
       setDecisions((prev) => prev.map((d) =>
         d.id === decisionId ? { ...d, final_decision: finalText.trim(), status: 'decided' } : d
       ));
-      showToast('최종 결정이 저장됐어요 ✓');
+      showToast('최종 결정이 저장됐어요');
     }
     setEditingFinal(null);
     setFinalText('');
@@ -283,7 +283,7 @@ export default function DecisionsPage() {
                       style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
                       onClick={() => { setEditingTitle(d.id); setEditTitleText(d.title); setMenuId(null); }}
                     >
-                      ✏️ 제목 수정
+                      <span className="flex items-center gap-2"><Pencil size={14} />제목 수정</span>
                     </button>
                     <div style={{ height: '1px', backgroundColor: 'var(--beige)' }} />
                     <button
@@ -291,7 +291,7 @@ export default function DecisionsPage() {
                       style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
                       onClick={() => deleteDecision(d.id)}
                     >
-                      🗑 삭제
+                      <span className="flex items-center gap-2"><Trash2 size={14} />삭제</span>
                     </button>
                   </div>
                 )}
@@ -419,7 +419,7 @@ export default function DecisionsPage() {
                           cursor: 'pointer',
                         }}
                       >
-                        ✏️ 수정
+                        <span className="flex items-center gap-1.5"><Pencil size={13} />수정</span>
                       </button>
                     </div>
                     <p className="text-sm" style={{ color: 'var(--ink)' }}>{d.final_decision}</p>

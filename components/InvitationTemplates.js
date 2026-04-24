@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
 import KakaoShareButton from '@/components/KakaoShareButton';
+import Icon from '@/components/Icon';
 
 // ─── 날짜 포매터 ────────────────────────────────────────────────────
 export function formatDate(dateStr) {
@@ -175,7 +176,9 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
   return (
     <div style={{ minHeight: '100dvh', fontFamily: FONT, maxWidth: 430, margin: '0 auto', background: 'linear-gradient(160deg, #fff5f7 0%, #fff9f5 50%, #f5f0ff 100%)' }}>
       <div style={{ textAlign: 'center', padding: '56px 32px 32px' }}>
-        <p style={{ fontSize: 40, marginBottom: 4, lineHeight: 1 }}>🌸</p>
+        <div style={{ fontSize: 40, marginBottom: 4, lineHeight: 1, display: 'flex', justifyContent: 'center' }}>
+          <Icon name="floret" size={40} color="#d4879a" />
+        </div>
         <p style={{ fontSize: 11, letterSpacing: '0.18em', color: '#d4879a', marginBottom: 28, textTransform: 'uppercase' }}>With Love</p>
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14, backgroundColor: 'white', borderRadius: 99, padding: '12px 28px', boxShadow: '0 4px 20px rgba(212,135,154,0.15)', marginBottom: 20 }}>
@@ -189,19 +192,29 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
       </div>
       {inv.message && (
         <div style={{ margin: '0 20px 20px', padding: '28px 24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,240,245,0.9))', borderRadius: 20, textAlign: 'center', boxShadow: '0 2px 16px rgba(212,135,154,0.1)', border: '1px solid rgba(212,135,154,0.15)' }}>
-          <p style={{ fontSize: 13, marginBottom: 12 }}>🌿 🌸 🌿</p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
+            <Icon name="floret" size={13} color="#d4879a" />
+            <Icon name="floret" size={13} color="#d4879a" />
+            <Icon name="floret" size={13} color="#d4879a" />
+          </div>
           <p style={{ fontSize: 15, lineHeight: 2, color: '#6b3549', whiteSpace: 'pre-line', margin: 0 }}>{inv.message}</p>
         </div>
       )}
       {(inv.venue_name || inv.venue_address) && (
         <div style={{ margin: '0 20px 20px', padding: '24px', backgroundColor: 'white', borderRadius: 20, boxShadow: '0 2px 16px rgba(212,135,154,0.1)', border: '1px solid rgba(212,135,154,0.15)' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#d4879a', marginBottom: 10 }}>📍 예 식 장</p>
+          <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#d4879a', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <MapPin size={11} color="#d4879a" />예 식 장
+          </p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d1a25', margin: '0 0 6px' }}>{inv.venue_name}</p>}
           {inv.venue_address && <p style={{ fontSize: 13, color: '#9c7080', margin: 0 }}>{inv.venue_address}</p>}
         </div>
       )}
       <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
-        <p style={{ fontSize: 20 }}>🌸 🤍 🌸</p>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+          <Icon name="floret" size={16} color="#d4879a" />
+          <Heart size={14} color="#d4879a" fill="#d4879a" />
+          <Icon name="floret" size={16} color="#d4879a" />
+        </div>
       </div>
       <BottomActions inv={inv} copied={copied} copyUrl={copyUrl} showAccount={showAccount} setShowAccount={setShowAccount} accentColor="#c4617a" />
     </div>
@@ -324,7 +337,7 @@ export function Guestbook({ invitationId, accentColor = '#3182f6', guestName, on
             transition: 'background-color 0.2s',
           }}
         >
-          {done ? <>✓ 전달됐어요!</> : submitting ? '전송 중...' : <><Send size={14} />메시지 남기기</>}
+          {done ? <><Icon name="check" size={14} color="currentColor" /> 전달됐어요!</> : submitting ? '전송 중...' : <><Send size={14} />메시지 남기기</>}
         </button>
       </div>
 

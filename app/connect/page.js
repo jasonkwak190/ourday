@@ -329,7 +329,7 @@ export default function ConnectPage() {
       {/* 내 초대 코드 */}
       <div className="card mb-4">
         <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>
-          📤 내 초대 코드를 상대방에게 보내세요
+          <span className="flex items-center gap-1"><Icon name="invite" size={13} color="currentColor" /> 내 초대 코드를 상대방에게 보내세요</span>
         </p>
         <div
           className="w-full py-5 rounded-2xl text-center mb-3"
@@ -366,7 +366,9 @@ export default function ConnectPage() {
         {/* 파트너 연동 대기 상태 */}
         {!partnerConnected && (
           <div className="mt-3 flex items-center gap-2 justify-center">
-            <span className="animate-pulse text-base">⏳</span>
+            <span className="animate-pulse" style={{ display: 'inline-flex' }}>
+              <Icon name="dot" size={14} color="var(--champagne)" />
+            </span>
             <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>
               상대방이 코드를 입력하면 자동으로 연동돼요
             </p>
@@ -394,7 +396,7 @@ export default function ConnectPage() {
       {/* 코드 입력 */}
       <div className="card mt-2 flex flex-col gap-3">
         <p className="text-xs font-semibold" style={{ color: 'var(--toss-text-tertiary)' }}>
-          📥 상대방 코드 입력
+          <span className="flex items-center gap-1"><Icon name="invite" size={13} color="currentColor" /> 상대방 코드 입력</span>
         </p>
         <input
           className="input-field text-center text-2xl tracking-widest font-bold"

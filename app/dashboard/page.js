@@ -397,7 +397,7 @@ export default function DashboardPage() {
                     backgroundColor: item.is_done ? 'var(--toss-red)' : 'transparent',
                   }}
                 >
-                  {item.is_done && <span style={{ color: 'white', fontSize: 11 }}>✓</span>}
+                  {item.is_done && <Icon name="check" size={11} color="white" />}
                 </button>
                 <span className="flex-1 text-sm" style={{ color: 'var(--toss-text-primary)', textDecoration: item.is_done ? 'line-through' : 'none' }}>
                   {item.title}

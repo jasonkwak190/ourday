@@ -34,7 +34,7 @@ export default function EmptyState({ icon: Icon, emoji, title, description, acti
             style={{ color: 'var(--toss-text-tertiary)' }}
           />
         ) : (
-          <span style={{ fontSize: compact ? 24 : 30 }}>{emoji || '📭'}</span>
+          <span style={{ fontSize: compact ? 24 : 30, color: 'var(--toss-text-tertiary)' }}>{emoji || '—'}</span>
         )}
       </div>
 

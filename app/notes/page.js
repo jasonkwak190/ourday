@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, X, Send, Link2, Edit2, Trash2, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
+import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
@@ -213,8 +214,9 @@ export default function NotesPage() {
     <div className="page-wrapper" style={{ paddingBottom: 0 }}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
-        <h1 className="text-xl font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
-          📎 정보 공유
+        <h1 className="text-xl font-semibold flex items-center gap-2" style={{ color: 'var(--toss-text-primary)' }}>
+          <Icon name="paperclip" size={22} color="var(--ink)" />
+          정보 공유
         </h1>
         <button
           onClick={() => setSearching(v => !v)}

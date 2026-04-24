@@ -3,19 +3,20 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import EmptyState from '@/components/EmptyState';
-import { Store } from 'lucide-react';
+import { Store, Pencil, Trash2 } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 const VENDOR_TYPES = [
-  { value: 'hall',    label: '웨딩홀',   icon: '🏛️' },
-  { value: 'studio',  label: '스튜디오', icon: '📸' },
-  { value: 'dress',   label: '드레스',   icon: '👗' },
-  { value: 'makeup',  label: '메이크업', icon: '💄' },
-  { value: 'hanbok',  label: '한복',     icon: '👘' },
-  { value: 'food',    label: '음식',     icon: '🍽️' },
-  { value: 'flower',  label: '꽃장식',   icon: '💐' },
-  { value: 'music',   label: '음향/영상', icon: '🎵' },
-  { value: 'travel',  label: '신혼여행', icon: '✈️' },
-  { value: 'other',   label: '기타',     icon: '📋' },
+  { value: 'hall',    label: '웨딩홀'   },
+  { value: 'studio',  label: '스튜디오' },
+  { value: 'dress',   label: '드레스'   },
+  { value: 'makeup',  label: '메이크업' },
+  { value: 'hanbok',  label: '한복'     },
+  { value: 'food',    label: '음식'     },
+  { value: 'flower',  label: '꽃장식'   },
+  { value: 'music',   label: '음향/영상'},
+  { value: 'travel',  label: '신혼여행' },
+  { value: 'other',   label: '기타'     },
 ];
 
 const CONTRACT_STATUS = [
@@ -203,7 +204,7 @@ export default function VendorsTab({ coupleId }) {
       {urgentVendors.length > 0 && (
         <div className="rounded-2xl px-4 py-3 mb-4 flex items-start gap-2"
           style={{ backgroundColor: 'var(--amber-light)', border: '1.5px solid var(--amber)' }}>
-          <span>⚠️</span>
+          <Icon name="alert" size={16} color="var(--amber)" style={{ flexShrink: 0, marginTop: 1 }} />
           <div>
             <p className="text-xs font-semibold" style={{ color: 'var(--amber)' }}>잔금 납부 임박</p>
             {urgentVendors.map(v => {
@@ -317,9 +318,9 @@ export default function VendorsTab({ coupleId }) {
                   <div className="absolute right-0 z-10 rounded-xl shadow-lg overflow-hidden"
                     style={{ top: '40px', backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: '110px' }}
                     onClick={e => e.stopPropagation()}>
-                    <button className="w-full text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => startEdit(vendor)}>✏️ 수정</button>
+                    <button className="w-full text-left px-4 py-3 text-sm font-medium flex items-center gap-2" style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => startEdit(vendor)}><Pencil size={14} />수정</button>
                     <div style={{ height: '1px', backgroundColor: 'var(--beige)' }} />
-                    <button className="w-full text-left px-4 py-3 text-sm font-medium" style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => deleteVendor(vendor.id)}>🗑 삭제</button>
+                    <button className="w-full text-left px-4 py-3 text-sm font-medium flex items-center gap-2" style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }} onClick={() => deleteVendor(vendor.id)}><Trash2 size={14} />삭제</button>
                   </div>
                 )}
               </div>

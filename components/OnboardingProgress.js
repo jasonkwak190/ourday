@@ -1,4 +1,5 @@
-// 온보딩 3단계 스텝 표시기 — Server Component (no state)
+// 온보딩 3단계 스텝 표시기
+import Icon from '@/components/Icon';
 const STEPS = [
   { label: '프로필' },
   { label: '커플 연동' },
@@ -35,7 +36,7 @@ export default function OnboardingProgress({ current }) {
                   transition: 'background-color 0.2s',
                 }}
               >
-                {done ? '✓' : step}
+                {done ? <Icon name="check" size={13} color="white" /> : step}
               </div>
               <span
                 className="text-xs font-medium"

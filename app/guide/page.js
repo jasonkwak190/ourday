@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import BottomNav from '@/components/BottomNav';
+import Icon from '@/components/Icon';
 
 const CATEGORIES = [
   {
-    icon: '🎎',
+    icon: 'bouquet',
     title: '폐백 & 예절',
     desc: '전통 혼례 예절과 폐백 준비 방법',
     content: [
@@ -41,7 +42,7 @@ const CATEGORIES = [
     ],
   },
   {
-    icon: '💌',
+    icon: 'invite',
     title: '청첩장',
     desc: '청첩장 문구, 디자인, 발송 시기',
     content: [
@@ -74,7 +75,7 @@ const CATEGORIES = [
     ],
   },
   {
-    icon: '📋',
+    icon: 'checklist',
     title: '계약 주의사항',
     desc: '웨딩홀·스드메 계약 시 확인할 것들',
     content: [
@@ -115,7 +116,7 @@ const CATEGORIES = [
     ],
   },
   {
-    icon: '🎁',
+    icon: 'gift',
     title: '예단 & 예물',
     desc: '예단·예물 품목과 금액 가이드',
     content: [
@@ -153,7 +154,7 @@ const CATEGORIES = [
 
 const POPULAR_GUIDES = [
   {
-    emoji: '🔥',
+    emoji: 'venue',
     title: '웨딩홀 계약 전 반드시 확인해야 할 10가지',
     tag: '계약',
     tagCls: 'tag-rose',
@@ -185,7 +186,7 @@ const POPULAR_GUIDES = [
     ],
   },
   {
-    emoji: '✨',
+    emoji: 'diamond',
     title: '스드메 패키지 가격 비교 가이드 2025',
     tag: '스드메',
     tagCls: 'tag-purple',
@@ -216,7 +217,7 @@ const POPULAR_GUIDES = [
     ],
   },
   {
-    emoji: '📅',
+    emoji: 'calendar',
     title: '결혼 준비 12개월 타임라인 총정리',
     tag: '일정',
     tagCls: 'tag-green',
@@ -266,8 +267,9 @@ export default function GuidePage() {
 
   return (
     <div className="page-wrapper">
-      <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
-        📖 정보 &amp; 가이드
+      <h1 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--ink)' }}>
+        <Icon name="book" size={22} color="var(--ink)" />
+        정보 &amp; 가이드
       </h1>
 
       {/* 카테고리 2x2 */}
@@ -284,7 +286,7 @@ export default function GuidePage() {
               }}
               onClick={() => setOpenCat(openCat === cat.title ? null : cat.title)}
             >
-              <p className="text-2xl mb-2">{cat.icon}</p>
+              <div className="mb-2"><Icon name={cat.icon} size={24} color="var(--champagne)" /></div>
               <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{cat.title}</p>
               <p className="text-xs mt-1" style={{ color: 'var(--ink-soft)' }}>{cat.desc}</p>
               <p className="text-xs mt-2" style={{ color: 'var(--rose)' }}>
@@ -300,7 +302,7 @@ export default function GuidePage() {
           return cat ? (
             <div className="card mt-3" style={{ border: '1.5px solid var(--rose)' }}>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl">{cat.icon}</span>
+                <Icon name={cat.icon} size={20} color="var(--champagne)" />
                 <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{cat.title}</p>
               </div>
               <ContentSection content={cat.content} />
@@ -317,7 +319,7 @@ export default function GuidePage() {
             <div key={g.title} className="card cursor-pointer" style={{ border: `1.5px solid ${openGuide === g.title ? 'var(--rose)' : 'transparent'}` }}
               onClick={() => setOpenGuide(openGuide === g.title ? null : g.title)}>
               <div className="flex items-start gap-3">
-                <span className="text-2xl">{g.emoji}</span>
+                <div className="flex-shrink-0"><Icon name={g.emoji} size={24} color="var(--champagne)" /></div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className={`tag ${g.tagCls}`}>{g.tag}</span>

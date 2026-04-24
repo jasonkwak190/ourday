@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
+import Icon from '@/components/Icon';
 import {
   CheckSquare, List, CalendarDays,
   ChevronLeft, ChevronRight, Heart, Building2,
@@ -480,7 +481,7 @@ export default function TimelinePage() {
           <button onClick={() => toggleItem(item.id, item.is_done)}
             className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all mt-0.5"
             style={{ border: `2px solid ${item.is_done ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: item.is_done ? 'var(--rose)' : 'transparent' }}>
-            {item.is_done && <span className="text-white" style={{ fontSize: 10 }}>✓</span>}
+            {item.is_done && <Icon name="check" size={10} color="white" />}
           </button>
 
           <div className="flex-1 min-w-0">
@@ -641,7 +642,7 @@ export default function TimelinePage() {
                           })}>
                           <div className="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center mt-0.5 transition-all"
                             style={{ border: `2px solid ${checked ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: checked ? 'var(--rose)' : 'white' }}>
-                            {checked && <span className="text-white" style={{ fontSize: 9 }}>✓</span>}
+                            {checked && <Icon name="check" size={9} color="white" />}
                           </div>
                           <span className="text-xs flex-1" style={{ color: checked ? 'var(--stone)' : 'var(--ink)', textDecoration: checked ? 'line-through' : 'none' }}>
                             {it}

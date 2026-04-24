@@ -252,7 +252,7 @@ export default function InvitationTab({ coupleId }) {
         <div className="flex justify-end mb-3">
           <span className="text-xs px-2 py-1 rounded-full tabular-nums"
             style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text-tertiary)' }}>
-            👁 {inv.view_count}회 열람
+            <span className="flex items-center gap-1"><Eye size={12} /> {inv.view_count}회 열람</span>
           </span>
         </div>
       )}

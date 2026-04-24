@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import OAuthButtons from '@/components/OAuthButtons';
 import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 // Supabase 에러 메시지 → 한국어 변환
 function toKoreanError(msg = '') {
@@ -78,7 +79,7 @@ export default function SignupPage() {
           Ourday
         </h2>
         <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-          함께 시작하는 첫 걸음 💍
+          함께 시작하는 첫 걸음 <Icon name="rings" size={14} color="var(--champagne)" style={{ display: 'inline', verticalAlign: 'middle' }} />
         </p>
       </div>
 
@@ -228,7 +229,7 @@ export default function SignupPage() {
             )}
             {confirmPw && password === confirmPw && (
               <p className="text-xs mt-1.5" style={{ color: 'var(--toss-green)' }}>
-                ✓ 비밀번호가 일치해요
+                <span className="flex items-center gap-1"><Icon name="check" size={12} color="currentColor" />비밀번호가 일치해요</span>
               </p>
             )}
           </div>

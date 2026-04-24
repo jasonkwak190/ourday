@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
-import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen } from 'lucide-react';
+import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2 } from 'lucide-react';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import InvitationTab from '@/components/InvitationTab';
@@ -430,7 +430,7 @@ export default function GuestsPage() {
                                 {guest.gift_amount.toLocaleString()}만
                               </p>
                             ) : (
-                              <p className="text-xs" style={{ color: 'var(--stone-light)' }}>💝</p>
+                              <Icon name="gift" size={14} color="var(--stone-light)" />
                             )}
                           </button>
                         )}
@@ -450,11 +450,15 @@ export default function GuestsPage() {
                       onClick={e => e.stopPropagation()}>
                       <button className="w-full text-left px-4 py-3 text-sm font-medium"
                         style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
-                        onClick={() => startEdit(guest)}>✏️ 수정</button>
+                        onClick={() => startEdit(guest)}>
+                        <span className="flex items-center gap-2"><Pencil size={14} />수정</span>
+                      </button>
                       <div style={{ height: 1, backgroundColor: 'var(--beige)' }} />
                       <button className="w-full text-left px-4 py-3 text-sm font-medium"
                         style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
-                        onClick={() => deleteGuest(guest.id)}>🗑 삭제</button>
+                        onClick={() => deleteGuest(guest.id)}>
+                        <span className="flex items-center gap-2"><Trash2 size={14} />삭제</span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -612,7 +616,9 @@ export default function GuestsPage() {
                     <div key={r.id} className="card flex items-start gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-base"
                         style={{ backgroundColor: r.attending ? 'var(--sage-wash)' : 'var(--ivory-2)' }}>
-                        {r.attending ? '✓' : '✕'}
+                        {r.attending
+                          ? <Icon name="check" size={16} color="var(--sage)" />
+                          : <span style={{ fontSize: 14, color: 'var(--ink-3)', fontWeight: 600 }}>✕</span>}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -668,7 +674,7 @@ export default function GuestsPage() {
           {!invitationId ? (
             <div className="card">
               <p className="text-sm text-center py-2" style={{ color: 'var(--stone)' }}>
-                청첩장을 만들면 방명록이 생겨요 💌
+                청첩장을 만들면 방명록이 생겨요
               </p>
               <button className="btn-outline w-full mt-2 text-sm"
                 onClick={() => setTab('invite')}>
