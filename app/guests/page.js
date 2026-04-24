@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
 import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen } from 'lucide-react';
+import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import InvitationTab from '@/components/InvitationTab';
 
@@ -207,7 +208,8 @@ export default function GuestsPage() {
 
   return (
     <div className="page-wrapper" onClick={() => { setMenuId(null); setGiftEditId(null); }}>
-      <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
+      <h1 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--ink)' }}>
+        <Icon name="guests" size={22} color="var(--ink)" />
         하객 관리
       </h1>
 
@@ -262,19 +264,22 @@ export default function GuestsPage() {
       {/* 탭 — 3개 */}
       <div className="flex mb-4 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--beige)' }}>
         {[
-          { key: 'list',   label: '명단' },
-          { key: 'rsvp',   label: `참석확인${unmappedRsvp.length > 0 ? ` (${unmappedRsvp.length})` : ''}` },
-          { key: 'invite', label: '청첩장' },
+          { key: 'list',   label: '명단',   icon: 'guests' },
+          { key: 'rsvp',   label: `참석확인${unmappedRsvp.length > 0 ? ` (${unmappedRsvp.length})` : ''}`, icon: 'check' },
+          { key: 'invite', label: '청첩장', icon: 'invite' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className="flex-1 py-2.5 text-sm font-medium transition-all"
+            className="flex-1 py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1"
             style={{
               background: tab === t.key ? 'white' : 'none',
               color: tab === t.key ? 'var(--rose)' : 'var(--stone)',
               border: 'none', cursor: 'pointer', borderRadius: '1rem', margin: '4px',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}
-          >{t.label}</button>
+          >
+            <Icon name={t.icon} size={14} color="currentColor" />
+            {t.label}
+          </button>
         ))}
       </div>
 

@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import { MessageSquarePlus } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 const FILTERS = [
   { key: 'all',        label: '전체' },
@@ -196,7 +197,8 @@ export default function DecisionsPage() {
         </div>
       )}
 
-      <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
+      <h1 className="text-xl font-semibold mb-4 flex items-center gap-2" style={{ color: 'var(--ink)' }}>
+        <Icon name="chat" size={22} color="var(--ink)" />
         의사결정 보드
       </h1>
 
@@ -403,7 +405,10 @@ export default function DecisionsPage() {
                 ) : d.final_decision ? (
                   <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--green-light)' }}>
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-xs font-medium" style={{ color: 'var(--green)' }}>✓ 최종 결정</p>
+                      <p className="text-xs font-medium flex items-center gap-1" style={{ color: 'var(--green)' }}>
+                        <Icon name="check" size={12} color="var(--sage)" />
+                        최종 결정
+                      </p>
                       <button
                         onClick={() => { setEditingFinal(d.id); setFinalText(d.final_decision); }}
                         className="text-xs font-medium px-2 py-0.5 rounded-lg"
@@ -454,7 +459,10 @@ export default function DecisionsPage() {
                     style={{ backgroundColor: 'var(--beige)', color: 'var(--stone)' }}
                     onClick={() => { setEditingFinal(d.id); setFinalText(''); }}
                   >
-                    최종 결정 입력하기
+                    <span className="flex items-center gap-1.5">
+                      <Icon name="check" size={13} color="currentColor" />
+                      최종 결정 입력하기
+                    </span>
                   </button>
                 )}
               </div>

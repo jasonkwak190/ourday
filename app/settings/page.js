@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
 import { Share2 } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 const ROLE_LABEL = { groom: '신랑', bride: '신부' };
 
@@ -80,7 +81,8 @@ export default function SettingsPage() {
 
   return (
     <div className="page-wrapper">
-      <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--toss-text-primary)' }}>
+      <h1 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--toss-text-primary)' }}>
+        <Icon name="settings" size={22} color="var(--ink)" />
         설정
       </h1>
 
@@ -153,7 +155,10 @@ export default function SettingsPage() {
             </div>
             <div className="flex gap-2">
               <button className="btn-outline flex-1" onClick={handleCopy}>
-                {copied ? '복사됨!' : '코드 복사'}
+                <span className="flex items-center gap-1.5">
+                  <Icon name={copied ? 'check' : 'paperclip'} size={14} color="currentColor" />
+                  {copied ? '복사됨!' : '코드 복사'}
+                </span>
               </button>
               {canShare && (
                 <button

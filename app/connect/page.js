@@ -343,7 +343,8 @@ export default function ConnectPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <button className="btn-outline flex-1" onClick={handleCopy}>
+          <button className="btn-outline flex-1 flex items-center justify-center gap-1.5" onClick={handleCopy}>
+            <Icon name={copied ? 'check' : 'paperclip'} size={14} color="currentColor" />
             {copied ? '복사됨!' : '코드 복사'}
           </button>
           {canShare && (

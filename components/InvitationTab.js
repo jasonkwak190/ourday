@@ -1,35 +1,36 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Copy, Check, Eye, Save, X, ExternalLink } from 'lucide-react';
+import Icon from '@/components/Icon';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
 
 const TEMPLATES = [
-  { key: 'minimal', label: '미니멀',  emoji: '🤍', desc: '깔끔하고 모던한 스타일' },
-  { key: 'classic', label: '클래식',  emoji: '🕊️', desc: '우아하고 격식있는 스타일' },
-  { key: 'floral',  label: '플라워',  emoji: '🌸', desc: '로맨틱하고 따뜻한 스타일' },
+  { key: 'minimal', label: '미니멀',  icon: 'diamond', desc: '깔끔하고 모던한 스타일' },
+  { key: 'classic', label: '클래식',  icon: 'ring',    desc: '우아하고 격식있는 스타일' },
+  { key: 'floral',  label: '플라워',  icon: 'floret',  desc: '로맨틱하고 따뜻한 스타일' },
 ];
 
 const FIELDS = [
-  { section: '신랑·신부', fields: [
+  { section: '신랑·신부', icon: 'rings', fields: [
     { key: 'groom_name',    label: '신랑 이름',   placeholder: '홍길동' },
     { key: 'bride_name',    label: '신부 이름',   placeholder: '김영희' },
   ]},
-  { section: '날짜·시간', fields: [
+  { section: '날짜·시간', icon: 'calendar', fields: [
     { key: 'wedding_date',  label: '결혼 날짜',   type: 'date' },
     { key: 'wedding_time',  label: '시간',        placeholder: '오후 1시 30분' },
   ]},
-  { section: '예식장', fields: [
+  { section: '예식장', icon: 'venue', fields: [
     { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
     { key: 'venue_address', label: '주소',        placeholder: '서울시 강남구 ...' },
     { key: 'venue_map_url', label: '지도 링크',   placeholder: 'https://map.kakao.com/...' },
   ]},
-  { section: '계좌번호', fields: [
+  { section: '계좌번호', icon: 'wallet', fields: [
     { key: 'account_groom', label: '신랑측 계좌', placeholder: '은행명 000-0000-0000 홍길동' },
     { key: 'account_bride', label: '신부측 계좌', placeholder: '은행명 000-0000-0000 김영희' },
   ]},
-  { section: '초대 메시지', fields: [
+  { section: '초대 메시지', icon: 'invite', fields: [
     { key: 'message', label: '메시지', type: 'textarea',
       placeholder: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.' },
   ]},
@@ -270,7 +271,9 @@ export default function InvitationTab({ coupleId }) {
                 backgroundColor: form.template === t.key ? 'var(--toss-blue-light)' : 'var(--toss-bg)',
                 transition: 'all 0.15s',
               }}>
-              <p style={{ fontSize: 20, marginBottom: 4 }}>{t.emoji}</p>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
+                <Icon name={t.icon} size={20} color={form.template === t.key ? 'var(--champagne)' : 'var(--ink-3)'} />
+              </div>
               <p style={{ fontSize: 12, fontWeight: 700, color: form.template === t.key ? 'var(--toss-blue)' : 'var(--toss-text-primary)' }}>
                 {t.label}
               </p>
@@ -283,9 +286,12 @@ export default function InvitationTab({ coupleId }) {
       </div>
 
       {/* 입력 폼 */}
-      {FIELDS.map(({ section, fields }) => (
+      {FIELDS.map(({ section, icon, fields }) => (
         <div key={section} className="card mb-4">
-          <p className="text-sm font-bold mb-3" style={{ color: 'var(--toss-text-primary)' }}>{section}</p>
+          <p className="text-sm font-bold mb-3 flex items-center gap-1.5" style={{ color: 'var(--toss-text-primary)' }}>
+            <Icon name={icon} size={15} color="var(--champagne)" />
+            {section}
+          </p>
           <div className="flex flex-col gap-3">
             {fields.map(({ key, label, type, placeholder }) => {
               const accountVal = key === 'groom_name' ? accountNames.groom
@@ -344,7 +350,11 @@ export default function InvitationTab({ coupleId }) {
       {/* 카카오톡 공유 썸네일 사진 */}
       <div className="card mb-4">
         <p className="text-sm font-bold mb-1" style={{ color: 'var(--toss-text-primary)' }}>
-          공유 썸네일 사진 <span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>(선택)</span>
+          <span className="flex items-center gap-1.5">
+            <Icon name="camera" size={15} color="var(--champagne)" />
+            공유 썸네일 사진
+          </span>
+          <span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>(선택)</span>
         </p>
         <p className="text-xs mb-3" style={{ color: 'var(--toss-text-tertiary)', lineHeight: 1.6 }}>
           카카오톡 등 링크 공유 시 미리보기 이미지로 쓰여요.{'\n'}
