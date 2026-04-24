@@ -15,9 +15,11 @@
 - 앱 업데이트 = `git push` → Vercel 배포만으로 완료 (앱 재빌드 불필요)
 - `appId: 'com.ourday.app'`
 
-**디자인 시스템**: Toss Design System 스타일 (오픈소스 구현)
-- 폰트: Pretendard (SIL OFL 라이선스)
-- 컬러: `--toss-*` CSS 변수 (globals.css)
+**디자인 시스템**: Editorial Wedding Planner v2 (2026-04 전면 적용)
+- 팔레트: Ink(`#1A1613`) / Ivory(`#FAF8F5`) / Champagne(`#C9A96E`) / Paper(`#F5F0E8`)
+- 폰트 3종: Cormorant Garamond (영문 세리프·이탤릭) · Noto Serif KR (한글 세리프) · Pretendard (본문 sans)
+- 컬러: `--ink`, `--champagne`, `--paper`, `--ivory` + `--toss-*` 유틸 변수 (globals.css)
+- O·D 모노그램: 로그인·가입·랜딩 페이지 헤더에 사용하는 Cormorant 88px 심볼
 - 공식 Toss 라이브러리 미사용 (저작권)
 
 ```
@@ -120,15 +122,37 @@ CRON_SECRET=...                    # Vercel Cron 인증 토큰
 - **Hydration 안전 패턴** — `window.*` 값을 JSX에서 직접 사용하지 말 것. `useState('') + useEffect(() => setX(window.xxx), [])` 패턴 사용
 - **절대 하지 말 것** — `dangerouslySetInnerHTML`, couple_id 필터 누락 쿼리, `SUPABASE_SERVICE_ROLE_KEY` 클라이언트 노출
 
-## 디자인 규칙 (TDS 스타일)
+## 디자인 규칙 (Editorial v2)
 
-- **컬러 변수** — 반드시 `var(--toss-*)` 변수 사용. 하드코딩 금지
-- **버튼** — `.btn-rose`(주) / `.btn-outline`(보조) / `.btn-ghost`(3차) 세 종류만 사용
-- **카드** — `.card` 클래스 사용. 직접 `bg-white rounded-2xl` 하드코딩 금지
+- **컬러 변수** — 반드시 `var(--ink)` / `var(--champagne)` / `var(--paper)` 등 CSS 변수 사용. 하드코딩 금지
+- **버튼** — `.btn-rose`(주, pill) / `.btn-outline`(보조, pill) / `.btn-ghost`(3차) / `.btn-champagne`(금색)
+  - 모든 버튼 `border-radius: 28px` — pill 형태 유지
+- **카드** — `.card`(일반) / `.card-hero`(코너 프레임 에디토리얼 카드) 구분 사용
+  - `card-hero`: `border-radius: 4px` + `::before/::after` 코너 프레임 (champagne, opacity 0.6)
 - **인풋** — `.input-field` 클래스 사용
-- **아이콘** — `lucide-react`만 사용, `strokeWidth={2}` 기본값
+- **아이콘** — `lucide-react`만 사용, `strokeWidth={2}` 기본값. SVG 스프라이트는 `public/icons.svg`
+- **타임라인** — `.timeline-rail` + `.timeline-node` + `.is-done` / `.is-now` 클래스 사용
+- **플러리시** — `.flourish` + `.fl-line` + `.fl-diamond` 클래스 (챔페인 구분선)
+- **세리프 타이포** 패턴:
+  ```jsx
+  // 페이지 헤더 표준
+  <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, letterSpacing: '-0.01em' }}>제목</h1>
+  <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', letterSpacing: '0.04em' }}>subtitle</p>
+
+  // 킥커(섹션 레이블) 표준
+  <div className="t-kicker">· LABEL ·</div>
+  ```
+- **O·D 모노그램** 패턴 (로그인·가입 헤더):
+  ```jsx
+  <span style={{ fontFamily: 'var(--font-serif-en)', fontSize: 88, fontWeight: 500 }}>O</span>
+  <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'var(--champagne)' }} />
+  <span style={{ fontFamily: 'var(--font-serif-en)', fontSize: 88, fontWeight: 500 }}>D</span>
+  ```
+- **다이어리 카드** (대시보드 dark 카드) 패턴:
+  ```jsx
+  // background: var(--ink), 내부 inset 5px champagne border opacity 0.35
+  ```
 - **디자인 수정 시** — Supabase 쿼리/상태관리 로직 절대 건드리지 않음
-- **TDS 전환 진행 상황** — `TDS_MIGRATION.md` 참조
 
 ## 폰트 스택 규칙 (절대 바꾸지 말 것)
 
@@ -174,3 +198,57 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 | `BM.md` | 비즈니스 모델·수익화 플래닝 (Freemium·청첩장·B2B 제휴·광고) |
 | `TDS_MIGRATION.md` | Toss 스타일 전환 체크리스트 |
 | `SUPABASE.md` | Supabase 스키마·RLS 정책 |
+
+---
+
+## TODO 체크리스트 (2026-04-24 기준)
+
+> 완료된 항목 ✅ / 진행 중 🔄 / 미착수 ⬜
+
+### 🎨 디자인 — Editorial v2
+
+- [x] globals.css: pill 버튼(28px), card-hero 코너 프레임, timeline-rail, flourish
+- [x] 로그인: O·D 모노그램 스플래시 풀페이지 레이아웃
+- [x] 가입: O·D 모노그램 헤더
+- [x] 랜딩: 에디토리얼 히어로 + 플러리시
+- [x] 대시보드: good morning 인사말 + 레터프레스 다이어리 카드
+- [x] 타임라인: 노드 레일 + 기간별 카드
+- [x] 노트: serif 헤더·구분선·배지·전송버튼
+- [x] decisions / budget / guests / guide: 페이지 헤더 통일
+- [ ] settings 페이지 헤더 serif 업데이트
+- [ ] timeline 캘린더 뷰 에디토리얼 처리
+- [ ] `/i/[slug]` 공개 청첩장 에디토리얼 타이포
+- [ ] 앱 스플래시·아이콘 O·D 모노그램으로 교체
+
+### 🔐 인증 / OAuth
+
+- [x] 이메일 가입·로그인 (Supabase Auth)
+- [x] 비밀번호 재설정 (`/reset-password`, `/reset-password/confirm`)
+- [x] OAuth 콜백 처리 (`/auth/callback`)
+- [ ] **Google OAuth** — Supabase Dashboard → Auth → Providers 설정 필요 (수동)
+- [ ] **카카오 OAuth** — developers.kakao.com 앱 설정 + Supabase 연결 필요 (수동)
+
+### 📤 공유 기능
+
+- [x] 청첩장 공개 페이지 (`/i/[slug]`) — OG태그, 방명록
+- [x] RSVP 공개 폼 (`/rsvp/[id]`)
+- [x] 하객 QR 사진 업로드 (`/guest/[code]`)
+- [x] 라이브 슬라이드쇼 (`/live/[code]`)
+- [ ] **카카오톡 공유 버튼** — 임시 JS 키로 구현됨, 실 키 등록 필요 (수동)
+- [ ] 준비 현황 PDF 내보내기
+- [ ] 예산 내역 엑셀 다운로드
+
+### 💡 기능 확장
+
+- [ ] 영수증·계약서 사진 첨부 (업체/예산 항목별 Supabase Storage)
+- [ ] 예산 초과 실시간 경고 배너
+- [ ] 푸시 알림 (D-day·잔금 D-7·D-1 리마인더) — Web Push API
+- [ ] 오프라인 지원 (Service Worker 캐시)
+- [ ] 좌석 배치도
+
+### 🚀 출시 준비
+
+- [ ] Google Play 개발자 계정 등록 ($25, 수동)
+- [ ] App Store 개발자 계정 등록 ($99/년, 수동)
+- [ ] 실기기 최종 테스트 (Android + iOS)
+- [ ] 개인정보처리방침 법적 검토
