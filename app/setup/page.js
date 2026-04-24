@@ -330,7 +330,7 @@ export default function SetupPage() {
           onClick={handleSave}
           disabled={saving}
         >
-          {saving ? '저장 중...' : isEdit ? '수정 완료' : '저장하고 시작하기 🎉'}
+          {saving ? '저장 중...' : isEdit ? '수정 완료' : '저장하고 시작하기'}
         </button>
 
         {/* 스킵 버튼 (수정 모드가 아닐 때만) */}

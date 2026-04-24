@@ -197,7 +197,7 @@ export default function DecisionsPage() {
       )}
 
       <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
-        💬 의사결정 보드
+        의사결정 보드
       </h1>
 
       {/* 필터 탭 */}
@@ -298,7 +298,7 @@ export default function DecisionsPage() {
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   {/* 신랑 */}
                   <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--beige)' }}>
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신랑 🤵</p>
+                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신랑</p>
                     {d.groom_opinion ? (
                       <div>
                         <p className="text-xs" style={{ color: 'var(--ink)' }}>{d.groom_opinion}</p>
@@ -327,7 +327,7 @@ export default function DecisionsPage() {
 
                   {/* 신부 */}
                   <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--rose-light)' }}>
-                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신부 👰</p>
+                    <p className="text-xs font-medium mb-1" style={{ color: 'var(--stone)' }}>신부</p>
                     {d.bride_opinion ? (
                       <div>
                         <p className="text-xs" style={{ color: 'var(--ink)' }}>{d.bride_opinion}</p>
@@ -403,7 +403,7 @@ export default function DecisionsPage() {
                 ) : d.final_decision ? (
                   <div className="rounded-xl p-3" style={{ backgroundColor: 'var(--green-light)' }}>
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-xs font-medium" style={{ color: 'var(--green)' }}>✅ 최종 결정</p>
+                      <p className="text-xs font-medium" style={{ color: 'var(--green)' }}>✓ 최종 결정</p>
                       <button
                         onClick={() => { setEditingFinal(d.id); setFinalText(d.final_decision); }}
                         className="text-xs font-medium px-2 py-0.5 rounded-lg"
@@ -454,7 +454,7 @@ export default function DecisionsPage() {
                     style={{ backgroundColor: 'var(--beige)', color: 'var(--stone)' }}
                     onClick={() => { setEditingFinal(d.id); setFinalText(''); }}
                   >
-                    ✅ 최종 결정 입력하기
+                    최종 결정 입력하기
                   </button>
                 )}
               </div>

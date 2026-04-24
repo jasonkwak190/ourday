@@ -9,16 +9,16 @@ import { Wallet, Store, AlertTriangle, Edit3 } from 'lucide-react';
 
 /* ─── 업체 종류 ────────────────────────────────────────────────── */
 const VENDOR_TYPES = [
-  { value: 'hall',    label: '웨딩홀',    color: '#3182f6' },
-  { value: 'studio',  label: '스튜디오',  color: '#f06292' },
-  { value: 'dress',   label: '드레스',    color: '#ab47bc' },
-  { value: 'makeup',  label: '메이크업',  color: '#ff7043' },
-  { value: 'hanbok',  label: '한복',      color: '#26a69a' },
-  { value: 'food',    label: '음식',      color: '#ffa726' },
-  { value: 'flower',  label: '꽃장식',    color: '#ec407a' },
-  { value: 'music',   label: '음향/영상', color: '#5c6bc0' },
-  { value: 'travel',  label: '신혼여행',  color: '#29b6f6' },
-  { value: 'other',   label: '기타',      color: '#8d6e63' },
+  { value: 'hall',    label: '웨딩홀',    color: '#B89968' },
+  { value: 'studio',  label: '스튜디오',  color: '#B57A7A' },
+  { value: 'dress',   label: '드레스',    color: '#945E5E' },
+  { value: 'makeup',  label: '메이크업',  color: '#B8914A' },
+  { value: 'hanbok',  label: '한복',      color: '#7A8B6B' },
+  { value: 'food',    label: '음식',      color: '#9C4A3A' },
+  { value: 'flower',  label: '꽃장식',    color: '#CDB388' },
+  { value: 'music',   label: '음향/영상', color: '#6E6459' },
+  { value: 'travel',  label: '신혼여행',  color: '#3A332E' },
+  { value: 'other',   label: '기타',      color: '#A79D90' },
 ];
 
 const CONTRACT_STATUS = [
@@ -81,7 +81,7 @@ function DonutChart({ vendors }) {
       </p>
       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
         <svg width={160} height={160} viewBox="0 0 200 200">
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#f2f4f6" strokeWidth={30} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#E2D9C9" strokeWidth={30} />
           <g transform={`rotate(-90 ${CX} ${CY})`}>
             {segments.map((seg, i) => (
               <circle key={i} cx={CX} cy={CY} r={R} fill="none"
@@ -90,11 +90,11 @@ function DonutChart({ vendors }) {
                 strokeDashoffset={-seg.offset} strokeLinecap="butt" />
             ))}
           </g>
-          <text x={CX} y={CY - 8} textAnchor="middle" fontSize={13} fill="#8b95a1" fontFamily={FONT}>예상 합계</text>
-          <text x={CX} y={CY + 12} textAnchor="middle" fontSize={17} fontWeight={700} fill="#191f28" fontFamily={FONT}>
+          <text x={CX} y={CY - 8} textAnchor="middle" fontSize={13} fill="#6E6459" fontFamily={FONT}>예상 합계</text>
+          <text x={CX} y={CY + 12} textAnchor="middle" fontSize={17} fontWeight={700} fill="#1A1613" fontFamily={FONT}>
             {grandTotal.toLocaleString()}
           </text>
-          <text x={CX} y={CY + 28} textAnchor="middle" fontSize={11} fill="#8b95a1" fontFamily={FONT}>만원</text>
+          <text x={CX} y={CY + 28} textAnchor="middle" fontSize={11} fill="#6E6459" fontFamily={FONT}>만원</text>
         </svg>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 12px' }}>
@@ -103,10 +103,10 @@ function DonutChart({ vendors }) {
             <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: seg.color, flexShrink: 0 }} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 12, color: '#4e5968', fontWeight: 500, whiteSpace: 'nowrap' }}>{seg.label}</span>
-                <span style={{ fontSize: 11, color: '#b0b8c1', flexShrink: 0 }}>{Math.round(seg.ratio * 100)}%</span>
+                <span style={{ fontSize: 12, color: 'var(--ink-2)', fontWeight: 500, whiteSpace: 'nowrap' }}>{seg.label}</span>
+                <span style={{ fontSize: 11, color: 'var(--ink-4)', flexShrink: 0 }}>{Math.round(seg.ratio * 100)}%</span>
               </div>
-              <p style={{ fontSize: 12, fontWeight: 700, color: '#191f28', margin: 0 }}>{seg.total.toLocaleString()}만원</p>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>{seg.total.toLocaleString()}만원</p>
             </div>
           </div>
         ))}

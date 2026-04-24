@@ -87,8 +87,8 @@ export default function SignupPage() {
         style={{
           display: 'flex', alignItems: 'flex-start', gap: 12,
           padding: '14px 16px', borderRadius: 16, cursor: 'pointer',
-          backgroundColor: agreed ? '#eaf4ff' : 'var(--toss-bg)',
-          border: `1.5px solid ${agreed ? '#3182f6' : 'var(--toss-border)'}`,
+          backgroundColor: agreed ? 'var(--champagne-wash)' : 'var(--toss-bg)',
+          border: `1.5px solid ${agreed ? 'var(--champagne)' : 'var(--toss-border)'}`,
           transition: 'all 0.15s', marginBottom: 4,
         }}
       >
@@ -96,25 +96,25 @@ export default function SignupPage() {
           type="checkbox"
           checked={agreed}
           onChange={e => setAgreed(e.target.checked)}
-          style={{ marginTop: 2, width: 18, height: 18, accentColor: '#3182f6', flexShrink: 0, cursor: 'pointer' }}
+          style={{ marginTop: 2, width: 18, height: 18, accentColor: 'var(--champagne)', flexShrink: 0, cursor: 'pointer' }}
         />
         <div style={{ fontSize: 13, lineHeight: 1.6 }}>
-          <span style={{ fontWeight: 700, color: '#191f28' }}>[필수]&nbsp;</span>
-          <span style={{ color: '#4e5968' }}>
+          <span style={{ fontWeight: 700, color: 'var(--ink)' }}>[필수]&nbsp;</span>
+          <span style={{ color: 'var(--ink-2)' }}>
             서비스 이용을 위한{' '}
             <Link href="/privacy" target="_blank"
-              style={{ color: '#3182f6', fontWeight: 600, textDecoration: 'underline' }}
+              style={{ color: 'var(--champagne)', fontWeight: 600, textDecoration: 'underline' }}
               onClick={e => e.stopPropagation()}>
               개인정보처리방침
             </Link>
             에 동의합니다.
           </span>
-          <p style={{ fontSize: 11, color: '#8b95a1', marginTop: 4 }}>
+          <p style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>
             이메일·이름을 수집하며, 탈퇴 시 즉시 파기됩니다.
           </p>
         </div>
         {agreed && (
-          <ShieldCheck size={18} color="#3182f6" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
+          <ShieldCheck size={18} color="var(--champagne)" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
         )}
       </label>
 
@@ -123,7 +123,7 @@ export default function SignupPage() {
         <OAuthButtons />
       </div>
       {!agreed && (
-        <p style={{ fontSize: 12, color: '#8b95a1', textAlign: 'center', marginTop: 4 }}>
+        <p style={{ fontSize: 12, color: 'var(--ink-3)', textAlign: 'center', marginTop: 4 }}>
           위 약관에 동의 후 진행할 수 있어요
         </p>
       )}
@@ -239,8 +239,8 @@ export default function SignupPage() {
               style={{ color: 'var(--toss-text-secondary)' }}>나는요</label>
             <div className="flex gap-3">
               {[
-                { value: 'groom', label: '신랑 🤵' },
-                { value: 'bride', label: '신부 👰' },
+                { value: 'groom', label: '신랑' },
+                { value: 'bride', label: '신부' },
               ].map(r => (
                 <button key={r.value} type="button" onClick={() => setRole(r.value)}
                   className="flex-1 font-semibold transition-all"

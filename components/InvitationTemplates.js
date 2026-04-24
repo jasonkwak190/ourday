@@ -22,12 +22,12 @@ function AccountRow({ label, value }) {
     setTimeout(() => setCopied(false), 1500);
   }
   return (
-    <div style={{ padding: '14px 16px', borderBottom: '1px solid #f2f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white' }}>
+    <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--ivory)' }}>
       <div>
-        <p style={{ fontSize: 11, color: '#8b95a1', margin: 0 }}>{label}</p>
-        <p style={{ fontSize: 14, color: '#191f28', fontWeight: 600, margin: '2px 0 0' }}>{value}</p>
+        <p style={{ fontSize: 11, color: 'var(--ink-3)', margin: 0 }}>{label}</p>
+        <p style={{ fontSize: 14, color: 'var(--ink)', fontWeight: 600, margin: '2px 0 0' }}>{value}</p>
       </div>
-      <button onClick={copy} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #e5e8eb', backgroundColor: copied ? '#eafaf3' : '#f8f9fa', color: copied ? '#27b97c' : '#4e5968', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
+      <button onClick={copy} style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid var(--rule)', backgroundColor: copied ? 'var(--sage-wash)' : 'var(--ivory-2)', color: copied ? 'var(--sage)' : 'var(--ink-2)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
         {copied ? '복사됨' : '복사'}
       </button>
     </div>
@@ -35,7 +35,7 @@ function AccountRow({ label, value }) {
 }
 
 // ─── 공통 하단 버튼 ──────────────────────────────────────────────────
-export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccount, accentColor = '#3182f6' }) {
+export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccount, accentColor = '#B89968' }) {
   return (
     <div style={{ padding: '0 24px 48px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       {inv.venue_map_url && (
@@ -54,15 +54,15 @@ export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccoun
         </button>
       )}
       {showAccount && (
-        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid #e5e8eb' }}>
+        <div style={{ borderRadius: 16, overflow: 'hidden', border: '1px solid var(--rule)' }}>
           {inv.account_groom && <AccountRow label="신랑측" value={inv.account_groom} />}
           {inv.account_bride && <AccountRow label="신부측" value={inv.account_bride} />}
         </div>
       )}
       <button
         onClick={copyUrl}
-        style={{ height: 52, borderRadius: 14, border: '1px solid #e5e8eb', backgroundColor: '#f8f9fa', color: '#4e5968', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-        {copied ? <Check size={18} color="#27b97c" /> : <Copy size={18} />}
+        style={{ height: 52, borderRadius: 14, border: '1px solid var(--rule)', backgroundColor: 'var(--ivory-2)', color: 'var(--ink-2)', fontWeight: 700, fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+        {copied ? <Check size={18} color="var(--sage)" /> : <Copy size={18} />}
         {copied ? '복사됐어요!' : '청첩장 링크 복사'}
       </button>
       <KakaoShareButton

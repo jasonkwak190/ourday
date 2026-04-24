@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
 import OnboardingProgress from '@/components/OnboardingProgress';
 import { Share2 } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 function generateInviteCode() {
   const array = new Uint8Array(3);
@@ -222,7 +223,7 @@ export default function ConnectPage() {
     return (
       <div className="page-wrapper flex items-center justify-center">
         <div className="text-center" style={{ color: 'var(--toss-text-secondary)' }}>
-          <div className="text-3xl mb-2 animate-pulse">💑</div>
+          <div className="mb-2 animate-pulse flex justify-center"><Icon name="couple" size={36} color="var(--champagne)" /></div>
           <p className="text-sm">준비 중...</p>
         </div>
       </div>
@@ -241,7 +242,7 @@ export default function ConnectPage() {
             backgroundColor: 'var(--toss-blue-light)',
           }}
         >
-          <span style={{ fontSize: 40 }}>💑</span>
+          <Icon name="couple" size={40} color="var(--champagne)" />
         </div>
         <h2 className="text-2xl font-bold mb-2" style={{ color: 'var(--toss-text-primary)' }}>
           연동 완료!
@@ -270,7 +271,7 @@ export default function ConnectPage() {
               backgroundColor: 'var(--toss-blue-light)',
             }}
           >
-            <span style={{ fontSize: 36 }}>💑</span>
+            <Icon name="couple" size={36} color="var(--champagne)" />
           </div>
           <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--toss-text-primary)' }}>
             이미 커플 연동이 됐어요!
@@ -343,7 +344,7 @@ export default function ConnectPage() {
         </div>
         <div className="flex gap-2">
           <button className="btn-outline flex-1" onClick={handleCopy}>
-            {copied ? '✅ 복사됨!' : '📋 코드 복사'}
+            {copied ? '복사됨!' : '코드 복사'}
           </button>
           {canShare && (
             <button
@@ -372,7 +373,7 @@ export default function ConnectPage() {
         )}
         {partnerConnected && (
           <div className="mt-3 flex items-center gap-2 justify-center">
-            <span className="text-base">💑</span>
+            <Icon name="couple" size={18} color="var(--champagne)" />
             <p className="text-xs font-semibold" style={{ color: 'var(--toss-green)' }}>
               상대방이 연동됐어요!
             </p>

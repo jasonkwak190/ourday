@@ -14,17 +14,17 @@ export default function PrivacyPage() {
     <div style={{
       maxWidth: 680, margin: '0 auto', padding: '40px 20px 80px',
       fontFamily: "'Pretendard Variable','Pretendard',-apple-system,sans-serif",
-      color: '#191f28', lineHeight: 1.8,
+      color: 'var(--ink)', lineHeight: 1.8,
     }}>
       {/* 헤더 */}
       <div style={{ marginBottom: 40 }}>
-        <Link href="/" style={{ fontSize: 13, color: '#3182f6', textDecoration: 'none', fontWeight: 600 }}>
+        <Link href="/" style={{ fontSize: 13, color: 'var(--champagne)', textDecoration: 'none', fontWeight: 600 }}>
           ← 우리의 날
         </Link>
         <h1 style={{ fontSize: 24, fontWeight: 800, marginTop: 20, marginBottom: 8 }}>
           개인정보처리방침
         </h1>
-        <p style={{ fontSize: 13, color: '#8b95a1' }}>
+        <p style={{ fontSize: 13, color: 'var(--ink-3)' }}>
           시행일: {EFFECTIVE_DATE} &nbsp;|&nbsp; 최종 수정: {UPDATED_DATE}
         </p>
       </div>
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
           <li>이용자가 사전에 동의한 경우</li>
           <li>법령에 따라 수사기관 등이 적법한 절차로 요청하는 경우</li>
         </ul>
-        <p style={{ marginTop: 12, padding: '12px 16px', backgroundColor: '#f8f9fa', borderRadius: 12, fontSize: 14 }}>
+        <p style={{ marginTop: 12, padding: '12px 16px', backgroundColor: 'var(--ivory-2)', borderRadius: 12, fontSize: 14 }}>
           <strong>커플 간 공유</strong>는 제3자 제공이 아닌 서비스의 핵심 기능으로,
           연동된 파트너에게 타임라인·예산·의사결정 등 서비스 이용 데이터가 공유됩니다.
           회원가입 시 이에 동의하는 것으로 간주합니다.
@@ -95,11 +95,11 @@ export default function PrivacyPage() {
           ['위탁 기간', '서비스 이용 계약 기간 동안'],
           ['소재지', '미국 (AWS us-east-1 리전)'],
         ]} />
-        <p style={{ marginTop: 12, fontSize: 14, color: '#4e5968' }}>
+        <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-2)' }}>
           Supabase는 SOC 2 Type II 인증을 보유하며, GDPR 및 CCPA를 준수합니다.
           자세한 사항은{' '}
           <a href="https://supabase.com/privacy" target="_blank" rel="noopener noreferrer"
-            style={{ color: '#3182f6' }}>
+            style={{ color: 'var(--champagne)' }}>
             Supabase 개인정보처리방침
           </a>
           을 참조하세요.
@@ -155,19 +155,19 @@ export default function PrivacyPage() {
           ['이메일', CONTACT_EMAIL],
           ['처리 기간', '이메일 접수 후 10일 이내'],
         ]} />
-        <p style={{ marginTop: 12, fontSize: 14, color: '#4e5968' }}>
+        <p style={{ marginTop: 12, fontSize: 14, color: 'var(--ink-2)' }}>
           개인정보 침해에 대한 신고·상담은 아래 기관에 문의하실 수 있습니다.
         </p>
-        <ul style={{ paddingLeft: 20, marginTop: 8, fontSize: 14, color: '#4e5968' }}>
-          <li>개인정보보호위원회: <a href="https://www.pipc.go.kr" target="_blank" rel="noopener noreferrer" style={{ color: '#3182f6' }}>www.pipc.go.kr</a> (국번 없이 182)</li>
-          <li>개인정보침해신고센터: <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer" style={{ color: '#3182f6' }}>privacy.kisa.or.kr</a> (국번 없이 118)</li>
+        <ul style={{ paddingLeft: 20, marginTop: 8, fontSize: 14, color: 'var(--ink-2)' }}>
+          <li>개인정보보호위원회: <a href="https://www.pipc.go.kr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--champagne)' }}>www.pipc.go.kr</a> (국번 없이 182)</li>
+          <li>개인정보침해신고센터: <a href="https://privacy.kisa.or.kr" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--champagne)' }}>privacy.kisa.or.kr</a> (국번 없이 118)</li>
         </ul>
       </Section>
 
       <div style={{
         marginTop: 40, padding: '20px 24px',
-        backgroundColor: '#f8f9fa', borderRadius: 16,
-        fontSize: 13, color: '#8b95a1', textAlign: 'center',
+        backgroundColor: 'var(--ivory-2)', borderRadius: 16,
+        fontSize: 13, color: 'var(--ink-3)', textAlign: 'center',
       }}>
         본 방침은 {UPDATED_DATE}부터 적용됩니다.<br />
         이전 방침은 문의 이메일로 요청 시 제공합니다.
@@ -182,19 +182,19 @@ function Section({ title, children }) {
     <section style={{ marginBottom: 36 }}>
       <h2 style={{
         fontSize: 16, fontWeight: 700, marginBottom: 12,
-        paddingBottom: 8, borderBottom: '2px solid #f2f4f6',
-        color: '#191f28',
+        paddingBottom: 8, borderBottom: '2px solid var(--rule)',
+        color: 'var(--ink)',
       }}>
         {title}
       </h2>
-      <div style={{ fontSize: 14, color: '#4e5968' }}>{children}</div>
+      <div style={{ fontSize: 14, color: 'var(--ink-2)' }}>{children}</div>
     </section>
   );
 }
 
 function SubTitle({ children }) {
   return (
-    <p style={{ fontSize: 13, fontWeight: 700, color: '#191f28', marginTop: 16, marginBottom: 8 }}>
+    <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--ink)', marginTop: 16, marginBottom: 8 }}>
       {children}
     </p>
   );
@@ -205,15 +205,15 @@ function Table({ rows }) {
     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
       <tbody>
         {rows.map(([label, value], i) => (
-          <tr key={i} style={{ borderBottom: '1px solid #f2f4f6' }}>
+          <tr key={i} style={{ borderBottom: '1px solid var(--rule)' }}>
             <td style={{
-              padding: '10px 12px', fontWeight: 600, color: '#191f28',
-              backgroundColor: '#f8f9fa', whiteSpace: 'nowrap', width: '30%',
+              padding: '10px 12px', fontWeight: 600, color: 'var(--ink)',
+              backgroundColor: 'var(--ivory-2)', whiteSpace: 'nowrap', width: '30%',
               borderRadius: i === 0 ? '8px 0 0 0' : i === rows.length - 1 ? '0 0 0 8px' : 0,
             }}>
               {label}
             </td>
-            <td style={{ padding: '10px 12px', color: '#4e5968' }}>{value}</td>
+            <td style={{ padding: '10px 12px', color: 'var(--ink-2)' }}>{value}</td>
           </tr>
         ))}
       </tbody>

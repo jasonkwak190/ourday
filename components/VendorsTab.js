@@ -49,9 +49,8 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
       <div className="grid grid-cols-5 gap-1.5">
         {VENDOR_TYPES.map(t => (
           <button key={t.value} onClick={() => setForm(f => ({ ...f, type: t.value }))}
-            className="py-2 rounded-xl text-xs font-medium flex flex-col items-center gap-0.5"
+            className="py-2 rounded-xl text-xs font-medium flex items-center justify-center"
             style={{ backgroundColor: form.type === t.value ? 'var(--rose-light)' : 'var(--beige)', color: form.type === t.value ? 'var(--rose)' : 'var(--stone)', border: `1.5px solid ${form.type === t.value ? 'var(--rose)' : 'transparent'}` }}>
-            <span className="text-base">{t.icon}</span>
             <span className="leading-none">{t.label}</span>
           </button>
         ))}
@@ -242,7 +241,7 @@ export default function VendorsTab({ coupleId }) {
         {VENDOR_TYPES.filter(t => vendors.some(v => v.type === t.value)).map(t => (
           <button key={t.value} onClick={() => setFilterType(t.value)} className="flex-shrink-0 px-3 py-1.5 rounded-xl text-xs font-medium"
             style={{ backgroundColor: filterType === t.value ? 'var(--rose-light)' : 'var(--beige)', color: filterType === t.value ? 'var(--rose)' : 'var(--stone)', border: `1.5px solid ${filterType === t.value ? 'var(--rose)' : 'transparent'}` }}>
-            {t.icon} {t.label}
+            {t.label}
           </button>
         ))}
       </div>
@@ -282,7 +281,10 @@ export default function VendorsTab({ coupleId }) {
             return (
               <div key={vendor.id} className="card relative" onClick={e => e.stopPropagation()}>
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl flex-shrink-0 mt-0.5">{typeInfo.icon}</span>
+                  <span className="text-xs font-semibold px-2 py-1 rounded-lg flex-shrink-0 mt-0.5"
+                    style={{ backgroundColor: 'var(--champagne-wash)', color: 'var(--champagne-2)' }}>
+                    {typeInfo.label}
+                  </span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{vendor.name}</p>

@@ -208,7 +208,7 @@ export default function GuestsPage() {
   return (
     <div className="page-wrapper" onClick={() => { setMenuId(null); setGiftEditId(null); }}>
       <h1 className="text-xl font-semibold mb-4" style={{ color: 'var(--ink)' }}>
-        🎊 하객 관리
+        하객 관리
       </h1>
 
       {/* 요약 카드 */}
@@ -262,9 +262,9 @@ export default function GuestsPage() {
       {/* 탭 — 3개 */}
       <div className="flex mb-4 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--beige)' }}>
         {[
-          { key: 'list',   label: '👥 명단' },
-          { key: 'rsvp',   label: `✅ 참석확인${unmappedRsvp.length > 0 ? ` (${unmappedRsvp.length})` : ''}` },
-          { key: 'invite', label: '💌 청첩장' },
+          { key: 'list',   label: '명단' },
+          { key: 'rsvp',   label: `참석확인${unmappedRsvp.length > 0 ? ` (${unmappedRsvp.length})` : ''}` },
+          { key: 'invite', label: '청첩장' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className="flex-1 py-2.5 text-sm font-medium transition-all"
@@ -381,9 +381,9 @@ export default function GuestsPage() {
                         {/* RSVP 상태 뱃지 */}
                         {rsvp && (
                           <span className="text-xs px-2 py-0.5 rounded-full"
-                            style={{ backgroundColor: rsvp.attending ? '#e8f7ee' : '#f2f4f6',
-                              color: rsvp.attending ? '#1a9e5c' : 'var(--stone)' }}>
-                            {rsvp.attending ? '🎉 참석' : '🙏 불참'}
+                            style={{ backgroundColor: rsvp.attending ? 'var(--sage-wash)' : 'var(--ivory-2)',
+                              color: rsvp.attending ? 'var(--sage)' : 'var(--stone)' }}>
+                            {rsvp.attending ? '참석' : '불참'}
                           </span>
                         )}
                       </div>
@@ -546,7 +546,7 @@ export default function GuestsPage() {
           {unmappedRsvp.length > 0 && (
             <div className="card mb-4" style={{ border: '1.5px solid var(--toss-blue-light)', backgroundColor: 'var(--toss-blue-light)' }}>
               <p className="text-sm font-bold mb-2" style={{ color: 'var(--toss-blue)' }}>
-                📋 명단에 없는 참석자 {unmappedRsvp.length}명
+                명단에 없는 참석자 {unmappedRsvp.length}명
               </p>
               <p className="text-xs mb-3" style={{ color: 'var(--toss-text-secondary)' }}>
                 RSVP로 참석 응답했지만 명단에 없어요. 추가하세요.
@@ -606,8 +606,8 @@ export default function GuestsPage() {
                   return (
                     <div key={r.id} className="card flex items-start gap-3">
                       <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-base"
-                        style={{ backgroundColor: r.attending ? 'var(--toss-blue-light)' : '#f2f4f6' }}>
-                        {r.attending ? '🎉' : '🙏'}
+                        style={{ backgroundColor: r.attending ? 'var(--sage-wash)' : 'var(--ivory-2)' }}>
+                        {r.attending ? '✓' : '✕'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -620,13 +620,13 @@ export default function GuestsPage() {
                             </span>
                           )}
                           <span className="text-xs px-2 py-0.5 rounded-full font-medium"
-                            style={{ backgroundColor: r.attending ? 'var(--toss-blue-light)' : '#f2f4f6',
-                              color: r.attending ? 'var(--toss-blue)' : 'var(--stone)' }}>
+                            style={{ backgroundColor: r.attending ? 'var(--sage-wash)' : 'var(--ivory-2)',
+                              color: r.attending ? 'var(--sage)' : 'var(--stone)' }}>
                             {r.attending ? `참석 · ${r.meal_count || 1}명` : '불참'}
                           </span>
                           {/* 명단 연결 상태 */}
-                          <span className="text-xs" style={{ color: inList ? '#1a9e5c' : 'var(--stone-light)' }}>
-                            {inList ? '✅ 명단 있음' : '—'}
+                          <span className="text-xs" style={{ color: inList ? 'var(--sage)' : 'var(--stone-light)' }}>
+                            {inList ? '명단 있음' : '—'}
                           </span>
                         </div>
                         {r.phone && <p className="text-xs mt-0.5" style={{ color: 'var(--stone)' }}>{r.phone}</p>}

@@ -245,9 +245,9 @@ export default function NotesPage() {
       {/* 역할 배지 */}
       <div className="flex items-center justify-between mb-3">
         <div className="px-3 py-1 rounded-full text-xs font-semibold"
-          style={{ backgroundColor: isGroom ? '#e8f0fe' : '#fce4ec',
-            color: isGroom ? '#1a56db' : '#c2185b' }}>
-          {isGroom ? '🤵 신랑' : '👰 신부'} 으로 작성 중
+          style={{ backgroundColor: isGroom ? 'var(--champagne-wash)' : 'var(--rose-ed-wash)',
+            color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)' }}>
+          {isGroom ? '신랑' : '신부'} 으로 작성 중
         </div>
         <span className="text-xs tabular-nums" style={{ color: 'var(--toss-text-tertiary)' }}>
           {filtered.length}개
@@ -377,8 +377,8 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
   const { preview, loading: previewLoading } = useLinkPreview(note.link_url);
 
   const bubbleColor = isGroom
-    ? { bg: '#e8f0fe', text: '#1a56db', badge: '🤵' }
-    : { bg: '#fce4ec', text: '#c2185b', badge: '👰' };
+    ? { bg: 'var(--champagne-wash)', text: 'var(--champagne-2)', badge: '신랑' }
+    : { bg: 'var(--rose-ed-wash)', text: 'var(--rose-ed)', badge: '신부' };
 
   const align = isGroom ? 'flex-start' : 'flex-end';
 
@@ -405,7 +405,7 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
               style={{ border: 'none', outline: 'none', resize: 'none', fontSize: 14,
                 lineHeight: 1.5, fontFamily: 'inherit', color: 'var(--toss-text-primary)', width: '100%' }} />
             <div className="flex items-center gap-1.5"
-              style={{ borderTop: '1px solid #e5e8eb', paddingTop: 8 }}>
+              style={{ borderTop: '1px solid var(--rule)', paddingTop: 8 }}>
               <Link2 size={12} color="var(--toss-text-tertiary)" />
               <input type="url" placeholder="링크 (선택)" value={editLink}
                 onChange={e => onEditChange(editContent, e.target.value)}
@@ -414,8 +414,8 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
             </div>
             <div style={{ display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
               <button onClick={onEditCancel}
-                style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid #e5e8eb',
-                  backgroundColor: 'white', fontSize: 12, cursor: 'pointer', color: 'var(--toss-text-secondary)' }}>
+                style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid var(--rule)',
+                  backgroundColor: 'var(--ivory)', fontSize: 12, cursor: 'pointer', color: 'var(--toss-text-secondary)' }}>
                 취소
               </button>
               <button onClick={onEditSave}
@@ -430,13 +430,13 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
             <p style={{ fontSize: 13, color: 'var(--toss-text-primary)', margin: 0 }}>삭제할까요?</p>
             <div style={{ display: 'flex', gap: 6 }}>
               <button onClick={onDeleteCancel}
-                style={{ flex: 1, padding: '4px 0', borderRadius: 8, border: '1px solid #e5e8eb',
-                  backgroundColor: 'white', fontSize: 12, cursor: 'pointer', color: 'var(--toss-text-secondary)' }}>
+                style={{ flex: 1, padding: '4px 0', borderRadius: 8, border: '1px solid var(--rule)',
+                  backgroundColor: 'var(--ivory)', fontSize: 12, cursor: 'pointer', color: 'var(--toss-text-secondary)' }}>
                 취소
               </button>
               <button onClick={onDeleteConfirm}
                 style={{ flex: 1, padding: '4px 0', borderRadius: 8, border: 'none',
-                  backgroundColor: '#ff4d4f', color: 'white', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
+                  backgroundColor: 'var(--clay)', color: 'white', fontSize: 12, cursor: 'pointer', fontWeight: 600 }}>
                 삭제
               </button>
             </div>

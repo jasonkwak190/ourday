@@ -89,8 +89,8 @@ export default function SetupProfilePage() {
           </label>
           <div className="flex gap-3">
             {[
-              { value: 'groom', label: '신랑 🤵' },
-              { value: 'bride', label: '신부 👰' },
+              { value: 'groom', label: '신랑' },
+              { value: 'bride', label: '신부' },
             ].map(r => (
               <button
                 key={r.value}

@@ -573,7 +573,7 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-2">
             {guestbook.map(msg => (
               <div key={msg.id} className="flex items-start gap-2">
-                <span className="text-xs flex-shrink-0 mt-0.5">💌</span>
+                <Icon name="invite" size={14} color="var(--champagne)" style={{ flexShrink: 0, marginTop: 2 }} />
                 <div className="flex-1 min-w-0">
                   <span className="text-xs font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
                     {msg.name}

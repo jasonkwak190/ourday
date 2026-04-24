@@ -12,24 +12,24 @@ const TEMPLATES = [
 ];
 
 const FIELDS = [
-  { section: '👫 신랑·신부', fields: [
+  { section: '신랑·신부', fields: [
     { key: 'groom_name',    label: '신랑 이름',   placeholder: '홍길동' },
     { key: 'bride_name',    label: '신부 이름',   placeholder: '김영희' },
   ]},
-  { section: '📅 날짜·시간', fields: [
+  { section: '날짜·시간', fields: [
     { key: 'wedding_date',  label: '결혼 날짜',   type: 'date' },
     { key: 'wedding_time',  label: '시간',        placeholder: '오후 1시 30분' },
   ]},
-  { section: '📍 예식장', fields: [
+  { section: '예식장', fields: [
     { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
     { key: 'venue_address', label: '주소',        placeholder: '서울시 강남구 ...' },
     { key: 'venue_map_url', label: '지도 링크',   placeholder: 'https://map.kakao.com/...' },
   ]},
-  { section: '💳 계좌번호', fields: [
+  { section: '계좌번호', fields: [
     { key: 'account_groom', label: '신랑측 계좌', placeholder: '은행명 000-0000-0000 홍길동' },
     { key: 'account_bride', label: '신부측 계좌', placeholder: '은행명 000-0000-0000 김영희' },
   ]},
-  { section: '💌 초대 메시지', fields: [
+  { section: '초대 메시지', fields: [
     { key: 'message', label: '메시지', type: 'textarea',
       placeholder: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.' },
   ]},
@@ -98,7 +98,7 @@ function PreviewModal({ form, onClose, onSave, saving }) {
         </div>
       </div>
 
-      <div style={{ flex: 1, overflowY: 'auto', backgroundColor: '#f0f0f0' }}>
+      <div style={{ flex: 1, overflowY: 'auto', backgroundColor: 'var(--ivory-2)' }}>
         <div style={{ maxWidth: 390, margin: '20px auto', borderRadius: 24, overflow: 'hidden', boxShadow: '0 8px 40px rgba(0,0,0,0.3)' }}>
           <InvitationRenderer
             inv={form}
@@ -344,7 +344,7 @@ export default function InvitationTab({ coupleId }) {
       {/* 카카오톡 공유 썸네일 사진 */}
       <div className="card mb-4">
         <p className="text-sm font-bold mb-1" style={{ color: 'var(--toss-text-primary)' }}>
-          📸 공유 썸네일 사진 <span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>(선택)</span>
+          공유 썸네일 사진 <span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>(선택)</span>
         </p>
         <p className="text-xs mb-3" style={{ color: 'var(--toss-text-tertiary)', lineHeight: 1.6 }}>
           카카오톡 등 링크 공유 시 미리보기 이미지로 쓰여요.{'\n'}

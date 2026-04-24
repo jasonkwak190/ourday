@@ -6,7 +6,7 @@ import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
 import { Share2 } from 'lucide-react';
 
-const ROLE_LABEL = { groom: '신랑 🤵', bride: '신부 👰' };
+const ROLE_LABEL = { groom: '신랑', bride: '신부' };
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -81,7 +81,7 @@ export default function SettingsPage() {
   return (
     <div className="page-wrapper">
       <h1 className="text-xl font-semibold mb-6" style={{ color: 'var(--toss-text-primary)' }}>
-        ⚙️ 설정
+        설정
       </h1>
 
       {/* 내 프로필 */}
@@ -119,7 +119,7 @@ export default function SettingsPage() {
               <div className="flex items-center gap-3">
                 <div className="flex items-center justify-center rounded-full text-lg"
                   style={{ width: 40, height: 40, backgroundColor: partner ? 'var(--toss-blue)' : 'var(--toss-border)' }}>
-                  {partner ? (partner.role === 'bride' ? '👰' : '🤵') : '?'}
+                  {partner ? (partner.role === 'bride' ? '신부' : '신랑') : '?'}
                 </div>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: 'var(--toss-text-primary)' }}>
@@ -135,7 +135,7 @@ export default function SettingsPage() {
               {partner && (
                 <span className="text-xs font-semibold px-2 py-1 rounded-full"
                   style={{ backgroundColor: 'var(--toss-blue)', color: 'white' }}>
-                  💑 연동됨
+                  연동됨
                 </span>
               )}
             </div>
@@ -153,7 +153,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex gap-2">
               <button className="btn-outline flex-1" onClick={handleCopy}>
-                {copied ? '✅ 복사됨!' : '📋 코드 복사'}
+                {copied ? '복사됨!' : '코드 복사'}
               </button>
               {canShare && (
                 <button
