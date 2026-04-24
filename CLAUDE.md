@@ -218,7 +218,7 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [x] settings 페이지 헤더 serif 업데이트
 - [x] timeline 캘린더 뷰 에디토리얼 처리 (세리프 월/요일, 샴페인 오늘 링, 에디토리얼 범례)
 - [x] `/i/[slug]` 공개 청첩장 에디토리얼 타이포 (Divider serif, 방명록 카드, 제출 버튼 pill)
-- [ ] 앱 스플래시·아이콘 O·D 모노그램으로 교체
+- [x] 앱 스플래시·아이콘 O·D 모노그램으로 교체 (Baskerville 세리프, 잉크 배경, 샴페인 점)
 
 ### 🔐 인증 / OAuth
 
