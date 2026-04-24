@@ -81,10 +81,10 @@ export default function SettingsPage() {
 
   return (
     <div className="page-wrapper">
-      <h1 className="text-xl font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--toss-text-primary)' }}>
-        <Icon name="settings" size={22} color="var(--ink)" />
-        설정
-      </h1>
+      <div className="mb-6">
+        <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>설정</h1>
+        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>account &amp; preferences</p>
+      </div>
 
       {/* 내 프로필 */}
       <div className="card mb-4">

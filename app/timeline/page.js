@@ -870,9 +870,15 @@ export default function TimelinePage() {
               <button onClick={prevCalMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <ChevronLeft size={20} color="var(--ink)" />
               </button>
-              <p className="text-base font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
-                {calYear}년 {calMonth + 1}월
-              </p>
+              <div style={{ textAlign: 'center' }}>
+                <span style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 16, color: 'var(--ink)', letterSpacing: '-0.01em' }}>
+                  {calYear}
+                </span>
+                <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 13, color: 'var(--champagne-2)', margin: '0 6px' }}>·</span>
+                <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 15, color: 'var(--ink-2)' }}>
+                  {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][calMonth]}
+                </span>
+              </div>
               <button onClick={nextCalMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <ChevronRight size={20} color="var(--ink)" />
               </button>
@@ -880,8 +886,8 @@ export default function TimelinePage() {
 
             <div className="grid grid-cols-7 mb-1">
               {DAY_LABELS.map((d, i) => (
-                <div key={d} className="text-center text-xs font-semibold py-1"
-                  style={{ color: i === 0 ? 'var(--toss-red)' : i === 6 ? 'var(--toss-blue)' : 'var(--stone)' }}>
+                <div key={d} className="text-center py-1"
+                  style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10, letterSpacing: '0.04em', color: i === 0 ? 'var(--clay)' : 'var(--ink-4)' }}>
                   {d}
                 </div>
               ))}
@@ -900,19 +906,24 @@ export default function TimelinePage() {
                   <div key={day} className="flex flex-col items-center py-0.5 cursor-pointer"
                     onClick={() => setCalSelected(isSel ? null : day)}>
                     <div className="w-8 h-8 flex items-center justify-center rounded-full transition-all"
-                      style={{ backgroundColor: isSel ? 'var(--toss-blue)' : isWedding ? 'var(--rose-light)' : isToday ? 'var(--toss-bg)' : 'transparent', border: isToday && !isSel ? '1.5px solid var(--toss-blue)' : 'none' }}>
-                      <span className="text-sm font-medium tabular-nums"
-                        style={{ color: isSel ? 'white' : isWedding ? 'var(--toss-blue)' : col === 0 ? 'var(--toss-red)' : col === 6 ? 'var(--toss-blue)' : 'var(--ink)' }}>
+                      style={{
+                        backgroundColor: isSel ? 'var(--ink)' : isWedding ? 'var(--champagne-wash)' : 'transparent',
+                        border: isToday && !isSel ? '1.5px solid var(--champagne)' : 'none',
+                      }}>
+                      <span style={{
+                        fontFamily: 'var(--font-serif-en)', fontSize: 13, fontWeight: isSel || isToday ? 600 : 400,
+                        color: isSel ? 'var(--ivory)' : isWedding ? 'var(--champagne-2)' : col === 0 ? 'var(--clay)' : 'var(--ink)',
+                      }}>
                         {day}
                       </span>
                     </div>
                     {dayEvts.length > 0 && (
                       <div className="flex gap-0.5 mt-0.5 items-center">
                         {dayEvts.slice(0, 2).map((e, i) => (
-                          <div key={i} className="rounded-full" style={{ width: 6, height: 6, backgroundColor: e.color }} />
+                          <div key={i} className="rounded-full" style={{ width: 5, height: 5, backgroundColor: e.color }} />
                         ))}
                         {dayEvts.length > 2 && (
-                          <span style={{ fontSize: 8, color: 'var(--stone)', lineHeight: 1 }}>+{dayEvts.length - 2}</span>
+                          <span style={{ fontSize: 8, color: 'var(--ink-4)', lineHeight: 1 }}>+{dayEvts.length - 2}</span>
                         )}
                       </div>
                     )}
@@ -925,13 +936,13 @@ export default function TimelinePage() {
           {/* 범례 */}
           <div className="flex gap-4 mb-4 px-1">
             {[
-              { color: 'var(--toss-blue)',   label: '체크리스트' },
-              { color: 'var(--toss-yellow)', label: '업체 잔금' },
-              { color: 'var(--toss-red)',    label: '결혼식 당일' },
+              { color: 'var(--champagne)',   label: '체크리스트' },
+              { color: 'var(--ochre)',       label: '업체 잔금' },
+              { color: 'var(--clay)',        label: '결혼식 당일' },
             ].map(({ color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
-                <div className="rounded-full" style={{ width: 8, height: 8, backgroundColor: color }} />
-                <span className="text-xs" style={{ color: 'var(--stone)' }}>{label}</span>
+                <div className="rounded-full" style={{ width: 7, height: 7, backgroundColor: color }} />
+                <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.03em' }}>{label}</span>
               </div>
             ))}
           </div>
@@ -939,7 +950,7 @@ export default function TimelinePage() {
           {/* 선택된 날짜 */}
           {calSelected && (
             <div className="card mb-4">
-              <p className="text-sm font-bold mb-3" style={{ color: 'var(--ink)' }}>
+              <p style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 14, color: 'var(--ink)', marginBottom: 12 }}>
                 {calMonth + 1}월 {calSelected}일 일정
               </p>
               {calSelectedEvents.length === 0 ? (
@@ -1012,19 +1023,19 @@ function DueModeSelector({ mode, onChange }) {
 /* ─── 캘린더 이벤트 아이템 ─────────────────────────────────── */
 function CalEventItem({ event, showDate }) {
   return (
-    <div className="flex items-start gap-3 py-2 rounded-xl px-3" style={{ backgroundColor: 'var(--toss-bg)' }}>
+    <div className="flex items-start gap-3 py-2 rounded-xl px-3" style={{ backgroundColor: 'var(--paper)' }}>
       <div className="flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center"
         style={{ backgroundColor: event.color + '22' }}>
         <event.Icon size={16} color={event.color} strokeWidth={2} />
       </div>
       <div className="flex-1 min-w-0">
         {showDate && (
-          <p className="text-xs tabular-nums" style={{ color: 'var(--stone)' }}>
-            {event.date.getMonth() + 1}월 {event.date.getDate()}일
+          <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10, color: 'var(--champagne-2)', marginBottom: 2, letterSpacing: '0.04em' }}>
+            {event.date.getMonth() + 1}. {event.date.getDate()}
           </p>
         )}
-        <p className="text-sm font-medium" style={{ color: 'var(--ink)' }}>{event.title}</p>
-        {event.sub && <p className="text-xs mt-0.5" style={{ color: 'var(--stone)' }}>{event.sub}</p>}
+        <p style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 13, color: 'var(--ink)', margin: 0 }}>{event.title}</p>
+        {event.sub && <p className="text-xs mt-0.5" style={{ color: 'var(--ink-3)' }}>{event.sub}</p>}
       </div>
       {event.badge && (
         <span className="text-xs px-2 py-0.5 rounded-full flex-shrink-0"

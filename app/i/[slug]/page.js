@@ -168,9 +168,13 @@ export default function InvitationViewPage({ params }) {
   if (!inv) {
     return (
       <div style={centered}>
-        <Heart size={28} color="#d4879a" />
-        <p style={{ fontSize: 16, color: '#4e5968', fontWeight: 600, marginTop: 12 }}>청첩장을 찾을 수 없어요</p>
-        <p style={{ fontSize: 13, color: '#b0b8c1', marginTop: 6 }}>링크를 다시 확인해주세요</p>
+        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 48, fontWeight: 500, color: '#1a1613', letterSpacing: '-0.04em', lineHeight: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span>O</span>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#c9a96e', display: 'inline-block', marginBottom: 4 }} />
+          <span>D</span>
+        </div>
+        <p style={{ fontFamily: "'Noto Serif KR', serif", fontSize: 15, color: '#1a1613', fontWeight: 500, marginTop: 16 }}>청첩장을 찾을 수 없어요</p>
+        <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: '#b0935a', marginTop: 6 }}>링크를 다시 확인해주세요</p>
       </div>
     );
   }
@@ -443,16 +447,16 @@ export default function InvitationViewPage({ params }) {
                 onClick={handleSubmit}
                 disabled={submitting}
                 style={{
-                  height: 56, borderRadius: 16, border: 'none',
-                  backgroundColor: submitting ? '#c9d1d9' : accentColor,
-                  color: 'white', fontSize: 16, fontWeight: 700,
+                  height: 56, borderRadius: 28, border: 'none',
+                  backgroundColor: submitting ? '#c9d1d9' : 'var(--ink, #1a1613)',
+                  color: 'var(--ivory, #faf8f5)', fontSize: 15, fontWeight: 600,
                   cursor: submitting ? 'not-allowed' : 'pointer',
                   fontFamily: FONT, transition: 'background-color 0.2s',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                  marginTop: 4,
+                  marginTop: 4, letterSpacing: '0.02em',
                 }}
               >
-                <Send size={16} />
+                <Send size={15} />
                 {submitting ? '전송 중...' : '참석 여부 전달하기'}
               </button>
             </div>
@@ -465,18 +469,18 @@ export default function InvitationViewPage({ params }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {entries.map(entry => (
                   <div key={entry.id} style={{
-                    backgroundColor: 'white', borderRadius: 14,
-                    padding: '14px 16px', border: '1px solid #f2f4f6',
+                    backgroundColor: 'var(--paper, #f5f0e8)', borderRadius: 10,
+                    padding: '14px 16px', border: '1px solid var(--rule, #e8e2d9)',
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#191f28', margin: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+                      <p style={{ fontFamily: "'Noto Serif KR', serif", fontWeight: 500, fontSize: 13, color: 'var(--ink, #1a1613)', margin: 0 }}>
                         {entry.name}
                       </p>
-                      <p style={{ fontSize: 11, color: '#b0b8c1', margin: 0 }}>
+                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 10, color: 'var(--champagne-2, #b0935a)', margin: 0, letterSpacing: '0.04em' }}>
                         {timeAgo(entry.created_at)}
                       </p>
                     </div>
-                    <p style={{ fontSize: 14, color: '#4e5968', lineHeight: 1.6, margin: 0, whiteSpace: 'pre-wrap' }}>
+                    <p style={{ fontFamily: "'Noto Serif KR', serif", fontSize: 13, color: 'var(--ink-2, #3d3530)', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                       {entry.message}
                     </p>
                   </div>
@@ -506,23 +510,24 @@ function FormCard({ children }) {
 function FieldLabel({ children, required, optional }) {
   return (
     <p style={{
-      fontSize: 12, fontWeight: 700, color: '#8b95a1',
+      fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic',
+      fontSize: 11, color: 'var(--champagne-2, #b0935a)', letterSpacing: '0.06em',
       marginBottom: 10, margin: '0 0 10px',
       display: 'flex', alignItems: 'center', gap: 4,
     }}>
       {children}
-      {required && <span style={{ color: '#ff4d4f', fontSize: 10 }}>필수</span>}
-      {optional && <span style={{ color: '#c9d1d9', fontSize: 10, fontWeight: 400 }}>선택</span>}
+      {required && <span style={{ fontFamily: 'inherit', fontStyle: 'normal', color: 'var(--clay, #c4617a)', fontSize: 9 }}>*</span>}
+      {optional && <span style={{ fontFamily: 'inherit', fontStyle: 'normal', color: '#c9d1d9', fontSize: 9 }}>opt</span>}
     </p>
   );
 }
 
 function Divider({ label }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '0 0 20px' }}>
-      <div style={{ flex: 1, height: 1, backgroundColor: '#e5e8eb' }} />
-      <p style={{ fontSize: 12, color: '#b0b8c1', letterSpacing: '0.06em', margin: 0 }}>{label}</p>
-      <div style={{ flex: 1, height: 1, backgroundColor: '#e5e8eb' }} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '28px 0 20px' }}>
+      <div style={{ flex: 1, height: 1, backgroundColor: 'var(--rule-strong, #e5e8eb)' }} />
+      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2, #b0935a)', letterSpacing: '0.08em', margin: 0 }}>· {label} ·</p>
+      <div style={{ flex: 1, height: 1, backgroundColor: 'var(--rule-strong, #e5e8eb)' }} />
     </div>
   );
 }
