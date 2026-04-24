@@ -1,210 +1,430 @@
 @import "tailwindcss";
 
 :root {
-  /* ── Toss 컬러 토큰 ── */
-  --toss-bg:             #FAF7F2;
-  --toss-card:           #FFFFFF;
-  --toss-blue:           #3182F6;
-  --toss-blue-light:     #EBF3FE;
-  --toss-blue-dark:      #1B64DA;
-  --toss-text-primary:   #191F28;
-  --toss-text-secondary: #4E5968;
-  --toss-text-tertiary:  #8B95A1;
-  --toss-border:         #E5E8EB;
-  --toss-red:            #F04452;
-  --toss-red-light:      #FFF0F1;
-  --toss-green:          #00B493;
-  --toss-green-light:    #E6FAF6;
-  --toss-yellow:         #F8B300;
-  --toss-yellow-light:   #FFFAE6;
-  --toss-purple:         #7B61FF;
-  --toss-purple-light:   #F0EEFF;
+  /* ── Editorial Wedding Planner · Ourday v2 ──
+     Ink · Ivory · Champagne Gold · Dusty Rose
+  ─────────────────────────────────────────────── */
 
-  /* ── 결혼 테마 → Toss 시맨틱 매핑 (하위호환) ── */
-  --cream:        var(--toss-bg);
-  --beige:        #EAECEF;
-  --rose:         var(--toss-blue);
-  --rose-light:   var(--toss-blue-light);
-  --stone:        var(--toss-text-secondary);
-  --stone-light:  var(--toss-border);
-  --ink:          var(--toss-text-primary);
-  --ink-soft:     var(--toss-text-secondary);
-  --green:        var(--toss-green);
-  --green-light:  var(--toss-green-light);
-  --amber:        var(--toss-yellow);
-  --amber-light:  var(--toss-yellow-light);
-  --purple:       var(--toss-purple);
-  --purple-light: var(--toss-purple-light);
+  /* Neutrals */
+  --ink:              #1A1613;
+  --ink-2:            #3A332E;
+  --ink-3:            #6E6459;
+  --ink-4:            #A79D90;
+  --ivory:            #F7F2EA;
+  --ivory-2:          #EFE8DC;
+  --paper:            #FBF8F2;
+  --paper-pure:       #FFFFFF;
+  --rule:             #E2D9C9;
+  --rule-strong:      #C8BCA4;
+
+  /* Champagne Gold — primary accent */
+  --champagne:        #B89968;
+  --champagne-2:      #9E8052;
+  --champagne-3:      #CDB388;
+  --champagne-wash:   #F1E8D6;
+
+  /* Dusty Rose */
+  --rose-ed:          #B57A7A;
+  --rose-ed-2:        #945E5E;
+  --rose-ed-wash:     #EFDFDE;
+
+  /* Burgundy */
+  --burgundy:         #6B2E3A;
+  --burgundy-wash:    #E8D5D8;
+
+  /* Semantic — muted earth tones */
+  --sage:             #7A8B6B;
+  --sage-wash:        #E4E8DC;
+  --ochre:            #B8914A;
+  --ochre-wash:       #F1E5CB;
+  --clay:             #9C4A3A;
+  --clay-wash:        #EED9D2;
+
+  /* Semantic role aliases */
+  --bg:               var(--ivory);
+  --bg-alt:           var(--ivory-2);
+  --surface:          var(--paper);
+  --surface-raised:   var(--paper-pure);
+  --fg:               var(--ink);
+  --fg-2:             var(--ink-2);
+  --fg-muted:         var(--ink-3);
+  --fg-faint:         var(--ink-4);
+  --border:           var(--rule);
+  --border-strong:    var(--rule-strong);
+  --accent:           var(--champagne);
+  --accent-hover:     var(--champagne-2);
+  --accent-wash:      var(--champagne-wash);
+
+  /* Fonts */
+  --font-serif-en:    "Cormorant Garamond", Georgia, serif;
+  --font-serif-ko:    "Noto Serif KR", "Nanum Myeongjo", serif;
+  --font-sans:        "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+
+  /* Letter spacing */
+  --tr-tight:         -0.02em;
+  --tr-tighter:       -0.035em;
+  --tr-wide:          0.04em;
+  --tr-wider:         0.12em;
+  --tr-widest:        0.22em;
+
+  /* Shadows */
+  --shadow-xs:        0 1px 2px rgba(26, 22, 19, 0.04);
+  --shadow-sm:        0 2px 8px rgba(26, 22, 19, 0.05);
+  --shadow-md:        0 6px 24px rgba(26, 22, 19, 0.07);
+  --shadow-lg:        0 18px 48px rgba(26, 22, 19, 0.10);
+  --shadow-sheet:     0 -8px 32px rgba(26, 22, 19, 0.08);
+
+  /* Radii */
+  --r-xs:   4px;
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   20px;
+  --r-pill: 999px;
+
+  /* Motion */
+  --ease:       cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast:   140ms;
+  --dur:        220ms;
+  --dur-slow:   360ms;
+
+  /* ── Backward-compatible Toss aliases ──
+     Existing code using --toss-* continues to work,
+     now mapped to the new editorial palette.
+  ──────────────────────────────────────── */
+  --toss-bg:             var(--ivory);
+  --toss-card:           var(--paper);
+  --toss-blue:           var(--champagne);
+  --toss-blue-light:     var(--champagne-wash);
+  --toss-blue-dark:      var(--champagne-2);
+  --toss-text-primary:   var(--ink);
+  --toss-text-secondary: var(--ink-2);
+  --toss-text-tertiary:  var(--ink-3);
+  --toss-border:         var(--rule);
+  --toss-red:            var(--clay);
+  --toss-red-light:      var(--clay-wash);
+  --toss-green:          var(--sage);
+  --toss-green-light:    var(--sage-wash);
+  --toss-yellow:         var(--ochre);
+  --toss-yellow-light:   var(--ochre-wash);
+  --toss-purple:         var(--burgundy);
+  --toss-purple-light:   var(--burgundy-wash);
+
+  /* Legacy wedding theme aliases */
+  --cream:        var(--ivory);
+  --beige:        var(--ivory-2);
+  --rose:         var(--champagne);
+  --rose-light:   var(--champagne-wash);
+  --stone:        var(--ink-2);
+  --stone-light:  var(--rule);
+  --ink-soft:     var(--ink-2);
+  --green:        var(--sage);
+  --green-light:  var(--sage-wash);
+  --amber:        var(--ochre);
+  --amber-light:  var(--ochre-wash);
+  --purple:       var(--burgundy);
+  --purple-light: var(--burgundy-wash);
 }
 
 /* ─── Base ─── */
 * { box-sizing: border-box; }
 
-/*
- * ─── Safe-area 전역 설정 ───
- * viewport-fit=cover (layout.js) + env(safe-area-inset-*) 조합으로
- * iPhone 노치·Dynamic Island·안드로이드 컷아웃·홈 인디케이터 대응.
- *
- * body에 padding-top을 주어 상단 상태바 아래로 콘텐츠가 시작되게 하고,
- * 배경색을 --toss-bg로 통일하여 safe area 영역도 자연스럽게 처리.
- */
 html {
-  background-color: var(--toss-bg);  /* 상단 safe-area 배경 */
+  background-color: var(--ivory);
 }
 
 body {
-  background-color: var(--toss-bg);
-  color: var(--toss-text-primary);
-  /*
-   * 폰트 스택 규칙:
-   * 1) Tossface — 이모지 코드포인트(U+1F000~)만 담당. 텍스트·숫자 글리프 없으므로
-   *    앞에 두어도 Pretendard 렌더링에 영향 없음. 이모지가 시스템 이모지 대신
-   *    Toss 디자인으로 표시되어 "인앱 느낌" 제공.
-   * 2) Pretendard Variable → Pretendard — 한/영/숫자 전담
-   * 3) 시스템 폰트 — Pretendard 미로드 시 fallback
-   */
-  font-family: 'Pretendard Variable', 'Pretendard',
-    -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
+  background-color: var(--ivory);
+  color: var(--ink);
+  font-family: var(--font-sans);
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* 상단 노치·상태바 영역 확보 */
   padding-top: env(safe-area-inset-top);
 }
 
-/* tabular-nums: 금액·날짜처럼 숫자가 나란히 있을 때만 선택 적용 */
+/* ─── Typography helpers ─── */
+.font-serif-en { font-family: var(--font-serif-en); }
+.font-serif-ko { font-family: var(--font-serif-ko); }
+.font-sans     { font-family: var(--font-sans); }
+
+.t-hero {
+  font-family: var(--font-serif-en);
+  font-size: clamp(80px, 20vw, 140px);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: var(--tr-tighter);
+  font-feature-settings: "onum" 1, "pnum" 1;
+}
+.t-display {
+  font-family: var(--font-serif-ko);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: var(--tr-tight);
+}
+.t-title {
+  font-family: var(--font-serif-ko);
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--tr-tight);
+}
+.t-h1 { font-size: 20px; font-weight: 700; line-height: 1.35; letter-spacing: var(--tr-tight); }
+.t-h2 { font-size: 16px; font-weight: 600; line-height: 1.4; }
+.t-h3 { font-size: 14px; font-weight: 600; line-height: 1.5; }
+.t-body { font-size: 14px; font-weight: 400; line-height: 1.6; color: var(--ink-2); }
+.t-sub { font-size: 13px; font-weight: 400; line-height: 1.6; color: var(--ink-3); }
+.t-caption { font-size: 12px; font-weight: 400; line-height: 1.5; color: var(--ink-3); }
+.t-kicker {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tr-widest);
+  color: var(--champagne-2);
+}
+.t-italic {
+  font-family: var(--font-serif-en);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.t-num {
+  font-family: var(--font-serif-en);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* tabular-nums */
 .tabular-nums { font-feature-settings: "tnum" 1; font-variant-numeric: tabular-nums; }
 
-/*
- * ─── 버튼 ───
- * 8pt grid: height 56px(8×7), padding 0 24px(8×3), radius 16px(8×2)
- * Toss Slash 기준 Primary 버튼 높이는 52~56px 사이 — 56px 채택 (더 시원한 느낌)
- */
-.btn-rose {
-  background-color: var(--toss-blue);
-  color: white;
-  border-radius: 16px;        /* 8×2 */
-  padding: 0 24px;            /* 8×3 */
-  height: 56px;               /* 8×7 */
-  font-weight: 700;
-  font-size: 1rem;
-  font-family: inherit;
+/* ─── Buttons ─── */
+.btn-primary {
+  background-color: var(--ink);
+  color: var(--ivory);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-md);
+  padding: 0 24px;
+  height: 52px;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: var(--font-sans);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;                   /* 8×1 */
+  gap: 8px;
   cursor: pointer;
-  border: none;
-  transition: background-color 0.15s, transform 0.1s;
-  letter-spacing: -0.02em;
+  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
+  letter-spacing: var(--tr-tight);
   width: 100%;
 }
-.btn-rose:hover  { background-color: var(--toss-blue-dark); }
+.btn-primary:hover  { background-color: var(--ink-2); }
+.btn-primary:active { transform: scale(0.97); }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Keep old name as alias */
+.btn-rose {
+  background-color: var(--ink);
+  color: var(--ivory);
+  border-radius: var(--r-md);
+  padding: 0 24px;
+  height: 52px;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
+  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
+  letter-spacing: var(--tr-tight);
+  width: 100%;
+}
+.btn-rose:hover  { background-color: var(--ink-2); }
 .btn-rose:active { transform: scale(0.97); }
 .btn-rose:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-.btn-outline {
-  background-color: var(--toss-card);
-  color: var(--toss-text-primary);
-  border: 1.5px solid var(--toss-border);
-  border-radius: 16px;        /* 8×2 */
-  padding: 0 24px;            /* 8×3 */
-  height: 56px;               /* 8×7 */
-  font-weight: 700;
-  font-size: 1rem;
-  font-family: inherit;
+.btn-champagne {
+  background-color: var(--champagne);
+  color: var(--paper-pure);
+  border-radius: var(--r-md);
+  padding: 0 24px;
+  height: 52px;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: var(--font-sans);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;                   /* 8×1 */
+  gap: 8px;
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
-  letter-spacing: -0.02em;
+  border: none;
+  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
+  letter-spacing: var(--tr-tight);
   width: 100%;
 }
-.btn-outline:hover  { background-color: var(--toss-bg); }
+.btn-champagne:hover  { background-color: var(--champagne-2); }
+.btn-champagne:active { transform: scale(0.97); }
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--ink);
+  border: 1px solid var(--ink);
+  border-radius: var(--r-md);
+  padding: 0 24px;
+  height: 52px;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: var(--font-sans);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
+  letter-spacing: var(--tr-tight);
+  width: 100%;
+}
+.btn-outline:hover  { background-color: var(--ivory-2); }
 .btn-outline:active { transform: scale(0.97); }
 .btn-outline:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
 .btn-ghost {
-  background-color: var(--toss-bg);
-  color: var(--toss-text-secondary);
+  background-color: transparent;
+  color: var(--ink-2);
   border: none;
-  border-radius: 16px;        /* 8×2 */
-  padding: 0 24px;            /* 8×3 */
-  height: 56px;               /* 8×7 */
-  font-weight: 600;
-  font-size: 1rem;
-  font-family: inherit;
+  border-radius: var(--r-md);
+  padding: 0 24px;
+  height: 52px;
+  font-weight: 500;
+  font-size: 14px;
+  font-family: var(--font-sans);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;                   /* 8×1 */
+  gap: 8px;
   cursor: pointer;
-  transition: background-color 0.15s, transform 0.1s;
+  transition: background-color var(--dur-fast) var(--ease), transform var(--dur-fast);
   width: 100%;
 }
-.btn-ghost:hover  { background-color: var(--toss-border); }
+.btn-ghost:hover  { background-color: var(--ivory-2); }
 .btn-ghost:active { transform: scale(0.97); }
 
-/*
- * ─── 인풋 ───
- * 8pt grid: height 56px(8×7), padding 0 16px(8×2), radius 12px(8×1.5)
- */
+/* ─── Inputs ─── */
 .input-field {
   width: 100%;
-  border: 1.5px solid transparent;
-  border-radius: 12px;        /* 8×1.5 */
-  padding: 0 16px;            /* 8×2 */
-  height: 56px;               /* 8×7 — 버튼과 높이 통일 */
-  font-size: 1rem;
-  font-family: inherit;
-  font-weight: 500;
-  background-color: var(--toss-bg);
-  color: var(--toss-text-primary);
+  border: none;
+  border-bottom: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 12px 0;
+  height: 52px;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  background-color: transparent;
+  color: var(--ink);
   outline: none;
-  transition: border-color 0.15s, background-color 0.15s;
+  transition: border-color var(--dur-fast) var(--ease);
   letter-spacing: -0.01em;
 }
 .input-field:focus {
-  border-color: var(--toss-blue);
-  background-color: var(--toss-card);
+  border-bottom-color: var(--ink);
 }
 .input-field::placeholder {
-  color: var(--toss-text-tertiary);
+  color: var(--ink-4);
+  font-style: italic;
+  font-family: var(--font-serif-en);
+}
+
+.input-box {
+  width: 100%;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-sm);
+  padding: 0 16px;
+  height: 52px;
+  font-size: 15px;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  background-color: var(--paper);
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--dur-fast) var(--ease), background-color var(--dur-fast);
+  letter-spacing: -0.01em;
+}
+.input-box:focus {
+  border-color: var(--champagne);
+  background-color: var(--paper-pure);
+}
+.input-box::placeholder {
+  color: var(--ink-4);
   font-weight: 400;
 }
 
-/*
- * ─── 카드 ───
- * 8pt grid: padding 24px(8×3), radius 24px(8×3)
- */
+/* ─── Cards ─── */
 .card {
-  background-color: var(--toss-card);
-  border-radius: 24px;        /* 8×3 — 더 둥글게, 앱스럽게 */
-  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.05), 0 4px 16px rgba(0, 0, 0, 0.04);
-  padding: 24px;              /* 8×3 */
+  background-color: var(--paper);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
 }
 
-/* ─── 태그 ─── */
+.card-ink {
+  background-color: var(--ink);
+  border-radius: var(--r-xl);
+  color: var(--ivory);
+  padding: 20px;
+}
+
+/* Corner-frame hero card */
+.card-hero {
+  background-color: var(--paper);
+  border-radius: var(--r-xl);
+  border: 1px solid var(--rule);
+  box-shadow: var(--shadow-sm);
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+}
+.card-hero::before,
+.card-hero::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--champagne);
+  border-style: solid;
+}
+.card-hero::before { top: 10px; left: 10px; border-width: 1px 0 0 1px; }
+.card-hero::after  { bottom: 10px; right: 10px; border-width: 0 1px 1px 0; }
+
+/* ─── Tags ─── */
 .tag {
   display: inline-flex;
   align-items: center;
-  border-radius: 8px;
+  border-radius: var(--r-xs);
   padding: 0.2rem 0.6rem;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: var(--tr-wide);
+  text-transform: uppercase;
 }
-.tag-rose   { background-color: var(--toss-blue-light);   color: var(--toss-blue); }
-.tag-green  { background-color: var(--toss-green-light);  color: var(--toss-green); }
-.tag-amber  { background-color: var(--toss-yellow-light); color: var(--toss-yellow); }
-.tag-purple { background-color: var(--toss-purple-light); color: var(--toss-purple); }
-.tag-stone  { background-color: var(--toss-bg);           color: var(--toss-text-secondary); }
-.tag-red    { background-color: var(--toss-red-light);    color: var(--toss-red); }
+.tag-champagne { background-color: var(--champagne-wash); color: var(--champagne-2); }
+.tag-rose      { background-color: var(--rose-ed-wash);   color: var(--rose-ed-2); }
+.tag-sage      { background-color: var(--sage-wash);       color: var(--sage); }
+.tag-ochre     { background-color: var(--ochre-wash);      color: var(--ochre); }
+.tag-clay      { background-color: var(--clay-wash);       color: var(--clay); }
+.tag-ink       { background-color: var(--ivory-2);         color: var(--ink-2); }
+/* Backward-compatible tag names */
+.tag-green     { background-color: var(--sage-wash);       color: var(--sage); }
+.tag-amber     { background-color: var(--ochre-wash);      color: var(--ochre); }
+.tag-purple    { background-color: var(--burgundy-wash);   color: var(--burgundy); }
+.tag-stone     { background-color: var(--ivory-2);         color: var(--ink-2); }
+.tag-red       { background-color: var(--clay-wash);       color: var(--clay); }
 
-/* ─── 하단 네비게이션 ─── */
+/* ─── Bottom nav ─── */
 .nav-bottom {
   position: fixed;
   bottom: 0;
@@ -212,53 +432,60 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  background-color: var(--toss-card);
-  box-shadow: 0 -1px 0 var(--toss-border);
+  background-color: var(--paper);
+  box-shadow: 0 -1px 0 var(--rule);
   display: flex;
   align-items: center;
   justify-content: space-around;
-  /* 홈 인디케이터(iOS) / 제스처 바(Android) 영역 확보 */
   padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
-  /* 좌우 landscape safe-area 대응 */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
   z-index: 50;
 }
 
-/* ─── 프로그레스 바 ─── */
+/* ─── Progress ─── */
 .progress-bar {
   width: 100%;
-  height: 6px;
-  background-color: var(--toss-bg);
-  border-radius: 99px;
+  height: 4px;
+  background-color: var(--rule);
+  border-radius: var(--r-pill);
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background-color: var(--toss-blue);
-  border-radius: 99px;
+  background-color: var(--champagne);
+  border-radius: var(--r-pill);
   transition: width 0.4s ease;
 }
 
-/*
- * ─── 페이지 래퍼 ───
- * 8pt grid: top 24px(8×3), horizontal 20px(Toss 표준 좌우 여백)
- * bottom: 네비 높이(64px) + 여유(16px) + 홈 인디케이터 safe-area
- *
- * body에 padding-top: env(safe-area-inset-top)이 이미 적용되어 있으므로
- * page-wrapper 자체는 추가 top safe-area 불필요.
- */
+/* ─── Page wrapper ─── */
 .page-wrapper {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
   padding: 24px 20px calc(80px + env(safe-area-inset-bottom));
-  background-color: var(--toss-bg);
+  background-color: var(--ivory);
 }
 
-/* ─── 구분선 ─── */
+/* ─── Divider ─── */
 .divider {
   height: 1px;
-  background-color: var(--toss-border);
+  background-color: var(--rule);
   margin: 0;
 }
+
+/* ─── Hairline decorator ─── */
+.hairline {
+  display: block;
+  width: 36px;
+  height: 1px;
+  background-color: var(--champagne);
+  margin: 0 auto;
+}
+
+/* ─── Dot indicator ─── */
+.dot-champagne { width: 6px; height: 6px; border-radius: 50%; background-color: var(--champagne); flex-shrink: 0; }
+.dot-sage      { width: 6px; height: 6px; border-radius: 50%; background-color: var(--sage); flex-shrink: 0; }
+.dot-rose      { width: 6px; height: 6px; border-radius: 50%; background-color: var(--rose-ed); flex-shrink: 0; }
+.dot-ochre     { width: 6px; height: 6px; border-radius: 50%; background-color: var(--ochre); flex-shrink: 0; }
+.dot-clay      { width: 6px; height: 6px; border-radius: 50%; background-color: var(--clay); flex-shrink: 0; }

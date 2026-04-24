@@ -2,21 +2,21 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Home, CalendarDays, Wallet, Users, MoreHorizontal, MessageSquare, BookOpen, Settings, Paperclip, Camera } from 'lucide-react';
+import Icon from '@/components/Icon';
 
 const NAV_ITEMS = [
-  { key: 'home',      label: '홈',   Icon: Home,         href: '/dashboard' },
-  { key: 'timeline',  label: '일정', Icon: CalendarDays, href: '/timeline' },
-  { key: 'budget',    label: '예산', Icon: Wallet,       href: '/budget' },
-  { key: 'decisions', label: '결정', Icon: MessageSquare,href: '/decisions' },
+  { key: 'home',      label: 'home',   icon: 'home',      href: '/dashboard' },
+  { key: 'timeline',  label: 'tasks',  icon: 'checklist', href: '/timeline' },
+  { key: 'budget',    label: 'budget', icon: 'wallet',    href: '/budget' },
+  { key: 'decisions', label: 'decide', icon: 'chat',      href: '/decisions' },
 ];
 
 const MORE_ITEMS = [
-  { key: 'guests',  label: '하객 관리',   Icon: Users,     href: '/guests',   desc: '하객 명단·축의금·청첩장' },
-  { key: 'gallery', label: '웨딩 사진',   Icon: Camera,    href: '/gallery',  desc: '촬영 QR·사진 모아보기' },
-  { key: 'notes',   label: '정보 공유',   Icon: Paperclip, href: '/notes',    desc: '링크·메모 함께 모아두기' },
-  { key: 'guide',   label: '예식 가이드', Icon: BookOpen,  href: '/guide',    desc: '폐백·청첩장·예단 정보' },
-  { key: 'settings',label: '설정',        Icon: Settings,  href: '/settings', desc: '프로필·결혼정보 수정' },
+  { key: 'guests',   label: '하객 관리',   icon: 'guests',    href: '/guests',    desc: '하객 명단·축의금·청첩장' },
+  { key: 'gallery',  label: '웨딩 사진',   icon: 'camera',    href: '/gallery',   desc: '촬영 QR·사진 모아보기' },
+  { key: 'notes',    label: '정보 공유',   icon: 'paperclip', href: '/notes',     desc: '링크·메모 함께 모아두기' },
+  { key: 'guide',    label: '예식 가이드', icon: 'book',      href: '/guide',     desc: '폐백·청첩장·예단 정보' },
+  { key: 'settings', label: '설정',        icon: 'settings',  href: '/settings',  desc: '프로필·결혼정보 수정' },
 ];
 
 const MORE_KEYS = MORE_ITEMS.map(i => i.key);
@@ -39,61 +39,63 @@ export default function BottomNav({ active }) {
         <>
           <div
             className="fixed inset-0 z-40"
-            style={{ backgroundColor: 'rgba(0,0,0,0.3)' }}
+            style={{ backgroundColor: 'rgba(26,22,19,0.3)' }}
             onClick={() => setShowMore(false)}
           />
           <div
             className="fixed z-50 left-1/2"
             style={{
-              /* 바텀 네비 높이(≈64px) + 홈 인디케이터 위에 딱 붙도록 */
               bottom: 'calc(64px + env(safe-area-inset-bottom))',
               transform: 'translateX(-50%)',
               width: '100%',
               maxWidth: '430px',
-              backgroundColor: 'var(--toss-card)',
-              borderRadius: '20px 20px 0 0',
-              boxShadow: '0 -4px 24px rgba(0,0,0,0.1)',
+              backgroundColor: 'var(--paper)',
+              borderRadius: '16px 16px 0 0',
+              boxShadow: 'var(--shadow-sheet)',
               padding: '12px 20px 20px',
             }}
           >
             <div
               className="mx-auto mb-4"
-              style={{ width: 36, height: 4, borderRadius: 99, backgroundColor: 'var(--toss-border)' }}
+              style={{ width: 32, height: 3, borderRadius: 99, backgroundColor: 'var(--rule-strong)' }}
             />
-            <p className="text-xs font-semibold mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>더 보기</p>
-            <div className="flex flex-col gap-2">
-              {MORE_ITEMS.map(({ key, label, Icon, href, desc }) => (
+            <p style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'var(--ink-4)', marginBottom: 12, fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>
+              more
+            </p>
+            <div className="flex flex-col gap-1">
+              {MORE_ITEMS.map(({ key, label, icon, href, desc }) => (
                 <button
                   key={key}
                   onClick={() => handleNav(href)}
-                  className="flex items-center gap-4 px-4 py-3 rounded-2xl text-left w-full"
+                  className="flex items-center gap-4 text-left w-full"
                   style={{
-                    backgroundColor: active === key ? 'var(--toss-blue-light)' : 'var(--toss-bg)',
+                    backgroundColor: active === key ? 'var(--champagne-wash)' : 'transparent',
                     border: 'none',
+                    borderRadius: 10,
                     cursor: 'pointer',
-                    transition: 'background-color 0.15s',
+                    padding: '12px 14px',
+                    transition: 'background-color 0.14s',
                   }}
                 >
                   <div
-                    className="flex items-center justify-center flex-shrink-0"
                     style={{
                       width: 40,
                       height: 40,
-                      borderRadius: 12,
-                      backgroundColor: active === key ? 'var(--toss-blue)' : 'var(--toss-card)',
+                      borderRadius: 10,
+                      backgroundColor: active === key ? 'var(--champagne)' : 'var(--ivory-2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
                     }}
                   >
-                    <Icon
-                      size={20}
-                      strokeWidth={2}
-                      color={active === key ? 'white' : 'var(--toss-text-secondary)'}
-                    />
+                    <Icon name={icon} size={20} color={active === key ? 'white' : 'var(--ink-2)'} />
                   </div>
                   <div>
-                    <p className="text-sm font-bold" style={{ color: active === key ? 'var(--toss-blue)' : 'var(--toss-text-primary)' }}>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: active === key ? 'var(--champagne-2)' : 'var(--ink)', margin: 0, fontFamily: 'var(--font-serif-ko)' }}>
                       {label}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'var(--toss-text-tertiary)' }}>{desc}</p>
+                    <p style={{ fontSize: 12, marginTop: 2, color: 'var(--ink-3)' }}>{desc}</p>
                   </div>
                 </button>
               ))}
@@ -104,31 +106,37 @@ export default function BottomNav({ active }) {
 
       {/* 바텀 네비 */}
       <nav className="nav-bottom">
-        {NAV_ITEMS.map(({ key, label, Icon, href }) => {
+        {NAV_ITEMS.map(({ key, label, icon, href }) => {
           const isActive = key === active;
           return (
             <button
               key={key}
               onClick={() => { setShowMore(false); router.push(href); }}
-              className="flex flex-col items-center gap-1 py-1"
               style={{
                 flex: 1,
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
                 padding: '6px 4px',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 3,
               }}
             >
               <Icon
+                name={icon}
                 size={22}
-                strokeWidth={isActive ? 2.5 : 2}
-                color={isActive ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)'}
+                color={isActive ? 'var(--champagne-2)' : 'var(--ink-4)'}
               />
               <span
-                className="text-xs font-semibold"
                 style={{
-                  color: isActive ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)',
-                  letterSpacing: '-0.01em',
+                  fontSize: 10,
+                  fontWeight: 500,
+                  fontFamily: 'var(--font-serif-en)',
+                  fontStyle: 'italic',
+                  color: isActive ? 'var(--champagne-2)' : 'var(--ink-4)',
+                  letterSpacing: '0.04em',
                 }}
               >
                 {label}
@@ -140,28 +148,34 @@ export default function BottomNav({ active }) {
         {/* 더보기 버튼 */}
         <button
           onClick={() => setShowMore(v => !v)}
-          className="flex flex-col items-center gap-1"
           style={{
             flex: 1,
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: '6px 4px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 3,
           }}
         >
-          <MoreHorizontal
+          <Icon
+            name="more"
             size={22}
-            strokeWidth={isMoreActive ? 2.5 : 2}
-            color={isMoreActive || showMore ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)'}
+            color={isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-4)'}
           />
           <span
-            className="text-xs font-semibold"
             style={{
-              color: isMoreActive || showMore ? 'var(--toss-blue)' : 'var(--toss-text-tertiary)',
-              letterSpacing: '-0.01em',
+              fontSize: 10,
+              fontWeight: 500,
+              fontFamily: 'var(--font-serif-en)',
+              fontStyle: 'italic',
+              color: isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-4)',
+              letterSpacing: '0.04em',
             }}
           >
-            더보기
+            more
           </span>
         </button>
       </nav>

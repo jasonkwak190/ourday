@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import BottomNav from '@/components/BottomNav';
+import Icon from '@/components/Icon';
 import { AlertCircle, ChevronRight, CalendarDays, Wallet, MessageSquare, BookOpen } from 'lucide-react';
 
 function calcDday(dateStr) {
@@ -100,9 +101,9 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="page-wrapper flex items-center justify-center">
-        <div className="text-center" style={{ color: 'var(--toss-text-tertiary)' }}>
-          <div className="text-3xl mb-2">💍</div>
-          <p className="text-sm">불러오는 중...</p>
+        <div className="text-center" style={{ color: 'var(--ink-3)' }}>
+          <Icon name="rings" size={36} color="var(--champagne)" style={{ margin: '0 auto 8px' }} />
+          <p className="text-sm" style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>불러오는 중…</p>
         </div>
       </div>
     );
@@ -156,22 +157,26 @@ export default function DashboardPage() {
   if (!couple) {
     return (
       <div className="page-wrapper flex flex-col">
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-between items-center mb-4">
+          <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 20, color: 'var(--ink)' }}>
+            <span style={{ fontStyle: 'normal', fontWeight: 500 }}>O</span>urday
+          </div>
           <button
             onClick={() => router.push('/settings')}
-            className="text-xl"
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             aria-label="설정"
-          >⚙️</button>
+          >
+            <Icon name="settings" size={22} color="var(--ink-3)" />
+          </button>
         </div>
 
         {/* 환영 헤더 */}
         <div className="text-center mt-8 mb-8">
-          <div className="text-5xl mb-4">💍</div>
-          <h1 className="text-xl font-bold mb-2" style={{ color: 'var(--toss-text-primary)' }}>
+          <Icon name="rings" size={48} color="var(--champagne)" style={{ margin: '0 auto 16px' }} />
+          <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 22, color: 'var(--ink)', margin: '0 0 8px', letterSpacing: '-0.01em' }}>
             환영해요! 3단계로 시작해요
           </h1>
-          <p className="text-sm" style={{ color: 'var(--toss-text-secondary)', lineHeight: 1.7 }}>
+          <p className="text-sm" style={{ color: 'var(--ink-3)', lineHeight: 1.7 }}>
             아래 순서대로 설정하면<br />결혼 준비를 함께 관리할 수 있어요
           </p>
         </div>
@@ -180,35 +185,36 @@ export default function DashboardPage() {
         <div className="flex flex-col gap-3 mb-6">
           {[
             {
-              step: 1, emoji: '📅', label: '결혼 정보 설정',
+              step: 1, icon: 'calendar', label: '결혼 정보 설정',
               desc: '날짜·장소·예산을 입력하면 D-day와 예산 현황이 표시돼요',
               btnLabel: '결혼 정보 설정하기', path: '/setup', primary: true,
             },
             {
-              step: 2, emoji: '💑', label: '파트너와 연동',
+              step: 2, icon: 'couple', label: '파트너와 연동',
               desc: '초대 코드를 공유해 신랑·신부가 같은 화면을 볼 수 있어요',
               btnLabel: '파트너 연동하기', path: '/connect', primary: false,
             },
             {
-              step: 3, emoji: '📋', label: '체크리스트 시작',
+              step: 3, icon: 'checklist', label: '체크리스트 시작',
               desc: '결혼 준비 항목 33개 기본 템플릿을 한 번에 불러올 수 있어요',
               btnLabel: '타임라인 보기', path: '/timeline', primary: false,
             },
-          ].map(({ step, emoji, label, desc, btnLabel, path, primary }) => (
+          ].map(({ step, icon, label, desc, btnLabel, path, primary }) => (
             <div key={step} className="card" style={{ padding: '20px' }}>
               <div className="flex items-start gap-3 mb-3">
                 <div style={{
                   width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
-                  backgroundColor: primary ? 'var(--toss-blue)' : 'var(--toss-bg)',
+                  backgroundColor: primary ? 'var(--champagne)' : 'var(--paper)',
+                  border: `1px solid ${primary ? 'var(--champagne)' : 'var(--rule)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <span style={{ fontSize: 14, fontWeight: 700, color: primary ? 'white' : 'var(--toss-text-tertiary)' }}>{step}</span>
+                  <Icon name={icon} size={16} color={primary ? 'white' : 'var(--ink-3)'} />
                 </div>
                 <div>
-                  <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--toss-text-primary)', margin: '0 0 4px' }}>
-                    {emoji} {label}
+                  <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--ink)', margin: '0 0 4px', fontFamily: 'var(--font-serif-ko)' }}>
+                    {label}
                   </p>
-                  <p style={{ fontSize: 13, color: 'var(--toss-text-tertiary)', margin: 0, lineHeight: 1.5 }}>{desc}</p>
+                  <p style={{ fontSize: 13, color: 'var(--ink-3)', margin: 0, lineHeight: 1.5 }}>{desc}</p>
                 </div>
               </div>
               <button
@@ -228,49 +234,69 @@ export default function DashboardPage() {
 
   return (
     <div className="page-wrapper">
-      {/* 상단 설정 버튼 */}
-      <div className="flex justify-end mb-2">
+      {/* 상단 바 */}
+      <div className="flex justify-between items-center mb-4">
+        <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 20, color: 'var(--ink)' }}>
+          <span style={{ fontStyle: 'normal', fontWeight: 500 }}>O</span>urday
+        </div>
         <button
           onClick={() => router.push('/settings')}
-          className="text-xl"
-          style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
           aria-label="설정"
-        >⚙️</button>
+        >
+          <Icon name="settings" size={22} color="var(--ink-3)" />
+        </button>
       </div>
 
-      {/* D-day 헤더 */}
-      <div className="text-center mb-6">
-        <p className="text-sm mb-1" style={{ color: 'var(--toss-text-tertiary)' }}>
-          {weddingDateFormatted || '결혼 날짜를 설정해주세요'}
-        </p>
-        {dday !== null && (
-          <>
-            <span
-              className="text-xs font-semibold px-3 py-1 rounded-full"
-              style={{ backgroundColor: 'var(--toss-blue-light)', color: 'var(--toss-blue)' }}
-            >
-              {dday > 0 ? `D-${dday}` : dday === 0 ? 'D-Day' : `D+${Math.abs(dday)}`}
-            </span>
-            <p
-              className="text-7xl font-extrabold mt-2 leading-none tracking-tight tabular-nums"
-              style={{ color: 'var(--toss-blue)' }}
-            >
-              {dday > 0 ? dday : dday === 0 ? '🎊' : Math.abs(dday)}
-            </p>
-            <p className="text-sm mt-1" style={{ color: 'var(--toss-text-secondary)' }}>
-              {dday > 0 ? '일 남았어요' : dday === 0 ? '오늘이에요!' : '일 지났어요'}
-            </p>
-          </>
+      {/* D-day 히어로 카드 */}
+      <div className="card-hero text-center mb-4">
+        <div className="t-kicker mb-2">· OUR WEDDING DAY ·</div>
+        {couple?.bride_name && couple?.groom_name && (
+          <div style={{ fontFamily: 'var(--font-serif-ko)', fontSize: 15, color: 'var(--ink-2)', marginBottom: 8 }}>
+            {couple.groom_name}
+            <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', color: 'var(--champagne)', margin: '0 8px' }}>&amp;</span>
+            {couple.bride_name}
+          </div>
         )}
+        {dday !== null ? (
+          <>
+            <div style={{
+              fontFamily: 'var(--font-serif-en)',
+              fontSize: dday === 0 ? 72 : 120,
+              fontWeight: 400,
+              lineHeight: 0.92,
+              letterSpacing: '-0.04em',
+              color: 'var(--ink)',
+              margin: '12px 0 6px',
+              fontFeatureSettings: '"onum" 1, "pnum" 1',
+            }}>
+              {dday > 0 ? dday : dday === 0 ? 'Today' : Math.abs(dday)}
+            </div>
+            <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 13, color: 'var(--ink-3)', letterSpacing: '0.06em' }}>
+              {dday > 0 ? 'days to go' : dday === 0 ? '오늘이에요!' : 'days ago'}
+            </div>
+          </>
+        ) : (
+          <button
+            onClick={() => router.push('/setup')}
+            style={{ fontFamily: 'var(--font-serif-ko)', fontSize: 14, color: 'var(--champagne-2)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            날짜를 설정해주세요 →
+          </button>
+        )}
+        <div className="hairline" style={{ marginTop: 14, marginBottom: 10 }} />
+        <div style={{ fontFamily: 'var(--font-serif-ko)', fontSize: 13, color: 'var(--ink-2)' }}>
+          {weddingDateFormatted || (
+            <span style={{ color: 'var(--ink-4)' }}>결혼 날짜 미설정</span>
+          )}
+        </div>
       </div>
 
       {/* ── 첫 시작 온보딩 배너 (체크리스트 0개 + 아직 dismiss 안 했을 때) ── */}
       {items.length === 0 && !onboardingDismissed && (
-        <div className="card mb-5" style={{ background: 'linear-gradient(135deg, #eaf4ff 0%, #f0f8ff 100%)', border: '1.5px solid var(--toss-blue-light)' }}>
+        <div className="card mb-5" style={{ background: 'var(--champagne-wash)', border: '1px solid var(--rule-strong)' }}>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-semibold" style={{ color: 'var(--toss-blue)', letterSpacing: '0.06em' }}>
-              🎉 결혼 준비를 시작해봐요!
-            </p>
+            <p className="t-kicker">· 결혼 준비를 시작해봐요 ·</p>
             <button
               onClick={async () => {
                 setOnboardingDismissed(true);
@@ -293,64 +319,49 @@ export default function DashboardPage() {
               >
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  backgroundColor: done ? 'var(--toss-blue)' : 'white',
-                  border: `2px solid ${done ? 'var(--toss-blue)' : 'var(--toss-border)'}`,
+                  backgroundColor: done ? 'var(--champagne)' : 'var(--paper)',
+                  border: `1px solid ${done ? 'var(--champagne)' : 'var(--rule-strong)'}`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {done
-                    ? <span style={{ fontSize: 12, color: 'white', fontWeight: 700 }}>✓</span>
-                    : <span style={{ fontSize: 12, color: 'var(--toss-text-tertiary)', fontWeight: 700 }}>{step}</span>
+                    ? <Icon name="check" size={14} color="white" />
+                    : <span style={{ fontSize: 11, color: 'var(--ink-3)', fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>{step}</span>
                   }
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: done ? 'var(--toss-text-tertiary)' : 'var(--toss-text-primary)', margin: 0, textDecoration: done ? 'line-through' : 'none' }}>{label}</p>
-                  <p style={{ fontSize: 12, color: 'var(--toss-text-tertiary)', margin: '2px 0 0' }}>{sub}</p>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: done ? 'var(--ink-3)' : 'var(--ink)', margin: 0, textDecoration: done ? 'line-through' : 'none', fontFamily: 'var(--font-serif-ko)' }}>{label}</p>
+                  <p style={{ fontSize: 12, color: 'var(--ink-3)', margin: '2px 0 0' }}>{sub}</p>
                 </div>
-                <span style={{ fontSize: 16, color: 'var(--toss-text-tertiary)' }}>›</span>
+                <Icon name="chev-right" size={16} color="var(--ink-4)" />
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* 스탯 카드 3개 */}
-      <div className="grid grid-cols-3 gap-2 mb-5">
-        <button
-          className="card text-center"
-          style={{ padding: '16px 8px', cursor: 'pointer' }}
-          onClick={() => router.push('/timeline')}
-        >
-          <p className="text-2xl font-bold tabular-nums" style={{ color: 'var(--toss-text-primary)' }}>
-            {progress}
-            <span className="text-base font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>%</span>
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>일정 완료</p>
-        </button>
-        <button
-          className="card text-center"
-          style={{ padding: '16px 8px', cursor: 'pointer' }}
-          onClick={() => router.push('/budget')}
-        >
-          <p
-            className="text-2xl font-bold tabular-nums"
-            style={{ color: budgetPct > 100 ? 'var(--toss-red)' : budgetPct > 80 ? 'var(--toss-yellow)' : 'var(--toss-text-primary)' }}
+      {/* 스탯 스트립 */}
+      <div className="mb-5" style={{
+        display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '1px', background: 'var(--rule)',
+        border: '1px solid var(--rule)', borderRadius: 10, overflow: 'hidden',
+      }}>
+        {[
+          { label: 'tasks', value: `${totalDone}`, unit: `/${totalCount}`, onClick: () => router.push('/timeline') },
+          { label: 'budget', value: `${budgetPct}`, unit: '%', onClick: () => router.push('/budget') },
+          { label: '미결정', value: `${undecided.length}`, unit: '', onClick: () => router.push('/decisions') },
+        ].map(({ label, value, unit, onClick }) => (
+          <button
+            key={label}
+            onClick={onClick}
+            style={{ background: 'var(--paper)', padding: '14px 10px', textAlign: 'center', border: 'none', cursor: 'pointer' }}
           >
-            {budgetPct}
-            <span className="text-base font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>%</span>
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>예산 사용</p>
-        </button>
-        <button
-          className="card text-center"
-          style={{ padding: '16px 8px', cursor: 'pointer' }}
-          onClick={() => router.push('/decisions')}
-        >
-          <p className="text-2xl font-bold tabular-nums"
-            style={{ color: undecided.length > 0 ? 'var(--toss-yellow)' : 'var(--toss-text-primary)' }}>
-            {undecided.length}
-          </p>
-          <p className="text-xs mt-1" style={{ color: 'var(--toss-text-tertiary)' }}>미결정</p>
-        </button>
+            <div style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10.5, color: 'var(--champagne-2)', letterSpacing: '0.06em', marginBottom: 4 }}>{label}</div>
+            <div style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 26, color: 'var(--ink)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+              {value}
+              {unit && <span style={{ fontSize: 13, color: 'var(--ink-3)', fontWeight: 400 }}>{unit}</span>}
+            </div>
+          </button>
+        ))}
       </div>
 
       {/* 🔴 긴급 — 이번 주 마감 or 지난 항목 */}
@@ -577,22 +588,23 @@ export default function DashboardPage() {
         </button>
       )}
 
-      {/* 퀵링크 */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      {/* 퀵 액션 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
         {[
-          { label: '📋 타임라인', desc: `완료 ${totalDone}/${totalCount}`, href: '/timeline', color: 'var(--toss-blue-light)', textColor: 'var(--toss-blue)' },
-          { label: '💰 예산·업체', desc: totalBudget > 0 ? `${budgetPct}% 사용` : '예산 설정하기', href: '/budget', color: 'var(--toss-blue-light)', textColor: 'var(--toss-blue)' },
-          { label: '🎊 하객 관리', desc: '명단·축의금·청첩장', href: '/guests', color: 'var(--rose-light)', textColor: 'var(--rose)' },
-          { label: '💬 의사결정', desc: undecided.length > 0 ? `${undecided.length}개 미결정` : '모두 결정됐어요', href: '/decisions', color: undecided.length > 0 ? '#FFF9E6' : 'var(--toss-bg)', textColor: undecided.length > 0 ? 'var(--toss-yellow)' : 'var(--toss-text-secondary)' },
-        ].map(({ label, desc, href, color, textColor }) => (
+          { icon: 'checklist', label: '체크리스트', href: '/timeline' },
+          { icon: 'invite',    label: '청첩장',     href: '/invitation' },
+          { icon: 'guests',    label: '하객',       href: '/guests' },
+          { icon: 'camera',    label: '스냅',       href: '/gallery' },
+        ].map(({ icon, label, href }) => (
           <button
             key={href}
             onClick={() => router.push(href)}
-            className="rounded-2xl p-4 text-left"
-            style={{ backgroundColor: color, border: 'none', cursor: 'pointer' }}
+            style={{ background: 'var(--paper)', border: '1px solid var(--rule)', borderRadius: 10, padding: '14px 6px 10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer' }}
           >
-            <p className="text-sm font-bold mb-1" style={{ color: textColor, whiteSpace: 'nowrap' }}>{label}</p>
-            <p className="text-xs" style={{ color: 'var(--toss-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{desc}</p>
+            <div style={{ width: 36, height: 36, border: '1px solid var(--champagne)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name={icon} size={18} color="var(--champagne-2)" />
+            </div>
+            <span style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 11.5, color: 'var(--ink)' }}>{label}</span>
           </button>
         ))}
       </div>
