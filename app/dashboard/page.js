@@ -452,7 +452,7 @@ export default function DashboardPage() {
             <span
               className="text-xs font-bold tabular-nums px-2 py-0.5 rounded-full"
               style={{
-                backgroundColor: budgetPct > 100 ? 'var(--toss-red-light)' : budgetPct > 80 ? '#FFF9E6' : 'var(--toss-blue-light)',
+                backgroundColor: budgetPct > 100 ? 'var(--toss-red-light)' : budgetPct > 80 ? 'var(--ochre-wash)' : 'var(--toss-blue-light)',
                 color: budgetPct > 100 ? 'var(--toss-red)' : budgetPct > 80 ? 'var(--toss-yellow)' : 'var(--toss-blue)',
               }}
             >
@@ -532,7 +532,7 @@ export default function DashboardPage() {
                 <span
                   className="text-xs px-2 py-0.5 rounded-full font-medium flex-shrink-0"
                   style={{
-                    backgroundColor: d.status === 'discussing' ? '#FFF9E6' : 'var(--toss-bg)',
+                    backgroundColor: d.status === 'discussing' ? 'var(--ochre-wash)' : 'var(--toss-bg)',
                     color: d.status === 'discussing' ? 'var(--toss-yellow)' : 'var(--toss-text-tertiary)',
                   }}
                 >
