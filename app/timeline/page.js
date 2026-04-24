@@ -240,7 +240,6 @@ export default function TimelinePage() {
   const [expandedMemo, setExpandedMemo] = useState(null);
   const [showVenueTour,setShowVenueTour]= useState(false);
   const [venueChecked, setVenueChecked] = useState({});
-  const venueStorageKey = coupleId ? `venue-tour-${coupleId}` : null;
   const [loadingTemplate, setLoadingTemplate] = useState(false);
   const [templateDone,    setTemplateDone]    = useState(false);
 
@@ -260,11 +259,12 @@ export default function TimelinePage() {
       const cId = user.couple_id;
       setCoupleId(cId);
       const [coupleRes, itemsRes, vendorRes] = await Promise.all([
-        supabase.from('couples').select('wedding_date').eq('id', cId).single(),
+        supabase.from('couples').select('wedding_date, venue_tour_checked').eq('id', cId).single(),
         supabase.from('checklist_items').select('*').eq('couple_id', cId).order('due_months_before', { ascending: false }),
         supabase.from('vendors').select('id,name,type,balance_due,contract_status').eq('couple_id', cId),
       ]);
       setWeddingDate(coupleRes.data?.wedding_date || null);
+      setVenueChecked(coupleRes.data?.venue_tour_checked || {});
       setItems(itemsRes.data || []);
       setVendors(vendorRes.data || []);
       setLoading(false);
@@ -272,14 +272,11 @@ export default function TimelinePage() {
     load();
   }, [router]);
 
-  /* ─ 웨딩홀 투어 체크 localStorage 복원 ─ */
-  useEffect(() => {
+  /* ─ 웨딩홀 투어 체크 Supabase 저장 ─ */
+  async function saveVenueChecked(next) {
     if (!coupleId) return;
-    try {
-      const saved = localStorage.getItem(`venue-tour-${coupleId}`);
-      if (saved) setVenueChecked(JSON.parse(saved));
-    } catch {}
-  }, [coupleId]);
+    await supabase.from('couples').update({ venue_tour_checked: next }).eq('id', coupleId);
+  }
 
   /* ─ Realtime ─ */
   useEffect(() => {
@@ -635,7 +632,7 @@ export default function TimelinePage() {
                         <div key={it} className="flex items-start gap-2 py-1 cursor-pointer"
                           onClick={() => setVenueChecked(p => {
                             const next = { ...p, [key]: !p[key] };
-                            if (coupleId) { try { localStorage.setItem(`venue-tour-${coupleId}`, JSON.stringify(next)); } catch {} }
+                            saveVenueChecked(next);
                             return next;
                           })}>
                           <div className="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center mt-0.5 transition-all"
@@ -651,7 +648,7 @@ export default function TimelinePage() {
                   </div>
                 ))}
                 <button className="text-xs mt-1" style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer' }}
-                  onClick={() => { setVenueChecked({}); if (coupleId) { try { localStorage.removeItem(`venue-tour-${coupleId}`); } catch {} } }}>초기화</button>
+                  onClick={() => { setVenueChecked({}); saveVenueChecked({}); }}>초기화</button>
               </div>
             )}
           </div>
