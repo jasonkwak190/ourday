@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Colors & Type</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  body { padding: 28px 24px; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+  .sw { border-radius: 12px; padding: 12px; min-height: 72px; display: flex; flex-direction: column; justify-content: space-between; font-size: 11px; font-weight: 600; }
+  .lbl { opacity: .85 }
+  .val { font-size: 13px; font-weight: 800; }
+  hr.divider { height: 1px; border: 0; background: var(--toss-border); margin: 20px 0; }
+  .specimen { display: flex; flex-direction: column; gap: 6px; }
+  .specimen .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  .meta { font-size: 11px; font-weight: 600; color: var(--toss-text-tertiary); letter-spacing: 0.02em; }
+</style>
+</head>
+<body>
+
+  <div class="t-kicker">컬러 토큰</div>
+  <h1 class="t-h1" style="margin:4px 0 14px">Toss 팔레트 · Ourday 튜닝</h1>
+  <div class="grid">
+    <div class="sw" style="background:#3182F6;color:#fff"><span class="lbl">blue · primary</span><span class="val">#3182F6</span></div>
+    <div class="sw" style="background:#EBF3FE;color:#3182F6"><span class="lbl">blue light</span><span class="val">#EBF3FE</span></div>
+    <div class="sw" style="background:#1B64DA;color:#fff"><span class="lbl">blue dark</span><span class="val">#1B64DA</span></div>
+    <div class="sw" style="background:#FAF7F2;color:#4E5968;border:1.5px solid #E5E8EB"><span class="lbl">bg · 크림</span><span class="val">#FAF7F2</span></div>
+    <div class="sw" style="background:#fff;color:#191F28;border:1.5px solid #E5E8EB"><span class="lbl">card</span><span class="val">#FFFFFF</span></div>
+    <div class="sw" style="background:#191F28;color:#fff"><span class="lbl">text · primary</span><span class="val">#191F28</span></div>
+    <div class="sw" style="background:#4E5968;color:#fff"><span class="lbl">text · secondary</span><span class="val">#4E5968</span></div>
+    <div class="sw" style="background:#8B95A1;color:#fff"><span class="lbl">text · tertiary</span><span class="val">#8B95A1</span></div>
+    <div class="sw" style="background:#F04452;color:#fff"><span class="lbl">red · 긴급</span><span class="val">#F04452</span></div>
+    <div class="sw" style="background:#00B493;color:#fff"><span class="lbl">green · 완료</span><span class="val">#00B493</span></div>
+    <div class="sw" style="background:#F8B300;color:#fff"><span class="lbl">yellow · 경고</span><span class="val">#F8B300</span></div>
+    <div class="sw" style="background:#7B61FF;color:#fff"><span class="lbl">purple</span><span class="val">#7B61FF</span></div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="t-kicker">타입 스케일 · Pretendard Variable</div>
+  <h1 class="t-h1" style="margin:4px 0 14px">시맨틱 스타일</h1>
+  <div class="specimen">
+    <div class="row"><span class="t-hero" style="font-size:56px">250</span><span class="meta">t-hero · 800 · tnum · -0.035em</span></div>
+    <div class="row"><span class="t-title">두 사람의 결혼 준비</span><span class="meta">t-title · 28 / 800</span></div>
+    <div class="row"><span class="t-h1">섹션 제목</span><span class="meta">h1 · 22 / 800</span></div>
+    <div class="row"><span class="t-h2">카드 제목 입니다</span><span class="meta">h2 · 18 / 700</span></div>
+    <div class="row"><span class="t-h3">리스트 항목 입니다</span><span class="meta">h3 · 16 / 700</span></div>
+    <div class="row"><span class="t-body">본문 · 신랑·신부가 같은 화면을 봐요</span><span class="meta">body · 14 / 400</span></div>
+    <div class="row"><span class="t-sub">보조 설명 · 체크리스트부터 청첩장까지</span><span class="meta">sub · 13 / 400</span></div>
+    <div class="row"><span class="t-caption">caption · 총 4,000만원</span><span class="meta">caption · 12 / 400</span></div>
+    <div class="row"><span class="t-kicker">이런 기능들이 있어요</span><span class="meta">kicker · 11 / 600 / +0.08em</span></div>
+    <div class="row"><span class="t-num" style="font-size:18px;font-weight:800">1,240만원 · 250일 · D-7</span><span class="meta">t-num · tabular-nums</span></div>
+  </div>
+</body>
+</html>

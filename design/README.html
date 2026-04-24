@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>Ourday Design System · README</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  body { padding: 32px 28px; max-width: 720px; }
+  h1 { font-size: 22px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.02em; }
+  h2 { font-size: 15px; font-weight: 700; margin: 18px 0 8px; letter-spacing: -0.01em; }
+  p, li { font-size: 13px; line-height: 1.65; color: #4E5968; }
+  b, strong { color: #191F28; font-weight: 700; }
+  code { background: #FAF7F2; padding: 1px 6px; border-radius: 6px; font-family: inherit; font-variant-numeric: tabular-nums; }
+  .sub { font-size: 12px; color: #8B95A1; margin-top: 2px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0 4px; }
+  .chip { background: #EBF3FE; color: #3182F6; font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; }
+  .chip.n { background: #FAF7F2; color: #4E5968; }
+  ul { margin: 4px 0 0; padding-left: 18px; }
+</style>
+</head>
+<body>
+  <div class="t-kicker" style="color:#3182F6">OURDAY · 우리의 날</div>
+  <h1>Ourday Design System</h1>
+  <p class="sub">결혼을 앞둔 커플이 함께 결혼 준비를 관리하는 모바일 퍼스트 웹앱</p>
+
+  <div class="row">
+    <span class="chip">Next.js 16</span>
+    <span class="chip">Capacitor 8</span>
+    <span class="chip">Toss DS 스타일</span>
+    <span class="chip n">Pretendard</span>
+    <span class="chip n">8pt grid</span>
+    <span class="chip n">Korean-first</span>
+  </div>
+
+  <h2>한눈에</h2>
+  <ul>
+    <li><b>핵심 컬러</b> blue <code>#3182F6</code> · bg <code>#FAF7F2</code> · ink <code>#191F28</code></li>
+    <li><b>타입</b> Pretendard Variable (SIL OFL) · Monospace 금지, 대신 <code>tabular-nums</code></li>
+    <li><b>컨테이너</b> <code>max-width: 430px</code> 모바일 퍼스트 · safe-area-inset 전면 적용</li>
+    <li><b>카드</b> 24px radius · 이중 그림자 · 보더 없음</li>
+    <li><b>버튼/인풋</b> 56px height · radius 16/12 · press <code>scale(0.97)</code></li>
+    <li><b>아이콘</b> Lucide (stroke 2, 활성 2.5) · 이모지는 카테고리 배지 역할</li>
+  </ul>
+
+  <h2>제품 표면</h2>
+  <ul>
+    <li>랜딩 · 로그인/가입 · 파트너 연동</li>
+    <li>대시보드 — D-day · 스탯 3개 · 긴급 · 예산 · 업체 잔금 · 방명록</li>
+    <li>타임라인 · 예산/업체 · 의사결정 · 하객 · 청첩장 + RSVP + 방명록</li>
+    <li>QR 하객 사진 업로드 · 식장 라이브 슬라이드쇼</li>
+  </ul>
+
+  <h2>톤 & 보이스</h2>
+  <ul>
+    <li>따뜻한 <b>~해요</b> 체 · 명령 대신 안내 · 2인칭 유지</li>
+    <li>"두 사람 / 신랑·신부 / 함께 / 같은 화면" 어휘 반복</li>
+    <li><code>·</code> 가운뎃점으로 짧은 나열 연결</li>
+    <li>단위 <code>만원</code> · D-day <code>D-250 / D-Day / D+3</code></li>
+    <li>이모지는 카테고리 배지: 💍 💌 🎉 📋 💰 📅 🎊 🤵 👰</li>
+  </ul>
+
+  <h2>파일 인덱스</h2>
+  <ul>
+    <li><code>README.md</code> — 긴 문서 · 이 페이지의 원본</li>
+    <li><code>colors_and_type.css</code> — CSS 변수 + 시맨틱 타입</li>
+    <li><code>SKILL.md</code> — 에이전트 스킬 정의</li>
+    <li><code>preview/</code> — 디자인 시스템 탭 카드</li>
+    <li><code>ui_kits/ourday_app/</code> — 인터랙티브 UI 킷</li>
+    <li><code>assets/</code> — 로고 · 아이콘 · 스플래시</li>
+  </ul>
+
+  <p class="sub" style="margin-top:20px">전체 가이드(컨텐츠 기준, 비주얼 기준, 아이코노그래피)는 프로젝트 루트의 <code>README.md</code>를 확인해주세요. · Source: github.com/jasonkwak190/ourday @ main</p>
+</body>
+</html>

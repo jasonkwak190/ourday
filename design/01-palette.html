@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>1단계 · 팔레트</title>
+<link rel="stylesheet" href="colors_and_type.css?v=2">
+<style>
+  /* Local palette redeclare — defensive vs stale CSS caches */
+  :root {
+    --ink: #1A1613; --ink-2: #3A332E; --ink-3: #6E6459; --ink-4: #A79D90;
+    --ivory: #F7F2EA; --ivory-2: #EFE8DC; --paper: #FBF8F2; --paper-pure: #FFFFFF;
+    --rule: #E2D9C9; --rule-strong: #C8BCA4;
+    --champagne: #B89968; --champagne-2: #9E8052; --champagne-3: #CDB388; --champagne-wash: #F1E8D6;
+    --rose: #B57A7A; --rose-2: #945E5E; --rose-wash: #EFDFDE;
+    --burgundy: #6B2E3A; --burgundy-wash: #E8D5D8;
+    --sage: #7A8B6B; --sage-wash: #E4E8DC;
+    --ochre: #B8914A; --ochre-wash: #F1E5CB;
+    --clay: #9C4A3A; --clay-wash: #EED9D2;
+    --bg: var(--ivory); --fg: var(--ink); --fg-2: var(--ink-2); --fg-muted: var(--ink-3);
+    --surface: var(--paper); --border: var(--rule); --border-strong: var(--rule-strong);
+    --accent: var(--champagne); --accent-hover: var(--champagne-2); --accent-wash: var(--champagne-wash);
+    --font-serif-en: "Cormorant Garamond", "Noto Serif KR", serif;
+    --font-serif-ko: "Noto Serif KR", "Cormorant Garamond", serif;
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+  }
+  html, body { margin: 0; background: var(--bg); font-family: var(--font-sans); color: var(--fg); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 64px 40px 80px; }
+  header { margin-bottom: 48px; }
+  .roman { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--accent); letter-spacing: 0.04em; }
+  h1 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 44px; margin: 8px 0 10px; letter-spacing: -0.02em; line-height: 1.15; }
+  .lede { max-width: 560px; font-size: 14px; line-height: 1.7; color: var(--fg-2); }
+  .lede em { font-family: var(--font-serif-en); font-style: italic; color: var(--accent-hover); letter-spacing: 0.01em; }
+
+  /* section */
+  .sec { margin-top: 56px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--rule-strong); margin-bottom: 20px; }
+  .sec-head h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .n { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--accent); letter-spacing: 0.06em; }
+
+  /* primary swatches */
+  .primary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .sw { position: relative; border-radius: var(--r-lg); padding: 22px 20px 18px; aspect-ratio: 3 / 4; display: flex; flex-direction: column; justify-content: space-between; }
+  .sw.bordered { border: 1px solid var(--rule); }
+  .sw .n { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .sw .h { font-family: var(--font-serif-en); font-style: italic; font-size: 18px; letter-spacing: 0.01em; }
+  .sw .r { font-size: 12px; opacity: .75; margin-top: 6px; line-height: 1.5; }
+  .sw .deco { position: absolute; top: 20px; right: 20px; font-family: var(--font-serif-en); font-style: italic; opacity: .5; font-size: 20px; }
+
+  /* scale */
+  .scale { display: flex; border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--rule); }
+  .step { flex: 1; padding: 18px 14px 14px; display: flex; flex-direction: column; gap: 2px; min-height: 120px; justify-content: space-between; }
+  .step .n { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; }
+  .step .h { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; }
+  .step .role { font-size: 11px; opacity: .75; margin-top: auto; line-height: 1.5; font-family: var(--font-serif-ko); }
+
+  /* emotional pairs */
+  .pairs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+  .stack { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--rule); }
+  .fill { padding: 20px 16px; display: flex; flex-direction: column; gap: 4px; min-height: 112px; justify-content: space-between; }
+  .fill .n { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+  .fill .ko { font-family: var(--font-serif-ko); font-weight: 500; font-size: 13px; opacity: .9; }
+  .fill .h { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; }
+  .wash { padding: 10px 16px; display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--rule); }
+  .wash .l { font-size: 10px; color: var(--fg-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .wash .h { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--fg-2); }
+
+  /* philosophy */
+  .philosophy { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 16px; }
+  .philosophy h3 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 17px; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .philosophy p { font-size: 13px; line-height: 1.75; color: var(--fg-2); margin: 0 0 10px; }
+  .philosophy em { font-family: var(--font-serif-en); font-style: italic; color: var(--accent-hover); }
+
+  /* before/after */
+  .ba { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  .ba > div { border: 1px solid var(--rule); border-radius: var(--r-lg); padding: 24px; background: var(--paper); }
+  .ba .lbl { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--fg-muted); letter-spacing: 0.06em; margin-bottom: 14px; }
+  .ba .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ba .chip { height: 36px; border-radius: var(--r-sm); flex: 1; min-width: 48px; border: 1px solid rgba(0,0,0,.06); }
+  .ba .note { font-size: 12px; color: var(--fg-muted); margin-top: 12px; line-height: 1.6; font-family: var(--font-serif-ko); }
+
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-muted); }
+  footer em { font-family: var(--font-serif-en); font-style: italic; color: var(--accent); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header>
+      <div class="roman">Stage One · The Palette</div>
+      <h1>정제된 잉크와 샴페인 골드</h1>
+      <p class="lede">
+        Toss의 선명한 파랑을 걷어내고 <em>따뜻한 아이보리</em> 위에 <em>깊은 잉크</em>와
+        <em>샴페인 골드</em>의 얇은 악센트를 올립니다. 결혼이라는 의식의 무게를
+        담으면서도 매일 열어볼 수 있도록 부드럽게, 그리고 고요하게.
+      </p>
+    </header>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Primary — 네 가지 기둥</h2>
+        <span class="n">i.</span>
+      </div>
+      <div class="primary">
+        <div class="sw" style="background: var(--ink); color: #F7F2EA">
+          <div>
+            <div class="n">Ink</div>
+            <div class="r">본문 텍스트 ·<br>primary 버튼</div>
+          </div>
+          <div class="h">#1A1613</div>
+          <div class="deco">i</div>
+        </div>
+        <div class="sw" style="background: var(--champagne); color: #1A1613">
+          <div>
+            <div class="n">Champagne</div>
+            <div class="r">악센트 라인 ·<br>이니셜 · 링크</div>
+          </div>
+          <div class="h">#B89968</div>
+          <div class="deco">ii</div>
+        </div>
+        <div class="sw bordered" style="background: var(--ivory); color: var(--ink)">
+          <div>
+            <div class="n">Ivory</div>
+            <div class="r">페이지 배경 ·<br>따뜻한 오프화이트</div>
+          </div>
+          <div class="h">#F7F2EA</div>
+          <div class="deco" style="color: var(--accent)">iii</div>
+        </div>
+        <div class="sw bordered" style="background: var(--paper); color: var(--ink)">
+          <div>
+            <div class="n">Paper</div>
+            <div class="r">카드 표면 ·<br>입력 필드</div>
+          </div>
+          <div class="h">#FBF8F2</div>
+          <div class="deco" style="color: var(--accent)">iv</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Ink — 네 단계 텍스트 계조</h2>
+        <span class="n">ii.</span>
+      </div>
+      <div class="scale">
+        <div class="step" style="background: var(--ink); color: #F7F2EA">
+          <div><div class="n">Ink</div><div class="h">#1A1613</div></div>
+          <div class="role">본문 · 제목</div>
+        </div>
+        <div class="step" style="background: var(--ink-2); color: #F7F2EA">
+          <div><div class="n">Ink 2</div><div class="h">#3A332E</div></div>
+          <div class="role">보조 텍스트</div>
+        </div>
+        <div class="step" style="background: var(--ink-3); color: #F7F2EA">
+          <div><div class="n">Ink 3</div><div class="h">#6E6459</div></div>
+          <div class="role">캡션 · 메타</div>
+        </div>
+        <div class="step" style="background: var(--ink-4); color: var(--ink)">
+          <div><div class="n">Ink 4</div><div class="h">#A79D90</div></div>
+          <div class="role">placeholder</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Emotional — 상태와 무드</h2>
+        <span class="n">iii.</span>
+      </div>
+      <div class="pairs">
+        <div class="stack">
+          <div class="fill" style="background: var(--rose); color: #fff">
+            <div class="n">Rose</div>
+            <div>
+              <div class="ko">로맨틱</div>
+              <div class="h">#B57A7A</div>
+            </div>
+          </div>
+          <div class="wash" style="background: var(--rose-wash)"><span class="l">wash</span><span class="h">#EFDFDE</span></div>
+        </div>
+        <div class="stack">
+          <div class="fill" style="background: var(--burgundy); color: #fff">
+            <div class="n">Burgundy</div>
+            <div>
+              <div class="ko">강조·서명</div>
+              <div class="h">#6B2E3A</div>
+            </div>
+          </div>
+          <div class="wash" style="background: var(--burgundy-wash)"><span class="l">wash</span><span class="h">#E8D5D8</span></div>
+        </div>
+        <div class="stack">
+          <div class="fill" style="background: var(--sage); color: #fff">
+            <div class="n">Sage</div>
+            <div>
+              <div class="ko">완료</div>
+              <div class="h">#7A8B6B</div>
+            </div>
+          </div>
+          <div class="wash" style="background: var(--sage-wash)"><span class="l">wash</span><span class="h">#E4E8DC</span></div>
+        </div>
+        <div class="stack">
+          <div class="fill" style="background: var(--ochre); color: #fff">
+            <div class="n">Ochre</div>
+            <div>
+              <div class="ko">경고</div>
+              <div class="h">#B8914A</div>
+            </div>
+          </div>
+          <div class="wash" style="background: var(--ochre-wash)"><span class="l">wash</span><span class="h">#F1E5CB</span></div>
+        </div>
+        <div class="stack">
+          <div class="fill" style="background: var(--clay); color: #fff">
+            <div class="n">Clay</div>
+            <div>
+              <div class="ko">긴급</div>
+              <div class="h">#9C4A3A</div>
+            </div>
+          </div>
+          <div class="wash" style="background: var(--clay-wash)"><span class="l">wash</span><span class="h">#EED9D2</span></div>
+        </div>
+      </div>
+      <p class="note" style="font-family: var(--font-serif-ko); font-size: 13px; color: var(--fg-muted); margin-top: 16px; max-width: 640px; line-height: 1.7;">
+        형광톤을 모두 지우고 자연·흙·식물·와인에서 가져온 다섯 가지 정제된 톤.
+        상태를 표시할 때도 요란하지 않게, 잉크 텍스트와 짝을 이루며 조용히 알립니다.
+      </p>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>철학 — 어떻게 사용하는가</h2>
+        <span class="n">iv.</span>
+      </div>
+      <div class="philosophy">
+        <div>
+          <h3>채움보다 <em>여백</em></h3>
+          <p>
+            배경은 아이보리로 고정하고, 강조는 면(fill)이 아닌 <em>얇은 선</em>으로
+            처리합니다. 골드는 1px hairline, 이니셜, 이탤릭 텍스트로 드러내고
+            넓은 면적의 골드 블록은 피합니다.
+          </p>
+        </div>
+        <div>
+          <h3>Ink가 <em>주역</em>, Gold는 조연</h3>
+          <p>
+            CTA 버튼은 잉크로, 보조 강조는 샴페인 언더라인으로.
+            골드를 이니셜·세리프 이탤릭·장식 디바이더에 양보하면 UI 전체가
+            차분해지고 중요한 숫자(D-day, 예산)가 제대로 살아납니다.
+          </p>
+        </div>
+        <div>
+          <h3>감정은 <em>wash</em>로</h3>
+          <p>
+            상태 컬러는 채도를 꺾은 흙톤으로, 카드 배경은 해당 색의
+            8% wash만 사용합니다. 긴급도 "빨간 경고"가 아니라
+            "조용한 clay 카드"로 표현합니다.
+          </p>
+        </div>
+        <div>
+          <h3>숫자는 <em>세리프</em>로</h3>
+          <p>
+            D-day, 예산, 퍼센트 같은 핵심 숫자는 Cormorant Garamond oldstyle
+            numerals로. 산세리프 탭룰러보다 느리게 읽히고, 기록해두고 싶은
+            순간이라는 감정이 함께 전달됩니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Before · After</h2>
+        <span class="n">v.</span>
+      </div>
+      <div class="ba">
+        <div>
+          <div class="lbl">before — Toss derivative</div>
+          <div class="chips">
+            <div class="chip" style="background:#3182F6"></div>
+            <div class="chip" style="background:#EBF3FE"></div>
+            <div class="chip" style="background:#191F28"></div>
+            <div class="chip" style="background:#FFFFFF"></div>
+            <div class="chip" style="background:#F04452"></div>
+            <div class="chip" style="background:#F8B300"></div>
+            <div class="chip" style="background:#00B493"></div>
+          </div>
+          <div class="note">핵심 컬러가 IT·금융 앱과 구분되지 않음. 형광 상태색이 감정선 방해.</div>
+        </div>
+        <div>
+          <div class="lbl">after — editorial wedding</div>
+          <div class="chips">
+            <div class="chip" style="background:var(--ink)"></div>
+            <div class="chip" style="background:var(--champagne)"></div>
+            <div class="chip" style="background:var(--ivory)"></div>
+            <div class="chip" style="background:var(--paper)"></div>
+            <div class="chip" style="background:var(--rose)"></div>
+            <div class="chip" style="background:var(--ochre)"></div>
+            <div class="chip" style="background:var(--sage)"></div>
+          </div>
+          <div class="note">잉크 기반 + 샴페인 골드 악센트. 상태색은 흙톤으로 낮춰 전체가 하나의 무드.</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <span>Ourday · Design System v2 — <em>Editorial Wedding Planner</em></span>
+      <span>01 / 10</span>
+    </footer>
+
+  </div>
+</body>
+</html>

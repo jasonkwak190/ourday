@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>3단계 · 아이콘 세트</title>
+<link rel="stylesheet" href="colors_and_type.css?v=2">
+<style>
+  :root {
+    --ink: #1A1613; --ink-2: #3A332E; --ink-3: #6E6459; --ink-4: #A79D90;
+    --ivory: #F7F2EA; --ivory-2: #EFE8DC; --paper: #FBF8F2;
+    --rule: #E2D9C9; --rule-strong: #C8BCA4;
+    --champagne: #B89968; --champagne-2: #9E8052; --champagne-wash: #F1E8D6;
+    --rose: #B57A7A; --sage: #7A8B6B; --ochre: #B8914A; --clay: #9C4A3A;
+    --bg: var(--ivory); --fg: var(--ink); --fg-2: var(--ink-2); --fg-muted: var(--ink-3);
+    --accent: var(--champagne); --border: var(--rule);
+    --font-serif-en: "Cormorant Garamond", serif;
+    --font-serif-ko: "Noto Serif KR", serif;
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+    --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+  }
+  html, body { margin: 0; background: var(--bg); font-family: var(--font-sans); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 64px 40px 80px; }
+
+  header { margin-bottom: 48px; }
+  .roman { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--accent); letter-spacing: 0.04em; }
+  h1.page { font-family: var(--font-serif-ko); font-weight: 500; font-size: 44px; margin: 8px 0 10px; letter-spacing: -0.02em; line-height: 1.15; }
+  .lede { max-width: 560px; font-size: 14px; line-height: 1.7; color: var(--fg-2); }
+  .lede em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+
+  .sec { margin-top: 56px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--rule-strong); margin-bottom: 24px; }
+  .sec-head h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .n { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--accent); letter-spacing: 0.06em; }
+
+  .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+  .cell { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-md); padding: 22px 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .cell svg { color: var(--ink); }
+  .cell .nm { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--fg-2); letter-spacing: 0.02em; }
+  .cell .ko { font-size: 11px; color: var(--fg-muted); letter-spacing: 0.04em; }
+
+  /* usage demos */
+  .demos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .demo { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 20px 22px; }
+  .demo .eyebrow { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne-2); letter-spacing: 0.06em; margin-bottom: 14px; }
+
+  /* size demo */
+  .sizes { display: flex; gap: 18px; align-items: center; justify-content: center; padding: 18px 0 8px; }
+  .sizes .box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .sizes .box span { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--fg-muted); }
+
+  /* color demo */
+  .colors-row { display: flex; gap: 16px; align-items: center; justify-content: center; padding: 18px 0 8px; }
+
+  /* in-context nav */
+  .nav-demo { display: flex; justify-content: space-around; align-items: center; padding: 14px 8px 4px; border-top: 1px solid var(--rule); }
+  .nav-demo .item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--fg-muted); }
+  .nav-demo .item.active { color: var(--ink); }
+  .nav-demo .item .l { font-size: 10px; font-weight: 600; letter-spacing: 0.04em; }
+  .nav-demo .item.active .l { color: var(--ink); }
+
+  /* compare */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .compare > div { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 24px; }
+  .compare .lbl { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--fg-muted); letter-spacing: 0.06em; margin-bottom: 18px; }
+  .compare .strip { display: flex; gap: 22px; align-items: center; font-size: 18px; }
+  .compare .strip span { font-family: var(--font-serif-ko); font-size: 14px; }
+  .compare .note { font-size: 12px; color: var(--fg-muted); margin-top: 16px; line-height: 1.7; font-family: var(--font-serif-ko); }
+
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-muted); }
+  footer em { font-family: var(--font-serif-en); font-style: italic; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- inline the symbol set -->
+<div style="display:none" aria-hidden="true">
+  <object type="image/svg+xml" data="assets/icons.svg"></object>
+</div>
+
+<div class="wrap">
+
+  <header>
+    <div class="roman">Stage Three · Iconography</div>
+    <h1 class="page">손으로 그은 얇은 선의 도상</h1>
+    <p class="lede">
+      OS마다 다르게 보이는 시스템 이모지를 전부 걷어내고, <em>24×24 그리드</em> 위에
+      <em>1.5px 스트로크</em>와 둥근 터미널로 통일된 세트를 직접 그렸습니다.
+      반지·꽃다발·초대장·결혼반지처럼 이 앱에만 필요한 도상들이 한 가족처럼 보이도록.
+    </p>
+  </header>
+
+  <!-- ─── i. All icons ───────────────────────── -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>전체 세트</h2>
+      <span class="n">i. 28 glyphs</span>
+    </div>
+    <div class="grid">
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#rings"/></svg><div class="nm">rings</div><div class="ko">두 반지</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#ring"/></svg><div class="nm">ring</div><div class="ko">반지</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#bouquet"/></svg><div class="nm">bouquet</div><div class="ko">꽃다발</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#heart-line"/></svg><div class="nm">heart</div><div class="ko">하트</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#couple"/></svg><div class="nm">couple</div><div class="ko">커플</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#diamond"/></svg><div class="nm">diamond</div><div class="ko">다이아몬드</div></div>
+
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#home"/></svg><div class="nm">home</div><div class="ko">홈</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#calendar"/></svg><div class="nm">calendar</div><div class="ko">일정</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#wallet"/></svg><div class="nm">wallet</div><div class="ko">예산</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#chat"/></svg><div class="nm">chat</div><div class="ko">결정</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#more"/></svg><div class="nm">more</div><div class="ko">더보기</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#settings"/></svg><div class="nm">settings</div><div class="ko">설정</div></div>
+
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#guests"/></svg><div class="nm">guests</div><div class="ko">하객</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#camera"/></svg><div class="nm">camera</div><div class="ko">사진</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#paperclip"/></svg><div class="nm">paperclip</div><div class="ko">메모</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#book"/></svg><div class="nm">book</div><div class="ko">가이드</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#checklist"/></svg><div class="nm">checklist</div><div class="ko">체크리스트</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#invite"/></svg><div class="nm">invite</div><div class="ko">청첩장</div></div>
+
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#gift"/></svg><div class="nm">gift</div><div class="ko">축의</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#venue"/></svg><div class="nm">venue</div><div class="ko">예식장</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#quote"/></svg><div class="nm">quote</div><div class="ko">인용</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#floret"/></svg><div class="nm">floret</div><div class="ko">장식</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#star-small"/></svg><div class="nm">star</div><div class="ko">별</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#dot"/></svg><div class="nm">dot</div><div class="ko">점</div></div>
+
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#check"/></svg><div class="nm">check</div><div class="ko">완료</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#plus"/></svg><div class="nm">plus</div><div class="ko">추가</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#close"/></svg><div class="nm">close</div><div class="ko">닫기</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#alert"/></svg><div class="nm">alert</div><div class="ko">알림</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#chev-right"/></svg><div class="nm">chev-right</div><div class="ko">더보기</div></div>
+      <div class="cell"><svg width="28" height="28"><use href="assets/icons.svg#eye"/></svg><div class="nm">eye</div><div class="ko">비밀번호</div></div>
+    </div>
+  </section>
+
+  <!-- ─── ii. Size & color ──────────────────── -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>크기와 색</h2>
+      <span class="n">ii.</span>
+    </div>
+    <div class="demos">
+
+      <div class="demo">
+        <div class="eyebrow">sizes · 16 / 20 / 24 / 32 / 48</div>
+        <div class="sizes">
+          <div class="box"><svg width="16" height="16"><use href="assets/icons.svg#rings"/></svg><span>16</span></div>
+          <div class="box"><svg width="20" height="20"><use href="assets/icons.svg#rings"/></svg><span>20</span></div>
+          <div class="box"><svg width="24" height="24"><use href="assets/icons.svg#rings"/></svg><span>24</span></div>
+          <div class="box"><svg width="32" height="32"><use href="assets/icons.svg#rings"/></svg><span>32</span></div>
+          <div class="box"><svg width="48" height="48"><use href="assets/icons.svg#rings"/></svg><span>48</span></div>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="eyebrow">currentColor · 6 tints</div>
+        <div class="colors-row">
+          <svg width="28" height="28" style="color: var(--ink)"><use href="assets/icons.svg#heart-line"/></svg>
+          <svg width="28" height="28" style="color: var(--champagne)"><use href="assets/icons.svg#heart-line"/></svg>
+          <svg width="28" height="28" style="color: var(--rose)"><use href="assets/icons.svg#heart-line"/></svg>
+          <svg width="28" height="28" style="color: var(--sage)"><use href="assets/icons.svg#heart-line"/></svg>
+          <svg width="28" height="28" style="color: var(--ochre)"><use href="assets/icons.svg#heart-line"/></svg>
+          <svg width="28" height="28" style="color: var(--clay)"><use href="assets/icons.svg#heart-line"/></svg>
+        </div>
+      </div>
+
+      <div class="demo">
+        <div class="eyebrow">bottom nav · in context</div>
+        <div class="nav-demo">
+          <div class="item active"><svg width="22" height="22"><use href="assets/icons.svg#home"/></svg><span class="l">홈</span></div>
+          <div class="item"><svg width="22" height="22"><use href="assets/icons.svg#calendar"/></svg><span class="l">일정</span></div>
+          <div class="item"><svg width="22" height="22"><use href="assets/icons.svg#wallet"/></svg><span class="l">예산</span></div>
+          <div class="item"><svg width="22" height="22"><use href="assets/icons.svg#chat"/></svg><span class="l">결정</span></div>
+          <div class="item"><svg width="22" height="22"><use href="assets/icons.svg#more"/></svg><span class="l">더보기</span></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ─── iii. Before / After ───────────────── -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>Before · After</h2>
+      <span class="n">iii. no more emoji</span>
+    </div>
+    <div class="compare">
+      <div>
+        <div class="lbl">before — system emoji</div>
+        <div class="strip" style="font-family: -apple-system, system-ui;">
+          <span>💍 결혼반지</span>
+          <span>📋 체크리스트</span>
+          <span>💰 예산</span>
+        </div>
+        <div class="strip" style="margin-top: 14px; font-family: -apple-system, system-ui;">
+          <span>🎊 하객</span>
+          <span>💌 청첩장</span>
+          <span>⚙️ 설정</span>
+        </div>
+        <div class="note">OS마다 렌더링이 달라 브랜드 일관성이 깨지고, 귀여운 톤이 강제됨.</div>
+      </div>
+      <div>
+        <div class="lbl">after — custom line set</div>
+        <div class="strip">
+          <span><svg width="22" height="22" style="color:var(--champagne-2); vertical-align:middle; margin-right:6px"><use href="assets/icons.svg#rings"/></svg>결혼반지</span>
+          <span><svg width="22" height="22" style="color:var(--champagne-2); vertical-align:middle; margin-right:6px"><use href="assets/icons.svg#checklist"/></svg>체크리스트</span>
+          <span><svg width="22" height="22" style="color:var(--champagne-2); vertical-align:middle; margin-right:6px"><use href="assets/icons.svg#wallet"/></svg>예산</span>
+        </div>
+        <div class="strip" style="margin-top: 14px">
+          <span><svg width="22" height="22" style="color:var(--champagne-2); vertical-align:middle; margin-right:6px"><use href="assets/icons.svg#guests"/></svg>하객</span>
+          <span><svg width="22" height="22" style="color:var(--champagne-2); vertical-align:middle; margin-right:6px"><use href="assets/icons.svg#invite"/></svg>청첩장</span>
+          <span><svg width="22" height="22" style="color:var(--champagne-2); vertical-align:middle; margin-right:6px"><use href="assets/icons.svg#settings"/></svg>설정</span>
+        </div>
+        <div class="note">동일 스트로크·동일 라운딩·currentColor로 컬러 재주입 가능. OS와 무관하게 일관된 도상.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Ourday · Design System v2 — <em>Editorial Wedding Planner</em></span>
+    <span>03 / 10</span>
+  </footer>
+
+</div>
+</body>
+</html>

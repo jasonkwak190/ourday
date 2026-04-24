@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>4단계 · 로고</title>
+<link rel="stylesheet" href="colors_and_type.css?v=2">
+<style>
+  :root {
+    --ink: #1A1613; --ink-2: #3A332E; --ink-3: #6E6459; --ink-4: #A79D90;
+    --ivory: #F7F2EA; --ivory-2: #EFE8DC; --paper: #FBF8F2;
+    --rule: #E2D9C9; --rule-strong: #C8BCA4;
+    --champagne: #B89968; --champagne-2: #9E8052;
+    --bg: var(--ivory); --fg: var(--ink); --fg-2: var(--ink-2); --fg-muted: var(--ink-3);
+    --accent: var(--champagne); --border: var(--rule);
+    --font-serif-en: "Cormorant Garamond", serif;
+    --font-serif-ko: "Noto Serif KR", serif;
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+    --r-md: 12px; --r-lg: 16px;
+  }
+  html, body { margin: 0; background: var(--bg); font-family: var(--font-sans); color: var(--fg); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 64px 40px 80px; }
+  header { margin-bottom: 48px; }
+  .roman { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--accent); letter-spacing: 0.04em; }
+  h1.page { font-family: var(--font-serif-ko); font-weight: 500; font-size: 44px; margin: 8px 0 10px; letter-spacing: -0.02em; line-height: 1.15; }
+  .lede { max-width: 560px; font-size: 14px; line-height: 1.7; color: var(--fg-2); }
+  .lede em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+  .sec { margin-top: 56px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--rule-strong); margin-bottom: 24px; }
+  .sec-head h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .n { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--accent); letter-spacing: 0.06em; }
+
+  /* hero monogram */
+  .hero { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 80px 24px; display: flex; align-items: center; justify-content: center; }
+  .hero svg { color: var(--ink); }
+
+  /* variants */
+  .variants { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .tile { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px 24px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .tile.dark { background: var(--ink); border-color: transparent; }
+  .tile.gold { background: var(--champagne); border-color: transparent; }
+  .tile.ivory { background: var(--ivory-2); }
+  .tile .caption { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--fg-muted); letter-spacing: 0.04em; text-align: center; }
+  .tile.dark .caption { color: rgba(247,242,234,.6); }
+  .tile.gold .caption { color: rgba(26,22,19,.7); }
+
+  /* appicon row */
+  .appicons { display: flex; gap: 20px; align-items: flex-end; justify-content: center; padding: 40px 0; }
+  .appicons .item { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .appicons .item span { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--fg-muted); }
+
+  /* sizes */
+  .sizes-row { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 40px 32px; display: flex; gap: 40px; align-items: flex-end; justify-content: center; color: var(--ink); }
+  .sizes-row .size { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .sizes-row .size span { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--fg-muted); }
+
+  /* construction */
+  .construction { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .construction > div { background: var(--paper); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 28px; }
+  .construction h3 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 17px; margin: 0 0 10px; }
+  .construction p { font-size: 13px; line-height: 1.7; color: var(--fg-2); margin: 0 0 8px; }
+  .construction em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 12px; color: var(--fg-muted); }
+  footer em { font-family: var(--font-serif-en); font-style: italic; color: var(--accent); }
+</style>
+</head>
+<body>
+
+<!-- Inline logo sprite — kept in sync with assets/logo.svg.
+     Inlined here so <text> elements inherit the host page's Cormorant Garamond
+     web font (external <use href="external.svg#id"> renders in an isolated
+     font context and can't see host @font-face declarations). -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <symbol id="monogram" viewBox="0 0 120 80">
+    <defs>
+      <clipPath id="mono-clip-O"><rect x="0" y="0" width="62" height="80"/></clipPath>
+      <clipPath id="mono-clip-D"><rect x="58" y="0" width="62" height="80"/></clipPath>
+    </defs>
+    <path d="M 18 68 Q 60 72 102 68" fill="none" stroke="currentColor" stroke-width="0.8" opacity=".6"/>
+    <g clip-path="url(#mono-clip-O)">
+      <text x="14" y="60" font-family="Cormorant Garamond, Noto Serif KR, serif" font-size="76" font-weight="500" fill="currentColor">O</text>
+    </g>
+    <circle cx="60" cy="44" r="1.8" fill="currentColor" opacity=".9"/>
+    <g clip-path="url(#mono-clip-D)">
+      <text x="60" y="60" font-family="Cormorant Garamond, Noto Serif KR, serif" font-size="76" font-weight="500" fill="currentColor">D</text>
+    </g>
+  </symbol>
+
+  <symbol id="wordmark" viewBox="0 0 260 64">
+    <text x="0" y="46" font-family="Cormorant Garamond, serif" font-size="52" font-weight="500" fill="currentColor">O</text>
+    <text x="30" y="46" font-family="Cormorant Garamond, serif" font-size="52" font-weight="400" font-style="italic" fill="currentColor">urday</text>
+    <path d="M 235 26 l 5 5 l -5 5 l -5 -5 z" fill="none" stroke="currentColor" stroke-width="1" opacity=".7"/>
+  </symbol>
+
+  <symbol id="lockup-stacked" viewBox="0 0 200 180">
+    <path d="M 80 16 L 100 16 M 92 11 L 100 16 L 92 21" fill="none" stroke="currentColor" stroke-width="0.8" opacity=".5"/>
+    <path d="M 100 16 L 120 16" fill="none" stroke="currentColor" stroke-width="0.8" opacity=".5"/>
+    <g transform="translate(40,26)">
+      <text x="14" y="60" font-family="Cormorant Garamond, serif" font-size="76" font-weight="500" fill="currentColor">O</text>
+      <circle cx="60" cy="44" r="1.8" fill="currentColor" opacity=".9"/>
+      <text x="60" y="60" font-family="Cormorant Garamond, serif" font-size="76" font-weight="500" fill="currentColor">D</text>
+    </g>
+    <line x1="60" y1="118" x2="140" y2="118" stroke="currentColor" stroke-width="0.6" opacity=".45"/>
+    <text x="100" y="138" font-family="Pretendard Variable, sans-serif" font-size="10" font-weight="600" letter-spacing="6" text-anchor="middle" fill="currentColor" opacity=".8">OURDAY</text>
+    <text x="100" y="158" font-family="Noto Serif KR, serif" font-size="11" font-weight="500" text-anchor="middle" fill="currentColor" opacity=".7">두 사람의 기록</text>
+  </symbol>
+
+  <symbol id="appicon" viewBox="0 0 120 120">
+    <rect x="0" y="0" width="120" height="120" rx="28" fill="#1A1613"/>
+    <rect x="8" y="8" width="104" height="104" rx="22" fill="none" stroke="#B89968" stroke-width="0.8" opacity=".55"/>
+    <g fill="#F7F2EA">
+      <text x="22" y="80" font-family="Cormorant Garamond, serif" font-size="80" font-weight="500">O</text>
+      <text x="62" y="80" font-family="Cormorant Garamond, serif" font-size="80" font-weight="500">D</text>
+    </g>
+    <circle cx="62" cy="60" r="2" fill="#B89968"/>
+    <path d="M 60 22 l 4 4 l -4 4 l -4 -4 z" fill="none" stroke="#B89968" stroke-width="0.8" opacity=".7"/>
+  </symbol>
+
+  <symbol id="seal" viewBox="0 0 140 140">
+    <circle cx="70" cy="70" r="64" fill="none" stroke="currentColor" stroke-width="0.8" opacity=".5"/>
+    <circle cx="70" cy="70" r="58" fill="none" stroke="currentColor" stroke-width="0.5" opacity=".3"/>
+    <g transform="translate(12,30)">
+      <text x="14" y="60" font-family="Cormorant Garamond, serif" font-size="64" font-weight="500" fill="currentColor">O</text>
+      <circle cx="58" cy="46" r="1.6" fill="currentColor" opacity=".9"/>
+      <text x="58" y="60" font-family="Cormorant Garamond, serif" font-size="64" font-weight="500" fill="currentColor">D</text>
+    </g>
+    <defs>
+      <path id="seal-arc-top" d="M 18 70 A 52 52 0 0 1 122 70" fill="none"/>
+      <path id="seal-arc-bot" d="M 18 70 A 52 52 0 0 0 122 70" fill="none"/>
+    </defs>
+    <text font-family="Pretendard Variable, sans-serif" font-size="8" font-weight="600" letter-spacing="4" fill="currentColor" opacity=".65">
+      <textPath href="#seal-arc-top" startOffset="50%" text-anchor="middle">· TWO · SOULS · ONE · DAY ·</textPath>
+    </text>
+    <text font-family="Cormorant Garamond, serif" font-style="italic" font-size="9" fill="currentColor" opacity=".65">
+      <textPath href="#seal-arc-bot" startOffset="50%" text-anchor="middle">Ourday · MMXXVI</textPath>
+    </text>
+  </symbol>
+</svg>
+
+<div class="wrap">
+
+  <header>
+    <div class="roman">Stage Four · Logo &amp; Monogram</div>
+    <h1 class="page">O·D — 두 사람의 이니셜</h1>
+    <p class="lede">
+      기존의 두 링 교차 로고를 <em>세리프 O와 D가 가운뎃점으로 이어지는</em> 모노그램으로
+      다시 그립니다. <em>Our · Day</em>의 두 이니셜이자 두 사람의 이니셜이기도 한
+      이 형태는 워드마크·씰·앱 아이콘 어디에 들어가도 같은 체계로 작동합니다.
+    </p>
+  </header>
+
+  <!-- i. Hero monogram -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>모노그램</h2>
+      <span class="n">i. primary mark</span>
+    </div>
+    <div class="hero">
+      <svg width="360" height="240" viewBox="0 0 120 80">
+        <use href="#monogram"/>
+      </svg>
+    </div>
+  </section>
+
+  <!-- ii. Variants -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>배경 변주</h2>
+      <span class="n">ii. color contexts</span>
+    </div>
+    <div class="variants">
+      <div class="tile ivory">
+        <svg width="220" height="150" viewBox="0 0 120 80" style="color: var(--ink)"><use href="#monogram"/></svg>
+        <div class="caption">ink on ivory — default</div>
+      </div>
+      <div class="tile">
+        <svg width="220" height="150" viewBox="0 0 120 80" style="color: var(--champagne-2)"><use href="#monogram"/></svg>
+        <div class="caption">champagne on paper — accent</div>
+      </div>
+      <div class="tile dark">
+        <svg width="220" height="150" viewBox="0 0 120 80" style="color: var(--ivory)"><use href="#monogram"/></svg>
+        <div class="caption">ivory on ink — dark mode</div>
+      </div>
+      <div class="tile gold">
+        <svg width="220" height="150" viewBox="0 0 120 80" style="color: var(--ink)"><use href="#monogram"/></svg>
+        <div class="caption">ink on champagne — invitation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- iii. Lockups -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>워드마크와 락업</h2>
+      <span class="n">iii. lockups</span>
+    </div>
+    <div class="variants">
+      <div class="tile ivory">
+        <svg width="280" height="68" viewBox="0 0 260 64" style="color: var(--ink)"><use href="#wordmark"/></svg>
+        <div class="caption">wordmark — header용</div>
+      </div>
+      <div class="tile ivory">
+        <svg width="220" height="200" viewBox="0 0 200 180" style="color: var(--ink)"><use href="#lockup-stacked"/></svg>
+        <div class="caption">stacked lockup — splash / 청첩장</div>
+      </div>
+      <div class="tile ivory">
+        <svg width="180" height="180" viewBox="0 0 140 140" style="color: var(--champagne-2)"><use href="#seal"/></svg>
+        <div class="caption">seal — 서명 · 스탬프</div>
+      </div>
+      <div class="tile dark">
+        <svg width="180" height="180" viewBox="0 0 140 140" style="color: var(--champagne)"><use href="#seal"/></svg>
+        <div class="caption">seal · dark — 청첩장 봉투</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- iv. App icon -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>앱 아이콘</h2>
+      <span class="n">iv. iOS / Android</span>
+    </div>
+    <div class="tile ivory" style="padding: 0;">
+      <div class="appicons">
+        <div class="item">
+          <svg width="180" height="180" viewBox="0 0 120 120" style="border-radius: 40px; box-shadow: 0 12px 36px rgba(26,22,19,.18);"><use href="#appicon"/></svg>
+          <span>180 · home screen</span>
+        </div>
+        <div class="item">
+          <svg width="120" height="120" viewBox="0 0 120 120" style="border-radius: 28px; box-shadow: 0 8px 24px rgba(26,22,19,.15);"><use href="#appicon"/></svg>
+          <span>120 · app drawer</span>
+        </div>
+        <div class="item">
+          <svg width="72" height="72" viewBox="0 0 120 120" style="border-radius: 18px; box-shadow: 0 4px 12px rgba(26,22,19,.12);"><use href="#appicon"/></svg>
+          <span>72 · notification</span>
+        </div>
+        <div class="item">
+          <svg width="40" height="40" viewBox="0 0 120 120" style="border-radius: 10px;"><use href="#appicon"/></svg>
+          <span>40 · spotlight</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- v. Scale test -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>크기 테스트</h2>
+      <span class="n">v. legibility</span>
+    </div>
+    <div class="sizes-row">
+      <div class="size"><svg width="400" height="85" viewBox="0 0 260 64" style="color: var(--ink)"><use href="#wordmark"/></svg><span>400px · splash</span></div>
+      <div class="size"><svg width="180" height="38" viewBox="0 0 260 64" style="color: var(--ink)"><use href="#wordmark"/></svg><span>180px · header</span></div>
+      <div class="size"><svg width="90" height="19" viewBox="0 0 260 64" style="color: var(--ink)"><use href="#wordmark"/></svg><span>90px · footer</span></div>
+    </div>
+  </section>
+
+  <!-- vi. Rules -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>규칙</h2>
+      <span class="n">vi. rules of use</span>
+    </div>
+    <div class="construction">
+      <div>
+        <h3>모노그램은 <em>항상 하나의 컬러</em>로</h3>
+        <p>O·D·점·언더라인은 모두 같은 currentColor를 상속합니다. 점만 금색으로 분리하는 등 색 분리는 피해주세요 — 표현은 배경 변주로.</p>
+      </div>
+      <div>
+        <h3>여백은 <em>O 글자 높이</em>만큼</h3>
+        <p>모노그램 사방으로 최소 1 O-height의 여백을 유지합니다. 청첩장 씰은 1.5 O-height까지 넉넉하게.</p>
+      </div>
+      <div>
+        <h3>워드마크 "urday"는 <em>이탤릭</em></h3>
+        <p>"O"만 로만 weight 500, 이어지는 "urday"는 이탤릭 400. 고유명사이자 "our day"의 이중 의미가 자연스럽게 드러납니다.</p>
+      </div>
+      <div>
+        <h3>씰은 <em>서명처럼 드물게</em></h3>
+        <p>청첩장 봉투, 하객 감사 카드, 프린트 굿즈처럼 격식 있는 표면에만. UI 화면에는 사용하지 않습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Ourday · Design System v2 — <em>Editorial Wedding Planner</em></span>
+    <span>04 / 10</span>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>6단계 · 카드 시스템</title>
+<link rel="stylesheet" href="colors_and_type.css?v=2">
+<style>
+  :root {
+    --ink: #1A1613; --ink-2: #3A332E; --ink-3: #6E6459; --ink-4: #A79D90;
+    --ivory: #F7F2EA; --ivory-2: #EFE8DC; --paper: #FBF8F2; --paper-pure: #fff;
+    --rule: #E2D9C9; --rule-strong: #C8BCA4;
+    --champagne: #B89968; --champagne-2: #9E8052; --champagne-3: #CDB388; --champagne-wash: #F1E8D6;
+    --rose: #B57A7A; --rose-wash: #EFDFDE;
+    --sage: #7A8B6B; --sage-wash: #E4E8DC;
+    --ochre: #B8914A; --clay: #9C4A3A;
+    --font-serif-en: "Cormorant Garamond", serif;
+    --font-serif-ko: "Noto Serif KR", serif;
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+  }
+  html, body { margin: 0; background: var(--ivory); font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1200px; margin: 0 auto; padding: 56px 40px 80px; }
+
+  .phead { margin-bottom: 40px; }
+  .phead .roman { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--champagne-2); letter-spacing: 0.04em; }
+  .phead h1 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 44px; margin: 8px 0 10px; letter-spacing: -0.02em; }
+  .phead p { max-width: 640px; font-size: 14px; line-height: 1.75; color: var(--ink-2); margin: 0; }
+  .phead em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+
+  .sec { margin-top: 56px; }
+  .sec-head { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid var(--rule-strong); margin-bottom: 24px; }
+  .sec-head h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 0; letter-spacing: -0.01em; }
+  .sec-head .meta { display: flex; gap: 20px; align-items: baseline; }
+  .sec-head .n { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .sec-head .desc { font-size: 12px; color: var(--ink-3); }
+
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+  .cardlabel { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--ink-3); margin-top: 10px; letter-spacing: 0.04em; text-align: center; }
+  .cardlabel b { font-style: normal; font-weight: 500; color: var(--ink); margin-right: 6px; }
+
+  /* ═══════════════════════════════════════════════════════════
+     BASE CARD PATTERNS
+     ═══════════════════════════════════════════════════════════ */
+
+  /* Frame · editorial bordered card with corner flourishes */
+  .frame {
+    background: var(--paper);
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    padding: 28px 24px 24px;
+    position: relative;
+  }
+  .frame::before, .frame::after {
+    content: ""; position: absolute; width: 12px; height: 12px;
+    border: 1px solid var(--champagne); opacity: .6;
+  }
+  .frame::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .frame::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+  .frame .kicker { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne-2); letter-spacing: 0.08em; text-align: center; }
+  .frame .title { font-family: var(--font-serif-ko); font-weight: 500; font-size: 20px; text-align: center; margin: 12px 0 6px; letter-spacing: -0.01em; }
+  .frame .big { font-family: var(--font-serif-en); font-size: 88px; line-height: 1; font-weight: 500; text-align: center; letter-spacing: -0.03em; color: var(--ink); margin: 16px 0 8px; }
+  .frame .sub { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; text-align: center; color: var(--ink-3); letter-spacing: 0.05em; }
+  .frame .hair { height: 1px; background: var(--rule-strong); width: 32px; margin: 14px auto; opacity: .6; }
+  .frame .meta { font-size: 12px; color: var(--ink-3); text-align: center; }
+
+  /* Plain card · softest container */
+  .plain {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .plain .eyebrow { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne-2); letter-spacing: 0.05em; }
+  .plain .title { font-family: var(--font-serif-ko); font-weight: 500; font-size: 17px; margin: 6px 0 8px; letter-spacing: -0.005em; }
+  .plain .body { font-size: 13px; color: var(--ink-2); line-height: 1.7; }
+
+  /* Letterpress · ink card for feature moments */
+  .letterpress {
+    background: var(--ink);
+    color: var(--ivory);
+    border-radius: 10px;
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .letterpress::after {
+    content: ""; position: absolute; inset: 6px;
+    border: 1px solid var(--champagne); opacity: .35; border-radius: 6px;
+    pointer-events: none;
+  }
+  .letterpress .eyebrow { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne); letter-spacing: 0.08em; }
+  .letterpress .title { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 8px 0 10px; letter-spacing: -0.01em; }
+  .letterpress .body { font-size: 13px; color: rgba(247,242,234,.75); line-height: 1.7; }
+  .letterpress .cta { margin-top: 16px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--champagne); padding-bottom: 2px; border-bottom: 1px solid rgba(184,153,104,.5); }
+
+  /* Ticket · calendar-page style with perforation */
+  .ticket {
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .ticket .thead {
+    background: var(--ink); color: var(--ivory);
+    padding: 12px 20px 10px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--champagne);
+  }
+  .ticket .thead .m { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; letter-spacing: 0.12em; color: var(--champagne); }
+  .ticket .thead .y { font-family: var(--font-serif-en); font-size: 12px; letter-spacing: 0.1em; color: var(--ivory); opacity: .7; }
+  .ticket .perf { height: 8px; background-image: radial-gradient(circle at center, var(--ivory) 1.5px, transparent 2px); background-size: 16px 8px; background-repeat: repeat-x; }
+  .ticket .tbody { padding: 18px 20px; }
+  .ticket .tbody .eyebrow { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); letter-spacing: 0.05em; text-align: center; }
+  .ticket .tbody .big { font-family: var(--font-serif-en); font-weight: 500; font-size: 72px; line-height: 0.9; text-align: center; margin: 4px 0 0; letter-spacing: -0.03em; }
+  .ticket .tbody .sub { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; text-align: center; color: var(--ink-3); margin-top: 6px; letter-spacing: 0.04em; }
+
+  /* Seal card · circular framed emblem */
+  .sealcard {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+  }
+  .sealcard .ring { width: 120px; height: 120px; border-radius: 50%; border: 1px solid var(--champagne); margin: 0 auto 14px; display: flex; align-items: center; justify-content: center; position: relative; }
+  .sealcard .ring::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; border: 0.5px solid var(--champagne); opacity: .5; }
+  .sealcard .ring .n { font-family: var(--font-serif-en); font-weight: 500; font-size: 48px; color: var(--ink); line-height: 1; letter-spacing: -0.02em; }
+  .sealcard .kicker { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .sealcard .title { font-family: var(--font-serif-ko); font-weight: 500; font-size: 16px; margin-top: 4px; }
+
+  /* Definition card · editorial key-value */
+  .definition { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; padding: 4px 22px; }
+  .definition .row { display: grid; grid-template-columns: 110px 1fr auto; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--rule); align-items: baseline; }
+  .definition .row:last-child { border-bottom: none; }
+  .definition .row .k { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.05em; }
+  .definition .row .v { font-family: var(--font-serif-ko); font-weight: 500; font-size: 14px; color: var(--ink); }
+  .definition .row .trail { font-family: var(--font-serif-en); font-size: 12px; color: var(--ink-3); letter-spacing: 0.04em; }
+
+  /* Compact stat card */
+  .statcard { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 16px; }
+  .statcard .k { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .statcard .v { font-family: var(--font-serif-en); font-weight: 500; font-size: 38px; color: var(--ink); line-height: 1; margin-top: 6px; letter-spacing: -0.02em; }
+  .statcard .v em { font-style: italic; color: var(--champagne-2); font-size: 18px; margin-left: 2px; }
+  .statcard .v small { font-size: 14px; color: var(--ink-3); font-weight: 400; letter-spacing: 0; }
+  .statcard .trend { margin-top: 10px; font-size: 11px; color: var(--ink-3); display: flex; align-items: center; gap: 6px; }
+  .statcard .trend b { font-family: var(--font-serif-en); font-style: italic; font-weight: 400; color: var(--sage); }
+
+  /* List card · timeline list inside a card */
+  .listcard { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; }
+  .listcard .lhead { padding: 14px 20px 10px; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: baseline; }
+  .listcard .lhead .t { font-family: var(--font-serif-ko); font-weight: 500; font-size: 15px; }
+  .listcard .lhead .c { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne-2); }
+  .listcard .item { padding: 14px 20px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--rule); }
+  .listcard .item:last-child { border-bottom: none; }
+  .listcard .item .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--champagne); flex-shrink: 0; }
+  .listcard .item .dot.sage { background: var(--sage); }
+  .listcard .item .dot.rose { background: var(--rose); }
+  .listcard .item .dot.ochre { background: var(--ochre); }
+  .listcard .item .main { flex: 1; min-width: 0; }
+  .listcard .item .t { font-family: var(--font-serif-ko); font-weight: 500; font-size: 14px; word-break: keep-all; }
+  .listcard .item .s { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--ink-3); letter-spacing: 0.04em; margin-top: 2px; }
+  .listcard .item .d { font-family: var(--font-serif-en); font-size: 13px; color: var(--champagne-2); white-space: nowrap; flex-shrink: 0; }
+
+  /* Quote · editorial pull quote */
+  .quote { background: var(--paper); border: 1px solid var(--rule); border-radius: 12px; padding: 28px 24px 24px; position: relative; }
+  .quote .mark { font-family: var(--font-serif-en); font-size: 56px; color: var(--champagne); line-height: 0.8; letter-spacing: -0.05em; }
+  .quote .text { font-family: var(--font-serif-ko); font-weight: 500; font-size: 17px; line-height: 1.6; color: var(--ink); margin-top: -6px; letter-spacing: -0.01em; word-break: keep-all; }
+  .quote .text em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); font-size: 19px; }
+  .quote .attr { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--ink-3); margin-top: 14px; letter-spacing: 0.04em; }
+  .quote .attr::before { content: "— "; color: var(--champagne); }
+
+  /* ═══════════════════════════════════════════════════════════
+     LAYOUT RECIPES
+     ═══════════════════════════════════════════════════════════ */
+
+  .layoutwrap { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 28px; }
+  .layoutwrap + .cardlabel { margin-top: 14px; }
+
+  /* Recipe A · Asymmetric two-column (hero left, stack right) */
+  .recipe-asym { display: grid; grid-template-columns: 1.3fr 1fr; gap: 16px; align-items: start; }
+  .recipe-asym .stack { display: flex; flex-direction: column; gap: 12px; }
+
+  /* Recipe B · Editorial grid (12col feel with hairlines) */
+  .recipe-edit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  .recipe-edit > div { padding: 20px; background: var(--paper); border-right: 1px solid var(--rule); }
+  .recipe-edit > div:last-child { border-right: none; }
+  .recipe-edit .num { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .recipe-edit h4 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 16px; margin: 6px 0 8px; letter-spacing: -0.01em; }
+  .recipe-edit p { font-size: 12.5px; color: var(--ink-3); line-height: 1.7; margin: 0; }
+
+  /* Recipe C · Centered stack (ceremonial) */
+  .recipe-stack { text-align: center; padding: 40px 24px; }
+  .recipe-stack .diamond { width: 10px; height: 10px; margin: 0 auto 18px; border: 1px solid var(--champagne); transform: rotate(45deg); }
+  .recipe-stack h3 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 28px; margin: 0 0 12px; letter-spacing: -0.015em; }
+  .recipe-stack h3 em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+  .recipe-stack p { max-width: 460px; margin: 0 auto; font-size: 13px; color: var(--ink-3); line-height: 1.8; }
+  .recipe-stack .rule { height: 1px; width: 40px; background: var(--rule-strong); margin: 20px auto; opacity: .7; }
+
+  footer { margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); }
+  footer em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="phead">
+    <div class="roman">Stage Six · Cards &amp; Layout System</div>
+    <h1>카드 여덟 · 레이아웃 셋</h1>
+    <p>
+      5단계에서 실험한 <em>Frame · Arc · Calendar</em>의 조형 언어를 재사용 가능한 카드 패턴 여덟 개와
+      레이아웃 레시피 세 개로 정리합니다. 모든 카드는 같은 팔레트 · 같은 타입 룰을 따르며,
+      <em>여백과 장식의 강약</em>만으로 의례감·정보감·일상감을 오갑니다.
+    </p>
+  </div>
+
+  <!-- ── Cards · 8 patterns ─────────────────────────── -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>카드 패턴</h2>
+      <div class="meta"><span class="desc">8 types · same tokens, different density</span><span class="n">i. — viii.</span></div>
+    </div>
+
+    <div class="grid-2">
+
+      <div>
+        <div class="frame">
+          <div class="kicker">· OUR WEDDING DAY ·</div>
+          <div class="title">민준 &amp; 서연</div>
+          <div class="big">142</div>
+          <div class="sub">days to go</div>
+          <div class="hair"></div>
+          <div class="meta">2026 · 05 · 16 · Saturday</div>
+        </div>
+        <div class="cardlabel"><b>i. Frame</b>의례용 · 히어로 · 청첩장 요소</div>
+      </div>
+
+      <div>
+        <div class="letterpress">
+          <div class="eyebrow">· INVITATION ·</div>
+          <div class="title">청첩장 제작이 시작되었어요</div>
+          <div class="body">원하는 이미지와 문구를 고르면 나머지는 저희가 조판합니다. 1시간이면 완성되는 품격 있는 한 장.</div>
+          <div class="cta">시작하기 →</div>
+        </div>
+        <div class="cardlabel"><b>ii. Letterpress</b>기능 진입 · 프로모션 · 강조 모먼트</div>
+      </div>
+
+      <div>
+        <div class="ticket">
+          <div class="thead"><div class="m">MAY · 五月</div><div class="y">MMXXVI</div></div>
+          <div class="perf"></div>
+          <div class="tbody">
+            <div class="eyebrow">· Saturday · 土 ·</div>
+            <div class="big">16</div>
+            <div class="sub">our wedding day</div>
+          </div>
+        </div>
+        <div class="cardlabel"><b>iii. Ticket</b>달력 · 날짜 스니펫 · 위젯</div>
+      </div>
+
+      <div>
+        <div class="plain">
+          <div class="eyebrow">· today's note ·</div>
+          <div class="title">드레스 피팅 2차, 어땠나요?</div>
+          <div class="body">오늘 있었던 피팅의 인상을 한 줄로 남겨두면, 결혼식 후에도 그날의 온도가 남습니다. 사진도 함께 올려 보세요.</div>
+        </div>
+        <div class="cardlabel"><b>iv. Plain</b>기본 컨테이너 · 본문 · 일반 리스트</div>
+      </div>
+
+      <div>
+        <div class="grid-3" style="gap: 12px;">
+          <div class="sealcard"><div class="ring"><div class="n">12</div></div><div class="kicker">· completed</div><div class="title">체크리스트</div></div>
+          <div class="sealcard"><div class="ring"><div class="n">86</div></div><div class="kicker">· confirmed</div><div class="title">하객</div></div>
+          <div class="sealcard"><div class="ring"><div class="n">48</div></div><div class="kicker">· spent</div><div class="title">지출 (백만)</div></div>
+        </div>
+        <div class="cardlabel"><b>v. Seal</b>프로필 · 뱃지 · 요약 메트릭</div>
+      </div>
+
+      <div>
+        <div class="definition">
+          <div class="row"><div class="k">date</div><div class="v">2026년 5월 16일 토요일</div><div class="trail">D-142</div></div>
+          <div class="row"><div class="k">venue</div><div class="v">그랜드 하얏트 서울 · 그랜드볼룸</div><div class="trail">reserved</div></div>
+          <div class="row"><div class="k">guests</div><div class="v">186명 초대 · 86명 확정</div><div class="trail">46%</div></div>
+          <div class="row"><div class="k">budget</div><div class="v">₩58,000,000 예산 · ₩48,200,000 지출</div><div class="trail">83%</div></div>
+        </div>
+        <div class="cardlabel"><b>vi. Definition</b>핵심 정보 요약 · 사전식 표</div>
+      </div>
+
+      <div>
+        <div class="grid-2" style="gap: 12px;">
+          <div class="statcard">
+            <div class="k">budget remaining</div>
+            <div class="v">₩9.8<em>M</em></div>
+            <div class="trend"><b>— 17%</b> vs. 예산</div>
+          </div>
+          <div class="statcard">
+            <div class="k">tasks done</div>
+            <div class="v">12<small>/28</small></div>
+            <div class="trend"><b>+ 3</b> this week</div>
+          </div>
+        </div>
+        <div class="cardlabel"><b>vii. Stat</b>대시보드 · 숫자 중심 카드</div>
+      </div>
+
+      <div>
+        <div class="listcard">
+          <div class="lhead"><div class="t">다가오는 일정</div><div class="c">next 30 days</div></div>
+          <div class="item"><div class="dot"></div><div class="main"><div class="t">웨딩홀 2차 미팅</div><div class="s">메뉴 · 좌석 확정</div></div><div class="d">D-3</div></div>
+          <div class="item"><div class="dot sage"></div><div class="main"><div class="t">드레스 피팅 2차</div><div class="s">청담 · 14:00</div></div><div class="d">D-14</div></div>
+          <div class="item"><div class="dot rose"></div><div class="main"><div class="t">청첩장 발송 시작</div><div class="s">180명 · 3주 전 기준</div></div><div class="d">D-28</div></div>
+        </div>
+        <div class="cardlabel"><b>viii. List</b>일정 · 알림 · 카테고리 리스트</div>
+      </div>
+
+    </div>
+
+    <!-- Quote card — full width -->
+    <div style="margin-top: 20px;">
+      <div class="quote">
+        <div class="mark">"</div>
+        <div class="text">함께 고른 <em>첫 번째</em> 접시. 결혼식이 다가올수록 <em>사소한</em> 선택들이 추억이 됩니다.</div>
+        <div class="attr">민준의 다이어리 · 3일 전</div>
+      </div>
+      <div class="cardlabel"><b>bonus · Quote</b>다이어리 · 고객 후기 · 에디토리얼 블록</div>
+    </div>
+  </section>
+
+  <!-- ── Layout Recipes · 3 ─────────────────────────── -->
+  <section class="sec">
+    <div class="sec-head">
+      <h2>레이아웃 레시피</h2>
+      <div class="meta"><span class="desc">3 compositions · how cards group on a page</span><span class="n">α · β · γ</span></div>
+    </div>
+
+    <!-- α · Asymmetric -->
+    <div class="layoutwrap">
+      <div class="recipe-asym">
+        <div class="frame" style="padding: 40px 32px 36px;">
+          <div class="kicker">· OUR WEDDING DAY ·</div>
+          <div class="title">민준 &amp; 서연</div>
+          <div class="big" style="font-size: 120px;">142</div>
+          <div class="sub">days to go</div>
+          <div class="hair"></div>
+          <div class="meta">2026 · 05 · 16 · Saturday</div>
+        </div>
+        <div class="stack">
+          <div class="statcard"><div class="k">tasks done</div><div class="v">12<small>/28</small></div><div class="trend"><b>+ 3</b> this week</div></div>
+          <div class="statcard"><div class="k">budget</div><div class="v">83<em>%</em></div><div class="trend"><b>— 17%</b> 남음</div></div>
+          <div class="statcard"><div class="k">guests</div><div class="v">86<small>/186</small></div><div class="trend"><b>+ 12</b> 지난주</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cardlabel"><b>α. Asymmetric</b>큰 Frame 히어로 + 보조 Stat 스택 · 홈 상단</div>
+
+    <!-- β · Editorial Grid -->
+    <div class="layoutwrap" style="margin-top: 24px; padding: 0; background: transparent; border: none;">
+      <div class="recipe-edit">
+        <div><div class="num">i.</div><h4>체크리스트</h4><p>웨딩 준비를 24주 타임라인으로 펼쳤어요. 오늘 해야 할 일이 매일 아침 도착합니다.</p></div>
+        <div><div class="num">ii.</div><h4>다이어리</h4><p>두 사람이 함께 쓰는 기록장. 피팅 · 미팅 · 감정까지 한 곳에 모여 식후 앨범이 됩니다.</p></div>
+        <div><div class="num">iii.</div><h4>가계부</h4><p>예산 대비 지출을 실시간으로. 카테고리별 계획과 실지출이 한 화면에서 비교됩니다.</p></div>
+      </div>
+    </div>
+    <div class="cardlabel"><b>β. Editorial Grid</b>3컬럼 하이라인 · 기능 소개 · 온보딩 · 마케팅</div>
+
+    <!-- γ · Centered Stack -->
+    <div class="layoutwrap" style="margin-top: 24px;">
+      <div class="recipe-stack">
+        <div class="diamond"></div>
+        <h3>두 사람의 기록이 <em>한 권의 책</em>이 됩니다</h3>
+        <p>Ourday는 결혼 준비의 사소한 결정과 큰 약속을 함께 담아둡니다.<br/>결혼식이 끝난 뒤에도 그날의 온도가 오래 남을 수 있도록.</p>
+        <div class="rule"></div>
+        <div style="font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--champagne-2); letter-spacing: 0.08em;">· since MMXXIII ·</div>
+      </div>
+    </div>
+    <div class="cardlabel"><b>γ. Centered Stack</b>중앙 정렬 의례 구성 · 랜딩 · 섹션 구분 · 공유 카드</div>
+  </section>
+
+</div>
+
+<footer>
+  <span>Ourday · Design System v2 — <em>Editorial Wedding Planner</em></span>
+  <span>06 / 10</span>
+</footer>
+
+</body>
+</html>

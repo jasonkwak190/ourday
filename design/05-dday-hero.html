@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>5단계 · D-day 히어로</title>
+<link rel="stylesheet" href="colors_and_type.css?v=2">
+<style>
+  :root {
+    --ink: #1A1613; --ink-2: #3A332E; --ink-3: #6E6459; --ink-4: #A79D90;
+    --ivory: #F7F2EA; --ivory-2: #EFE8DC; --paper: #FBF8F2; --paper-pure: #fff;
+    --rule: #E2D9C9; --rule-strong: #C8BCA4;
+    --champagne: #B89968; --champagne-2: #9E8052; --champagne-3: #CDB388; --champagne-wash: #F1E8D6;
+    --rose: #B57A7A; --rose-wash: #EFDFDE;
+    --burgundy: #6B2E3A;
+    --sage: #7A8B6B;
+    --font-serif-en: "Cormorant Garamond", serif;
+    --font-serif-ko: "Noto Serif KR", serif;
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+  }
+  html, body { margin: 0; background: var(--ivory); font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1600px; margin: 0 auto; padding: 56px 40px 80px; }
+
+  /* page header */
+  .phead { margin-bottom: 40px; }
+  .phead .roman { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--champagne-2); letter-spacing: 0.04em; }
+  .phead h1 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 44px; margin: 8px 0 10px; letter-spacing: -0.02em; }
+  .phead p { max-width: 620px; font-size: 14px; line-height: 1.7; color: var(--ink-2); margin: 0; }
+  .phead em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+
+  /* grid — 3 phones side-by-side */
+  .showcase { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: start; }
+  @media (max-width: 1200px) { .showcase { grid-template-columns: 1fr; justify-items: center; } }
+
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+
+  /* variant caption */
+  .label { text-align: center; max-width: 320px; }
+  .label .idx { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .label h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 6px 0 6px; letter-spacing: -0.01em; }
+  .label p { font-size: 12.5px; line-height: 1.7; color: var(--ink-3); margin: 0; }
+
+  /* phone */
+  .phone {
+    width: 360px; height: 740px;
+    background: var(--ivory);
+    border-radius: 44px;
+    box-shadow: 0 0 0 10px #201a16, 0 30px 80px -20px rgba(26,22,19,.35), 0 10px 30px -10px rgba(26,22,19,.15);
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+  }
+  /* status bar */
+  .status { height: 48px; padding: 18px 28px 0; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; color: var(--ink); }
+  .status .dots { display: flex; gap: 4px; align-items: center; }
+  .status .dots::after { content: ""; width: 18px; height: 10px; border: 1.5px solid var(--ink); border-radius: 3px; margin-left: 4px; position: relative; }
+
+  .scr { flex: 1; overflow: hidden; padding: 8px 24px 0; position: relative; }
+
+  /* top bar shared */
+  .topbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; }
+  .topbar .brand { font-family: var(--font-serif-en); font-style: italic; font-size: 20px; color: var(--ink); }
+  .topbar .brand b { font-style: normal; font-weight: 500; }
+  .topbar .icons { display: flex; gap: 14px; color: var(--ink-2); }
+
+  /* bottom nav shared */
+  .tabbar { position: absolute; left: 16px; right: 16px; bottom: 18px; height: 62px; background: var(--paper-pure); border: 1px solid var(--rule); border-radius: 28px; display: flex; justify-content: space-around; align-items: center; box-shadow: 0 6px 24px -8px rgba(26,22,19,.15); }
+  .tabbar .tab { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; color: var(--ink-3); font-family: var(--font-serif-en); font-style: italic; letter-spacing: 0.05em; }
+  .tabbar .tab.on { color: var(--champagne-2); }
+  .tabbar .tab svg { opacity: .8; }
+
+  /* ───────────────────────────────────────────────────────────
+     VARIANT A · Editorial Poster
+     세로 축 + 큰 세리프 숫자 + 한줄 라틴 타이포 + 프레임 라인
+     ─────────────────────────────────────────────────────────── */
+  .vA .scr { background: var(--ivory); }
+  .vA .hero {
+    margin-top: 6px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 4px;
+    padding: 36px 24px 28px;
+    text-align: center;
+    position: relative;
+    background:
+      linear-gradient(180deg, transparent 0%, transparent 60%, rgba(184,153,104,0.04) 100%),
+      var(--paper);
+  }
+  /* corner flourishes */
+  .vA .hero::before, .vA .hero::after {
+    content: ""; position: absolute; width: 14px; height: 14px;
+    border: 1px solid var(--champagne); opacity: .6;
+  }
+  .vA .hero::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .vA .hero::after  { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+  .vA .kicker { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.08em; margin-bottom: 14px; }
+  .vA .names { font-family: var(--font-serif-ko); font-weight: 500; font-size: 18px; color: var(--ink); letter-spacing: 0.02em; }
+  .vA .names span { color: var(--champagne-2); margin: 0 6px; font-family: var(--font-serif-en); font-style: italic; }
+  .vA .bignum {
+    font-family: var(--font-serif-en);
+    font-weight: 500;
+    font-size: 156px;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    margin: 22px 0 6px;
+    position: relative;
+  }
+  .vA .bignum sup { font-size: 32px; font-weight: 400; font-style: italic; color: var(--champagne-2); vertical-align: super; margin-left: 4px; letter-spacing: 0; top: -40px; position: relative; }
+  .vA .daystxt { font-family: var(--font-serif-en); font-style: italic; font-size: 15px; color: var(--ink-3); letter-spacing: 0.05em; margin-bottom: 20px; }
+  .vA .hairline { height: 1px; background: var(--rule-strong); margin: 0 auto; width: 40%; opacity: .7; }
+  .vA .date { font-family: var(--font-serif-ko); font-weight: 500; font-size: 15px; margin-top: 14px; color: var(--ink-2); }
+  .vA .date .dot { color: var(--champagne); margin: 0 8px; }
+
+  /* Quick stats strip */
+  .vA .stats { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+  .vA .stat { background: var(--paper); padding: 14px 10px; text-align: center; }
+  .vA .stat .n { font-family: var(--font-serif-en); font-size: 22px; color: var(--ink); line-height: 1; }
+  .vA .stat .n em { font-style: italic; color: var(--champagne-2); font-size: 14px; }
+  .vA .stat .t { font-size: 10.5px; color: var(--ink-3); margin-top: 6px; letter-spacing: 0.04em; }
+
+  /* next action */
+  .vA .next { margin-top: 16px; display: flex; gap: 12px; align-items: center; padding: 14px; border: 1px solid var(--rule); border-radius: 12px; background: var(--paper); }
+  .vA .next .idx { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--champagne); color: var(--champagne-2); display: flex; align-items: center; justify-content: center; font-family: var(--font-serif-en); font-style: italic; font-size: 15px; flex-shrink: 0; }
+  .vA .next .text { flex: 1; }
+  .vA .next .text .k { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); letter-spacing: 0.05em; }
+  .vA .next .text .t { font-family: var(--font-serif-ko); font-weight: 500; font-size: 14px; color: var(--ink); margin-top: 2px; }
+  .vA .next .arrow { color: var(--ink-3); }
+
+  /* ───────────────────────────────────────────────────────────
+     VARIANT B · Champagne Arc
+     원형 프로그레스 + 중앙에 세리프 숫자
+     ─────────────────────────────────────────────────────────── */
+  .vB .scr { background: linear-gradient(180deg, var(--paper) 0%, var(--ivory) 60%); }
+  .vB .greeting { text-align: left; padding: 12px 4px 0; }
+  .vB .greeting .k { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.05em; }
+  .vB .greeting h3 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 4px 0 0; letter-spacing: -0.01em; }
+
+  .vB .arcwrap { position: relative; width: 280px; height: 280px; margin: 24px auto 0; }
+  .vB .arcwrap svg { position: absolute; inset: 0; }
+  .vB .arctext { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .vB .arctext .pre { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.08em; }
+  .vB .arctext .big { font-family: var(--font-serif-en); font-weight: 500; font-size: 104px; line-height: 1; color: var(--ink); letter-spacing: -0.04em; margin-top: 4px; }
+  .vB .arctext .u { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--ink-3); margin-top: 6px; letter-spacing: 0.08em; }
+
+  .vB .names { text-align: center; margin-top: 20px; font-family: var(--font-serif-ko); font-size: 16px; color: var(--ink-2); font-weight: 500; }
+  .vB .names span { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne); margin: 0 8px; }
+  .vB .subdate { text-align: center; margin-top: 6px; font-size: 12px; color: var(--ink-3); letter-spacing: 0.04em; }
+  .vB .subdate b { font-family: var(--font-serif-en); font-weight: 500; color: var(--champagne-2); margin: 0 6px; }
+
+  /* horizontal pill list of upcoming */
+  .vB .upcoming { margin: 20px -24px 0; padding: 0 24px 4px; display: flex; gap: 10px; overflow-x: auto; overflow-y: visible; scrollbar-width: none; }
+  .vB .upcoming::-webkit-scrollbar { display: none; }
+  .vB .pill { flex-shrink: 0; padding: 8px 14px; border: 1px solid var(--rule); border-radius: 22px; background: var(--paper); display: inline-flex; align-items: baseline; gap: 8px; white-space: nowrap; }
+  .vB .pill.on { border-color: var(--champagne); background: var(--champagne-wash); }
+  .vB .pill .d { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); white-space: nowrap; }
+  .vB .pill .t { font-size: 12px; color: var(--ink); font-weight: 500; white-space: nowrap; }
+
+  /* ───────────────────────────────────────────────────────────
+     VARIANT C · Calendar Page
+     빈티지 달력 종이 느낌 · 월 · 큰 일자 · 아래 리스트
+     ─────────────────────────────────────────────────────────── */
+  .vC .scr { background: var(--ivory); }
+  .vC .card {
+    margin-top: 6px;
+    background: var(--paper-pure);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px -10px rgba(26,22,19,.1);
+  }
+  .vC .cardhead {
+    background: var(--ink);
+    color: var(--ivory);
+    padding: 14px 20px 12px;
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 1px solid var(--champagne);
+  }
+  .vC .cardhead .m { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; letter-spacing: 0.12em; color: var(--champagne); }
+  .vC .cardhead .y { font-family: var(--font-serif-en); font-size: 14px; letter-spacing: 0.1em; color: var(--ivory); opacity: .75; }
+
+  .vC .day {
+    text-align: center;
+    padding: 20px 20px 12px;
+    position: relative;
+  }
+  .vC .day .dow { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.12em; }
+  .vC .day .num { font-family: var(--font-serif-en); font-weight: 500; font-size: 132px; line-height: 0.9; color: var(--ink); letter-spacing: -0.04em; margin: 4px 0 2px; }
+  /* seven tick perforation between head and body */
+  .vC .perf { height: 10px; background-image: radial-gradient(circle at center, var(--ivory) 2px, transparent 2.5px); background-size: 20px 10px; background-repeat: repeat-x; }
+
+  .vC .daybody { padding: 4px 20px 16px; border-top: 1px dashed var(--rule-strong); }
+  .vC .daybody .row { padding: 10px 0; border-bottom: 1px solid var(--rule); display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .vC .daybody .row:last-child { border-bottom: none; }
+  .vC .daybody .row .l { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+  .vC .daybody .row .mark { width: 6px; height: 6px; border-radius: 50%; background: var(--champagne); flex-shrink: 0; }
+  .vC .daybody .row .mark.rose { background: var(--rose); }
+  .vC .daybody .row .mark.sage { background: var(--sage); }
+  .vC .daybody .row .t { font-family: var(--font-serif-ko); font-weight: 500; font-size: 13px; color: var(--ink); word-break: keep-all; line-height: 1.3; }
+  .vC .daybody .row .s { font-size: 11px; color: var(--ink-3); margin-top: 2px; font-family: var(--font-serif-en); font-style: italic; letter-spacing: 0.04em; }
+  .vC .daybody .row .d { font-family: var(--font-serif-en); font-size: 13px; color: var(--champagne-2); letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0; }
+  .vC .daybody .row .d b { font-weight: 500; }
+
+  /* below card: monthly summary */
+  .vC .summary { margin-top: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .vC .sum { background: var(--paper); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; }
+  .vC .sum .k { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); letter-spacing: 0.05em; }
+  .vC .sum .v { font-family: var(--font-serif-en); font-size: 22px; color: var(--ink); margin-top: 2px; line-height: 1; }
+  .vC .sum .v em { font-style: italic; color: var(--champagne-2); font-size: 14px; }
+
+  footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); max-width: 1600px; margin-left: auto; margin-right: auto; padding-left: 40px; padding-right: 40px; }
+  footer em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+</style>
+</head>
+<body>
+
+<!-- shared tiny icon sprite used inside mockups -->
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0" aria-hidden="true">
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 9a6 6 0 1 1 12 0c0 4 2 5 2 7H4c0-2 2-3 2-7z"/><path d="M10 19a2 2 0 0 0 4 0"/>
+  </symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round">
+    <path d="M4 7h16M4 12h16M4 17h16"/>
+  </symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 12h14M13 6l6 6-6 6"/>
+  </symbol>
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 7h16M4 12h10M4 17h16"/><circle cx="18" cy="12" r="1.2" fill="currentColor"/>
+  </symbol>
+  <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 4h10a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/>
+  </symbol>
+  <symbol id="i-coin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="8"/><path d="M9 10h6M9 14h6M12 7v10"/>
+  </symbol>
+  <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="9" r="3.5"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6"/>
+  </symbol>
+</svg>
+
+<div class="page">
+
+  <div class="phead">
+    <div class="roman">Stage Five · D-day Hero</div>
+    <h1>D-day 히어로 · 3가지 에디토리얼 해석</h1>
+    <p>
+      현재 제품의 홈 화면 가장 윗자리, 결혼식까지 남은 날짜를 알려주는 <em>D-day 카드</em>를
+      세 방향으로 다시 그립니다. 각 변주는 같은 데이터를 다른 편집 감각으로 해석합니다.
+      카피와 정보 밀도는 유지하되, 타입·레이아웃·장식이 바뀝니다.
+    </p>
+  </div>
+
+  <div class="showcase">
+
+    <!-- ─────────────────────────────────────────────────────
+         A · Editorial Poster
+         ───────────────────────────────────────────────────── -->
+    <div class="cell">
+      <div class="phone vA">
+        <div class="status"><span>9:41</span><span class="dots">·<svg width="16" height="10" viewBox="0 0 16 10"><path d="M1 9l2-2 2 2 2-4 2 4 2-6 2 6 2-8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div>
+        <div class="scr">
+          <div class="topbar">
+            <div class="brand"><b>O</b>urday</div>
+            <div class="icons"><svg width="22" height="22"><use href="#i-bell"/></svg><svg width="22" height="22"><use href="#i-menu"/></svg></div>
+          </div>
+
+          <div class="hero">
+            <div class="kicker">· OUR WEDDING DAY ·</div>
+            <div class="names">민준 <span>&amp;</span> 서연</div>
+            <div class="bignum">142<sup>*</sup></div>
+            <div class="daystxt">days to go</div>
+            <div class="hairline"></div>
+            <div class="date">2026 <span class="dot">·</span> 05 <span class="dot">·</span> 16 <span class="dot">·</span> 土</div>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><div class="n">12<em>/28</em></div><div class="t">체크리스트</div></div>
+            <div class="stat"><div class="n">₩<em>48.2</em></div><div class="t">지출 (백만)</div></div>
+            <div class="stat"><div class="n">86<em>/180</em></div><div class="t">하객</div></div>
+          </div>
+
+          <div class="next">
+            <div class="idx">i.</div>
+            <div class="text">
+              <div class="k">next step · D-3</div>
+              <div class="t">웨딩홀 2차 미팅 · 메뉴 확정</div>
+            </div>
+            <div class="arrow"><svg width="20" height="20"><use href="#i-arrow"/></svg></div>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab on"><svg width="20" height="20"><use href="#i-home"/></svg><span>home</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-check"/></svg><span>tasks</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-book"/></svg><span>diary</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-coin"/></svg><span>budget</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-user"/></svg><span>me</span></div>
+        </div>
+      </div>
+
+      <div class="label">
+        <div class="idx">i. Editorial Poster</div>
+        <h2>잡지 표지처럼</h2>
+        <p>Cormorant 156px 숫자, 모서리 금빛 코너 프레임, 한자 요일까지 품은 정통 에디토리얼 구성. 아래 3칸 스트립으로 진행률·지출·하객 요약까지 한 화면에.</p>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────
+         B · Champagne Arc
+         ───────────────────────────────────────────────────── -->
+    <div class="cell">
+      <div class="phone vB">
+        <div class="status"><span>9:41</span><span class="dots">·<svg width="16" height="10" viewBox="0 0 16 10"><path d="M1 9l2-2 2 2 2-4 2 4 2-6 2 6 2-8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div>
+        <div class="scr">
+          <div class="topbar">
+            <div class="brand"><b>O</b>urday</div>
+            <div class="icons"><svg width="22" height="22"><use href="#i-bell"/></svg><svg width="22" height="22"><use href="#i-menu"/></svg></div>
+          </div>
+
+          <div class="greeting">
+            <div class="k">· good morning, bride ·</div>
+            <h3>서연 님의 하루가<br/>시작되었어요</h3>
+          </div>
+
+          <div class="arcwrap">
+            <svg viewBox="0 0 280 280">
+              <!-- background track -->
+              <circle cx="140" cy="140" r="120" fill="none" stroke="#E2D9C9" stroke-width="1"/>
+              <circle cx="140" cy="140" r="126" fill="none" stroke="#E2D9C9" stroke-width="0.5" opacity=".6"/>
+              <!-- progress arc (approx 50% complete of planning) -->
+              <circle cx="140" cy="140" r="120" fill="none" stroke="#B89968" stroke-width="3"
+                      stroke-dasharray="754" stroke-dashoffset="377" stroke-linecap="round"
+                      transform="rotate(-90 140 140)"/>
+              <!-- progress head dot -->
+              <circle cx="140" cy="20" r="5" fill="#1A1613" transform="rotate(180 140 140)"/>
+              <!-- tick marks every 30deg -->
+              <g stroke="#C8BCA4" stroke-width="0.8" opacity=".5">
+                <line x1="140" y1="8" x2="140" y2="16"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(30 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(60 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(90 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(120 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(150 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(180 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(210 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(240 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(270 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(300 140 140)"/>
+                <line x1="140" y1="8" x2="140" y2="16" transform="rotate(330 140 140)"/>
+              </g>
+              <!-- curved top text -->
+              <defs>
+                <path id="arc-top" d="M 40 140 A 100 100 0 0 1 240 140" fill="none"/>
+                <path id="arc-bot" d="M 40 140 A 100 100 0 0 0 240 140" fill="none"/>
+              </defs>
+              <text font-family="Cormorant Garamond, serif" font-style="italic" font-size="11" fill="#9E8052" letter-spacing="3">
+                <textPath href="#arc-top" startOffset="50%" text-anchor="middle">· 준비 진행률 · 50% ·</textPath>
+              </text>
+              <text font-family="Cormorant Garamond, serif" font-size="10" fill="#6E6459" letter-spacing="2">
+                <textPath href="#arc-bot" startOffset="50%" text-anchor="middle">May · MMXXVI · Saturday</textPath>
+              </text>
+            </svg>
+            <div class="arctext">
+              <div class="pre">· D –</div>
+              <div class="big">142</div>
+              <div class="u">days</div>
+            </div>
+          </div>
+
+          <div class="names">민준 <span>&amp;</span> 서연</div>
+          <div class="subdate">2026 <b>·</b> 05 <b>·</b> 16 <b>·</b> Saturday</div>
+
+          <div class="upcoming">
+            <div class="pill on"><div class="d">D-3</div><div class="t">웨딩홀 미팅</div></div>
+            <div class="pill"><div class="d">D-14</div><div class="t">드레스 피팅 2차</div></div>
+            <div class="pill"><div class="d">D-28</div><div class="t">청첩장 발송</div></div>
+            <div class="pill"><div class="d">D-45</div><div class="t">스냅 촬영</div></div>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab on"><svg width="20" height="20"><use href="#i-home"/></svg><span>home</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-check"/></svg><span>tasks</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-book"/></svg><span>diary</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-coin"/></svg><span>budget</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-user"/></svg><span>me</span></div>
+        </div>
+      </div>
+
+      <div class="label">
+        <div class="idx">ii. Champagne Arc</div>
+        <h2>원형 진행률로</h2>
+        <p>남은 날짜와 준비 진행률을 하나의 링으로 합쳤어요. 위·아래 아크 텍스트로 월·요일을 빙 둘러 각인하고, 아래 핀셋 핀처럼 펼친 일정 칩들로 다음 할 일을 자연스럽게 이어갑니다.</p>
+      </div>
+    </div>
+
+    <!-- ─────────────────────────────────────────────────────
+         C · Calendar Page
+         ───────────────────────────────────────────────────── -->
+    <div class="cell">
+      <div class="phone vC">
+        <div class="status"><span>9:41</span><span class="dots">·<svg width="16" height="10" viewBox="0 0 16 10"><path d="M1 9l2-2 2 2 2-4 2 4 2-6 2 6 2-8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg></span></div>
+        <div class="scr">
+          <div class="topbar">
+            <div class="brand"><b>O</b>urday</div>
+            <div class="icons"><svg width="22" height="22"><use href="#i-bell"/></svg><svg width="22" height="22"><use href="#i-menu"/></svg></div>
+          </div>
+
+          <div class="card">
+            <div class="cardhead">
+              <div class="m">MAY · 五月</div>
+              <div class="y">MMXXVI</div>
+            </div>
+            <div class="perf"></div>
+            <div class="day">
+              <div class="dow">· Saturday · 土 ·</div>
+              <div class="num">16</div>
+            </div>
+            <div class="daybody">
+              <div class="row">
+                <div class="l"><div class="mark rose"></div><div><div class="t">민준 &amp; 서연 · 결혼식</div><div class="s">Grand Hyatt Seoul · 14:00</div></div></div>
+                <div class="d"><b>D-142</b></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top: 12px;">
+            <div class="cardhead" style="background: var(--paper); color: var(--ink); border-bottom: 1px solid var(--rule); padding: 10px 20px 8px;">
+              <div class="m" style="color: var(--champagne-2);">· UPCOMING ·</div>
+              <div class="y" style="color: var(--ink-3);">next 30 days</div>
+            </div>
+            <div class="daybody" style="border-top: none; padding-bottom: 8px;">
+              <div class="row">
+                <div class="l"><div class="mark"></div><div><div class="t">웨딩홀 2차 미팅</div><div class="s">메뉴 · 좌석 확정</div></div></div>
+                <div class="d"><b>D-3</b></div>
+              </div>
+              <div class="row">
+                <div class="l"><div class="mark sage"></div><div><div class="t">드레스 피팅 2차</div><div class="s">청담 · 14:00</div></div></div>
+                <div class="d"><b>D-14</b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabbar">
+          <div class="tab on"><svg width="20" height="20"><use href="#i-home"/></svg><span>home</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-check"/></svg><span>tasks</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-book"/></svg><span>diary</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-coin"/></svg><span>budget</span></div>
+          <div class="tab"><svg width="20" height="20"><use href="#i-user"/></svg><span>me</span></div>
+        </div>
+      </div>
+
+      <div class="label">
+        <div class="idx">iii. Calendar Page</div>
+        <h2>달력을 찢어낸 듯</h2>
+        <p>잉크 헤더 + 챔페인 하이라인 + 종이 퍼포레이션으로 데스크캘린더 한 장을 오브제처럼 놓았습니다. 결혼식 당일이 주인공이고 그 아래 리스트가 보조 일정으로 따라옵니다.</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  <span>Ourday · Design System v2 — <em>Editorial Wedding Planner</em></span>
+  <span>05 / 10</span>
+</footer>
+
+</body>
+</html>

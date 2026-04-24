@@ -1,0 +1,299 @@
+/* ============================================================
+   Ourday Design System · v2 · "Editorial Wedding Planner"
+   Palette:  Ink · Ivory · Champagne Gold · Dusty Rose
+   Type:     Cormorant Garamond (display) + Noto Serif KR (display-ko)
+             + Pretendard (body, ko/en)
+   ============================================================ */
+
+/* ── Webfonts ─────────────────────────────────────────────── */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap');
+
+:root {
+  /* ─────────────────────────────────────────────────────────
+     NEUTRALS  —  잉크 & 아이보리
+     따뜻한 오프화이트 배경 + 깊은 잉크 블랙 텍스트
+     ───────────────────────────────────────────────────────── */
+  --ink:              #1A1613;   /* primary text, 거의-블랙 잉크톤 */
+  --ink-2:            #3A332E;   /* secondary text */
+  --ink-3:            #6E6459;   /* tertiary / caption */
+  --ink-4:            #A79D90;   /* placeholder / disabled */
+
+  --ivory:            #F7F2EA;   /* page bg · warm off-white */
+  --ivory-2:          #EFE8DC;   /* subtle card bg / stripe */
+  --paper:            #FBF8F2;   /* card bg · lighter than ivory */
+  --paper-pure:       #FFFFFF;   /* true white — modals, inputs */
+
+  --rule:             #E2D9C9;   /* hairline borders (1px) */
+  --rule-strong:      #C8BCA4;   /* emphasized hairline */
+
+  /* ─────────────────────────────────────────────────────────
+     ACCENT  —  Champagne Gold
+     얇은 악센트 라인, 이니셜, 장식 디바이더, 디테일
+     ───────────────────────────────────────────────────────── */
+  --champagne:        #B89968;   /* primary accent · gold */
+  --champagne-2:      #9E8052;   /* darker · hover / pressed */
+  --champagne-3:      #CDB388;   /* lighter · bg wash */
+  --champagne-wash:   #F1E8D6;   /* 8% tint · highlight bg */
+
+  /* ─────────────────────────────────────────────────────────
+     ACCENT  —  Dusty Rose
+     로맨틱 터치, 알림/긴급보다는 정서적 강조
+     ───────────────────────────────────────────────────────── */
+  --rose:             #B57A7A;   /* muted dusty rose */
+  --rose-2:           #945E5E;   /* darker */
+  --rose-wash:        #EFDFDE;   /* subtle bg */
+
+  /* ─────────────────────────────────────────────────────────
+     ACCENT  —  Deep Burgundy (secondary, 드물게 사용)
+     ───────────────────────────────────────────────────────── */
+  --burgundy:         #6B2E3A;
+  --burgundy-wash:    #E8D5D8;
+
+  /* ─────────────────────────────────────────────────────────
+     SEMANTIC  —  상태 컬러 (정제된 톤으로)
+     ───────────────────────────────────────────────────────── */
+  --sage:             #7A8B6B;   /* 완료 / 성공 · 차분한 세이지 */
+  --sage-wash:        #E4E8DC;
+  --ochre:            #B8914A;   /* 경고 · 오커 (yellow 대체) */
+  --ochre-wash:       #F1E5CB;
+  --clay:             #9C4A3A;   /* 긴급 · 테라코타 (red 대체) */
+  --clay-wash:        #EED9D2;
+
+  /* ─────────────────────────────────────────────────────────
+     SEMANTIC TOKENS (브랜드 역할)
+     ───────────────────────────────────────────────────────── */
+  --bg:               var(--ivory);
+  --bg-alt:           var(--ivory-2);
+  --surface:          var(--paper);
+  --surface-raised:   var(--paper-pure);
+
+  --fg:               var(--ink);
+  --fg-2:             var(--ink-2);
+  --fg-muted:         var(--ink-3);
+  --fg-faint:         var(--ink-4);
+
+  --border:           var(--rule);
+  --border-strong:    var(--rule-strong);
+
+  --accent:           var(--champagne);
+  --accent-hover:     var(--champagne-2);
+  --accent-wash:      var(--champagne-wash);
+
+  --link:             var(--ink);        /* 링크는 잉크 + 골드 언더라인 */
+  --link-underline:   var(--champagne);
+
+  /* ─────────────────────────────────────────────────────────
+     SHADOWS  —  거의 보이지 않는 워엄 섀도우
+     고급감은 그림자보다 헤어라인 + 여백으로
+     ───────────────────────────────────────────────────────── */
+  --shadow-xs:        0 1px 2px rgba(26, 22, 19, 0.04);
+  --shadow-sm:        0 2px 8px rgba(26, 22, 19, 0.05);
+  --shadow-md:        0 6px 24px rgba(26, 22, 19, 0.07);
+  --shadow-lg:        0 18px 48px rgba(26, 22, 19, 0.10);
+  --shadow-sheet:     0 -8px 32px rgba(26, 22, 19, 0.08);
+
+  /* ─────────────────────────────────────────────────────────
+     RADII  —  부드럽지만 과하지 않게
+     ───────────────────────────────────────────────────────── */
+  --r-xs:             4px;      /* tags, small chips */
+  --r-sm:             8px;      /* inputs, pills */
+  --r-md:             12px;     /* buttons */
+  --r-lg:             16px;     /* cards · 에디토리얼 느낌 위해 작게 */
+  --r-xl:             20px;     /* hero cards */
+  --r-pill:           999px;
+
+  /* ─────────────────────────────────────────────────────────
+     SPACING  —  8pt grid (여유있게)
+     ───────────────────────────────────────────────────────── */
+  --s-1:              4px;
+  --s-2:              8px;
+  --s-3:              12px;
+  --s-4:              16px;
+  --s-5:              20px;
+  --s-6:              24px;
+  --s-7:              32px;
+  --s-8:              40px;
+  --s-9:              56px;
+  --s-10:             80px;
+
+  /* ─────────────────────────────────────────────────────────
+     MOTION  —  느리고 정제된
+     ───────────────────────────────────────────────────────── */
+  --ease:             cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in:          cubic-bezier(0.4, 0, 1, 1);
+  --dur-fast:         140ms;
+  --dur:              220ms;
+  --dur-slow:         360ms;
+}
+
+/* ==============================================================
+   TYPOGRAPHY
+   ============================================================== */
+
+:root {
+  --font-serif-en:    "Cormorant Garamond", "Noto Serif KR", serif;
+  --font-serif-ko:    "Noto Serif KR", "Cormorant Garamond", serif;
+  --font-sans:        "Pretendard Variable", Pretendard, -apple-system,
+                      BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* tracking */
+  --tr-tight:         -0.02em;
+  --tr-tighter:       -0.035em;
+  --tr-normal:        0;
+  --tr-wide:          0.04em;
+  --tr-wider:         0.12em;   /* kicker / eyebrow */
+  --tr-widest:        0.22em;   /* ALL CAPS labels */
+}
+
+/* ── semantic text styles (utility classes) ─────────────── */
+
+.t-hero {
+  font-family: var(--font-serif-en);
+  font-weight: 500;
+  font-size: clamp(84px, 18vw, 128px);
+  line-height: 0.92;
+  letter-spacing: var(--tr-tighter);
+  font-variant-numeric: oldstyle-nums proportional-nums;
+  color: var(--fg);
+}
+.t-hero em {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+.t-display {
+  font-family: var(--font-serif-ko);
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 1.25;
+  letter-spacing: var(--tr-tight);
+  color: var(--fg);
+}
+
+.t-title {
+  font-family: var(--font-serif-ko);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.3;
+  letter-spacing: var(--tr-tight);
+  color: var(--fg);
+}
+
+.t-h1 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.35;
+  letter-spacing: var(--tr-tight);
+  color: var(--fg);
+}
+
+.t-h2 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  color: var(--fg);
+}
+
+.t-h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--fg);
+}
+
+.t-body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--fg-2);
+}
+
+.t-sub {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--fg-muted);
+}
+
+.t-caption {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--fg-muted);
+}
+
+/* kicker · eyebrow · ALL CAPS label (영문 레이블용) */
+.t-kicker {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: var(--tr-widest);
+  text-transform: uppercase;
+  color: var(--accent-hover);
+}
+
+/* serif italic — editorial accents */
+.t-italic {
+  font-family: var(--font-serif-en);
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+/* large tabular numeric — D-day, budget */
+.t-num {
+  font-family: var(--font-serif-en);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-weight: 500;
+  letter-spacing: var(--tr-tight);
+}
+
+/* ==============================================================
+   DECORATIVE · editorial details
+   ============================================================== */
+
+/* 가운데 점선 러너 — 섹션 구분 */
+.rule-dot {
+  display: block;
+  border: 0;
+  height: 1px;
+  background-image: radial-gradient(circle, var(--rule-strong) 1px, transparent 1.2px);
+  background-size: 6px 1px;
+  background-repeat: repeat-x;
+  background-position: center;
+}
+
+/* 중앙 다이아몬드 디바이더 (◆ SVG 기반) */
+.rule-diamond {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--champagne);
+}
+.rule-diamond::before,
+.rule-diamond::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule-strong);
+}
+
+/* number eyebrow (섹션 번호 매김) */
+.numeral {
+  font-family: var(--font-serif-en);
+  font-weight: 400;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: var(--tr-wide);
+}

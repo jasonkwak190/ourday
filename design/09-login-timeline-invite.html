@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>9단계 · 로그인 · 타임라인 · 청첩장</title>
+<link rel="stylesheet" href="colors_and_type.css?v=2">
+<style>
+  :root {
+    --ink: #1A1613; --ink-2: #3A332E; --ink-3: #6E6459; --ink-4: #A79D90;
+    --ivory: #F7F2EA; --ivory-2: #EFE8DC; --paper: #FBF8F2; --paper-pure: #fff;
+    --rule: #E2D9C9; --rule-strong: #C8BCA4;
+    --champagne: #B89968; --champagne-2: #9E8052; --champagne-wash: #F1E8D6;
+    --rose: #B57A7A; --sage: #7A8B6B;
+    --font-serif-en: "Cormorant Garamond", serif;
+    --font-serif-ko: "Noto Serif KR", serif;
+    --font-sans: "Pretendard Variable", Pretendard, -apple-system, system-ui, sans-serif;
+  }
+  html, body { margin: 0; background: var(--ivory); font-family: var(--font-sans); color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .page { max-width: 1600px; margin: 0 auto; padding: 48px 40px 80px; }
+  .phead { margin-bottom: 36px; }
+  .phead .roman { font-family: var(--font-serif-en); font-style: italic; font-size: 14px; color: var(--champagne-2); letter-spacing: 0.04em; }
+  .phead h1 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 40px; margin: 8px 0 10px; letter-spacing: -0.02em; }
+  .phead p { max-width: 640px; font-size: 14px; line-height: 1.75; color: var(--ink-2); margin: 0; }
+  .phead em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+
+  .row3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; align-items: start; }
+  @media (max-width: 1300px) { .row3 { grid-template-columns: 1fr; justify-items: center; } }
+  .cell { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .label { text-align: center; max-width: 320px; }
+  .label .idx { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .label h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 6px 0 6px; letter-spacing: -0.01em; }
+  .label p { font-size: 12.5px; line-height: 1.7; color: var(--ink-3); margin: 0; }
+
+  .phone { width: 360px; height: 740px; background: var(--ivory); border-radius: 44px; box-shadow: 0 0 0 10px #201a16, 0 30px 80px -20px rgba(26,22,19,.35); overflow: hidden; position: relative; display: flex; flex-direction: column; }
+  .status { height: 44px; padding: 16px 28px 0; display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; color: var(--ink); }
+  .scr { flex: 1; overflow: hidden; padding: 4px 22px; position: relative; }
+
+  /* ──── A · Login / Splash ──── */
+  .vA .scr { background: linear-gradient(180deg, var(--paper) 0%, var(--ivory) 100%); display: flex; flex-direction: column; }
+  .vA .centerwrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-bottom: 20px; }
+  .vA .monogram { font-family: var(--font-serif-en); font-weight: 500; font-size: 92px; color: var(--ink); letter-spacing: -0.04em; line-height: 1; display: flex; align-items: center; gap: 16px; }
+  .vA .monogram .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--champagne); }
+  .vA .wordmark { font-family: var(--font-serif-en); font-size: 30px; margin-top: 16px; color: var(--ink); letter-spacing: 0.02em; }
+  .vA .wordmark b { font-weight: 500; } .vA .wordmark em { font-style: italic; }
+  .vA .tagline { font-family: var(--font-serif-ko); font-weight: 500; font-size: 14px; color: var(--ink-3); margin-top: 10px; }
+  .vA .flourish { display: flex; align-items: center; gap: 10px; margin-top: 22px; color: var(--champagne); }
+  .vA .flourish .line { width: 40px; height: 1px; background: currentColor; opacity: .6; }
+  .vA .flourish .diamond { width: 6px; height: 6px; border: 1px solid currentColor; transform: rotate(45deg); }
+  .vA .bottomwrap { padding: 0 4px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .vA .btn { font-family: var(--font-sans); font-weight: 500; font-size: 14px; height: 52px; border-radius: 28px; border: 1px solid var(--ink); display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; }
+  .vA .btn.dark { background: var(--ink); color: var(--ivory); }
+  .vA .btn.light { background: transparent; color: var(--ink); }
+  .vA .btn svg { flex-shrink: 0; }
+  .vA .divider { display: flex; align-items: center; gap: 12px; color: var(--ink-3); font-family: var(--font-serif-en); font-style: italic; font-size: 12px; padding: 4px 0; letter-spacing: 0.08em; }
+  .vA .divider::before, .vA .divider::after { content: ""; flex: 1; height: 1px; background: var(--rule-strong); }
+  .vA .linklogin { text-align: center; font-size: 12.5px; color: var(--ink-3); margin-top: 10px; }
+  .vA .linklogin a { color: var(--champagne-2); font-family: var(--font-serif-en); font-style: italic; letter-spacing: 0.04em; text-decoration: none; border-bottom: 1px solid var(--champagne); padding-bottom: 1px; }
+
+  /* ──── B · Timeline / Checklist ──── */
+  .vB .scr { background: var(--ivory); padding-top: 8px; }
+  .vB .topbar { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px 10px; }
+  .vB .topbar .brand { font-family: var(--font-serif-en); font-style: italic; font-size: 18px; color: var(--ink); }
+  .vB .topbar .brand b { font-style: normal; font-weight: 500; }
+  .vB h2 { font-family: var(--font-serif-ko); font-weight: 500; font-size: 22px; margin: 6px 4px 2px; letter-spacing: -0.01em; }
+  .vB h2 em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); font-size: 18px; }
+  .vB .lead { font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--ink-3); padding-left: 4px; margin-bottom: 12px; letter-spacing: 0.04em; }
+
+  .vB .seg { display: inline-flex; border: 1px solid var(--rule-strong); border-radius: 20px; overflow: hidden; background: var(--paper-pure); margin-bottom: 16px; }
+  .vB .seg button { border: none; background: transparent; padding: 7px 14px; font-family: var(--font-serif-en); font-style: italic; font-size: 12px; color: var(--ink-3); cursor: pointer; border-right: 1px solid var(--rule); letter-spacing: 0.04em; }
+  .vB .seg button:last-child { border-right: none; }
+  .vB .seg button.on { background: var(--ink); color: var(--ivory); }
+
+  .vB .timeline { position: relative; padding-left: 24px; }
+  .vB .timeline::before { content: ""; position: absolute; left: 8px; top: 10px; bottom: 10px; width: 1px; background: var(--rule-strong); }
+  .vB .node { position: relative; margin-bottom: 18px; }
+  .vB .node::before { content: ""; position: absolute; left: -21px; top: 10px; width: 9px; height: 9px; border-radius: 50%; background: var(--paper-pure); border: 1px solid var(--champagne); }
+  .vB .node.done::before { background: var(--champagne); }
+  .vB .node.now::before { background: var(--ink); border-color: var(--ink); box-shadow: 0 0 0 4px var(--champagne-wash); }
+  .vB .node .d { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); letter-spacing: 0.06em; }
+  .vB .node .card { background: var(--paper); border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px; margin-top: 4px; }
+  .vB .node.now .card { border-color: var(--champagne); background: var(--paper-pure); }
+  .vB .node.done .card { background: transparent; border-style: dashed; }
+  .vB .node .t { font-family: var(--font-serif-ko); font-weight: 500; font-size: 14px; color: var(--ink); word-break: keep-all; }
+  .vB .node.done .t { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--champagne); }
+  .vB .node .s { font-family: var(--font-serif-en); font-style: italic; font-size: 11.5px; color: var(--ink-3); margin-top: 3px; letter-spacing: 0.04em; }
+  .vB .node .meta { margin-top: 8px; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-serif-en); font-size: 11px; color: var(--ink-3); }
+  .vB .node .meta b { font-style: italic; color: var(--champagne-2); }
+
+  /* ──── C · Invitation preview ──── */
+  .vC .scr { background: var(--ink); padding: 0; overflow-y: auto; }
+  .vC .scr::-webkit-scrollbar { display: none; }
+  .vC .invite { background: var(--paper-pure); margin: 16px; border: 1px solid var(--champagne); border-radius: 2px; padding: 40px 24px 32px; position: relative; }
+  .vC .invite::before, .vC .invite::after { content: ""; position: absolute; width: 18px; height: 18px; border: 1px solid var(--champagne); }
+  .vC .invite::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .vC .invite::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+  .vC .invite .kicker { font-family: var(--font-serif-en); font-style: italic; font-size: 11px; color: var(--champagne-2); letter-spacing: 0.14em; text-align: center; }
+  .vC .invite .flourish { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 10px 0 20px; color: var(--champagne); }
+  .vC .invite .flourish .line { width: 28px; height: 1px; background: currentColor; opacity: .6; }
+  .vC .invite .flourish .diamond { width: 5px; height: 5px; border: 1px solid currentColor; transform: rotate(45deg); }
+
+  .vC .invite .names { font-family: var(--font-serif-ko); font-weight: 500; font-size: 26px; text-align: center; letter-spacing: -0.01em; line-height: 1.45; }
+  .vC .invite .names .and { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne); font-size: 28px; margin: 0 4px; display: block; padding: 4px 0; }
+  .vC .invite .romanames { font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--ink-3); text-align: center; margin-top: 8px; letter-spacing: 0.08em; }
+
+  .vC .invite .hairline { height: 1px; background: var(--rule-strong); margin: 22px auto; width: 50%; opacity: .7; }
+
+  .vC .invite .body { font-family: var(--font-serif-ko); font-weight: 500; font-size: 13px; line-height: 1.9; color: var(--ink-2); text-align: center; word-break: keep-all; }
+  .vC .invite .body em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+
+  .vC .invite .ceremony { margin-top: 24px; text-align: center; }
+  .vC .invite .datenum { font-family: var(--font-serif-en); font-weight: 500; font-size: 68px; line-height: 0.95; color: var(--ink); letter-spacing: -0.03em; }
+  .vC .invite .datebar { display: flex; justify-content: center; align-items: center; gap: 10px; font-family: var(--font-serif-en); font-style: italic; font-size: 13px; color: var(--champagne-2); letter-spacing: 0.1em; margin-top: 6px; }
+  .vC .invite .datebar .sep { color: var(--rule-strong); }
+  .vC .invite .when { font-family: var(--font-serif-ko); font-weight: 500; font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+  .vC .invite .where { font-family: var(--font-serif-ko); font-weight: 500; font-size: 13px; color: var(--ink-3); margin-top: 4px; }
+  .vC .invite .where b { color: var(--champagne-2); font-style: italic; font-family: var(--font-serif-en); font-weight: 400; margin-right: 6px; letter-spacing: 0.05em; }
+
+  .vC .chrome { position: sticky; bottom: 0; padding: 16px; display: flex; gap: 8px; background: linear-gradient(180deg, transparent 0, rgba(26,22,19,0.9) 40%); }
+  .vC .chrome .btn { flex: 1; height: 44px; border-radius: 22px; border: 1px solid var(--champagne); color: var(--champagne); font-family: var(--font-serif-en); font-style: italic; font-size: 13px; background: transparent; letter-spacing: 0.06em; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .vC .chrome .btn.primary { background: var(--champagne); color: var(--ink); font-weight: 500; font-style: normal; font-family: var(--font-sans); font-size: 14px; letter-spacing: -0.005em; }
+
+  footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--rule); display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); }
+  footer em { font-family: var(--font-serif-en); font-style: italic; color: var(--champagne-2); }
+</style>
+</head>
+<body>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0">
+  <symbol id="i-apple" viewBox="0 0 24 24" fill="currentColor"><path d="M17 13c0-3 2.2-4 2.3-4.1-1.3-1.8-3.2-2.1-3.9-2.1-1.7-.2-3.2.9-4 .9-.8 0-2.1-.9-3.5-.9-1.8 0-3.5 1.1-4.4 2.7-1.9 3.3-.5 8.1 1.3 10.8.9 1.3 2 2.7 3.4 2.7 1.4-.1 1.9-.9 3.5-.9s2.1.9 3.5.9c1.4-.1 2.4-1.3 3.3-2.7.7-1 1.2-2 1.5-3.1-1.6-.6-3-2.3-3-4.2zM14.7 5.5c.7-.9 1.2-2.1 1.1-3.3-1 0-2.3.7-3 1.5-.6.7-1.3 1.9-1.1 3.1 1.2.1 2.3-.5 3-1.3z"/></symbol>
+  <symbol id="i-kakao" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4c-5 0-9 3.3-9 7.3 0 2.5 1.6 4.7 4 6v5l4.3-2.8c.3 0 .5.1.7.1 5 0 9-3.3 9-7.3S17 4 12 4z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="2.2"/><circle cx="18" cy="6" r="2.2"/><circle cx="18" cy="18" r="2.2"/><path d="M8 11l8-4M8 13l8 4"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a1 1 0 0 1 1-1h11"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 1 1 12 0c0 4 2 5 2 7H4c0-2 2-3 2-7z"/><path d="M10 19a2 2 0 0 0 4 0"/></symbol>
+</svg>
+
+<div class="page">
+  <div class="phead">
+    <div class="roman">Stage Nine · Three Key Screens</div>
+    <h1>로그인 · 타임라인 · 청첩장</h1>
+    <p>
+      홈 외 <em>가장 자주 쓰이는</em> 세 화면을 시스템에 맞게 다시 그립니다.
+      첫인상(로그인)·주요 작업(타임라인)·정점의 산출물(청첩장)이 모두 같은
+      편집 언어를 말합니다.
+    </p>
+  </div>
+
+  <div class="row3">
+
+    <!-- A · Login -->
+    <div class="cell">
+      <div class="phone vA">
+        <div class="status"><span>9:41</span><span>· · ·</span></div>
+        <div class="scr">
+          <div class="centerwrap">
+            <div class="monogram">O<span class="dot"></span>D</div>
+            <div class="wordmark"><b>O</b><em>urday</em></div>
+            <div class="tagline">두 사람의 기록이 한 권의 책이 됩니다</div>
+            <div class="flourish"><span class="line"></span><span class="diamond"></span><span class="line"></span></div>
+          </div>
+          <div class="bottomwrap">
+            <button class="btn dark"><svg width="16" height="16"><use href="#i-apple"/></svg>Apple로 시작하기</button>
+            <button class="btn light" style="background: #FEE500; border-color: #FEE500; color: #3C1E1E;"><svg width="16" height="16"><use href="#i-kakao"/></svg>카카오로 시작하기</button>
+            <div class="divider">· or ·</div>
+            <button class="btn light">이메일로 계속</button>
+            <div class="linklogin">이미 계정이 있으신가요? <a>로그인</a></div>
+          </div>
+        </div>
+      </div>
+      <div class="label">
+        <div class="idx">i. Login / Splash</div>
+        <h2>첫 만남</h2>
+        <p>O·D 모노그램 히어로 + 세리프 워드마크 + 챔페인 다이아몬드 플러리시. 소셜 로그인은 브랜드 컬러를 유지하되 잉크 라벨로 톤 통일.</p>
+      </div>
+    </div>
+
+    <!-- B · Timeline -->
+    <div class="cell">
+      <div class="phone vB">
+        <div class="status"><span>9:41</span><span>· · ·</span></div>
+        <div class="scr">
+          <div class="topbar">
+            <div class="brand"><b>O</b>urday</div>
+            <svg width="20" height="20"><use href="#i-bell"/></svg>
+          </div>
+          <h2>체크리스트 <em>· 28</em></h2>
+          <div class="lead">· 24주 준비 타임라인 · 12 완료 ·</div>
+          <div class="seg">
+            <button class="on">all</button>
+            <button>to do</button>
+            <button>done</button>
+          </div>
+
+          <div class="timeline">
+            <div class="node done">
+              <div class="d">D-180 · 6개월 전</div>
+              <div class="card">
+                <div class="t">예식 날짜 확정</div>
+                <div class="s">2026 · 05 · 16 · Saturday</div>
+                <div class="meta"><span>민준 완료</span><b>✓ done</b></div>
+              </div>
+            </div>
+            <div class="node done">
+              <div class="d">D-150 · 5개월 전</div>
+              <div class="card">
+                <div class="t">웨딩홀 계약</div>
+                <div class="s">Grand Hyatt · 그랜드볼룸</div>
+              </div>
+            </div>
+            <div class="node now">
+              <div class="d">D-3 · 이번 주</div>
+              <div class="card">
+                <div class="t">웨딩홀 2차 미팅 · 메뉴 확정</div>
+                <div class="s">Grand Hyatt · 15:00</div>
+                <div class="meta"><span>함께 진행</span><b>now →</b></div>
+              </div>
+            </div>
+            <div class="node">
+              <div class="d">D-14 · 2주 후</div>
+              <div class="card">
+                <div class="t">드레스 피팅 2차</div>
+                <div class="s">청담 · 14:00</div>
+              </div>
+            </div>
+            <div class="node">
+              <div class="d">D-28 · 4주 후</div>
+              <div class="card">
+                <div class="t">청첩장 발송 시작</div>
+                <div class="s">180명 · 3주 전 기준</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="label">
+        <div class="idx">ii. Timeline · Checklist</div>
+        <h2>24주 타임라인</h2>
+        <p>한 줄 잉크 레일 위로 원형 노드가 이어집니다. 완료(챔페인 채움)·현재(잉크+챔페인 링)·예정(하이라인)을 시각적 위계로 구분.</p>
+      </div>
+    </div>
+
+    <!-- C · Invitation -->
+    <div class="cell">
+      <div class="phone vC">
+        <div class="status" style="color: var(--ivory);"><span>9:41</span><span>· · ·</span></div>
+        <div class="scr">
+          <div class="invite">
+            <div class="kicker">· SAVE THE DATE ·</div>
+            <div class="flourish"><span class="line"></span><span class="diamond"></span><span class="line"></span></div>
+
+            <div class="names">
+              이 민 준
+              <span class="and">&amp;</span>
+              김 서 연
+            </div>
+            <div class="romanames">Minjun Lee · Seoyeon Kim</div>
+
+            <div class="hairline"></div>
+
+            <div class="body">
+              저희 두 사람, <em>오랜 기다림</em> 끝에<br/>
+              한 자리에 서려 합니다.<br/>
+              부디 오셔서 축복해 주시기 바랍니다.
+            </div>
+
+            <div class="ceremony">
+              <div class="datenum">5·16</div>
+              <div class="datebar">
+                <span>MMXXVI</span><span class="sep">·</span><span>SATURDAY</span>
+              </div>
+              <div class="when">2026년 5월 16일 · 오후 2시</div>
+              <div class="where"><b>AT</b>그랜드 하얏트 서울 · 그랜드볼룸</div>
+            </div>
+
+            <div class="hairline" style="margin: 20px auto 10px;"></div>
+            <div class="kicker" style="letter-spacing: 0.18em;">· 이 민 준 <span style="color:var(--champagne)">&amp;</span> 김 서 연 ·</div>
+          </div>
+
+          <div style="height: 12px;"></div>
+        </div>
+        <div class="chrome">
+          <button class="btn"><svg width="14" height="14"><use href="#i-copy"/></svg>링크 복사</button>
+          <button class="btn primary"><svg width="14" height="14"><use href="#i-share"/></svg>공유하기</button>
+        </div>
+      </div>
+      <div class="label">
+        <div class="idx">iii. Invitation</div>
+        <h2>청첩장</h2>
+        <p>잉크 배경 위 페이퍼 카드 — 금빛 코너 프레임 + 로만자 부제 + 세리프 5·16 + 라틴 이탤릭 요일. 어둠 위의 공연처럼 한 장만 집중되게.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <span>Ourday · Design System v2 — <em>Editorial Wedding Planner</em></span>
+  <span>09 / 10</span>
+</footer>
+</body>
+</html>
