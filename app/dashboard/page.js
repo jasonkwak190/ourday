@@ -49,7 +49,7 @@ export default function DashboardPage() {
 
       const { data: user } = await supabase
         .from('users')
-        .select('couple_id')
+        .select('couple_id, onboarding_dismissed')
         .eq('id', session.user.id)
         .single();
 
@@ -57,10 +57,7 @@ export default function DashboardPage() {
 
       const cId = user.couple_id;
       setCoupleId(cId);
-      // 온보딩 배너 dismissed 상태 복원
-      try {
-        if (localStorage.getItem(`onboarding-dismissed-${cId}`)) setOnboardingDismissed(true);
-      } catch {}
+      if (user.onboarding_dismissed) setOnboardingDismissed(true);
       const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes] = await Promise.all([
         supabase.from('couples').select('*').eq('id', cId).single(),
         supabase.from('checklist_items').select('*').eq('couple_id', cId),
@@ -275,9 +272,10 @@ export default function DashboardPage() {
               🎉 결혼 준비를 시작해봐요!
             </p>
             <button
-              onClick={() => {
+              onClick={async () => {
                 setOnboardingDismissed(true);
-                try { if (coupleId) localStorage.setItem(`onboarding-dismissed-${coupleId}`, '1'); } catch {}
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) await supabase.from('users').update({ onboarding_dismissed: true }).eq('id', session.user.id);
               }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)', fontSize: 18, lineHeight: 1, padding: '0 2px' }}
             >×</button>
