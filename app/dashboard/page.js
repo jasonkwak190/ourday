@@ -59,7 +59,7 @@ export default function DashboardPage() {
 
     const load = async () => {
       const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes, noteRes] = await Promise.all([
-        supabase.from('couples').select('id, wedding_date, groom_name, bride_name, total_budget').eq('id', coupleId).single(),
+        supabase.from('couples').select('id, wedding_date, total_budget').eq('id', coupleId).single(),
         supabase.from('checklist_items').select('id, title, is_done, due_months_before, due_date, assigned_to').eq('couple_id', coupleId),
         supabase.from('decisions').select('id, title, status').eq('couple_id', coupleId),
         supabase.from('budget_items').select('estimated_amount, actual_amount').eq('couple_id', coupleId),
