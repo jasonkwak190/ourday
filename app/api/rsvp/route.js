@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+import { isUUID, sanitizeString, sanitizeInt, isOneOf } from '@/lib/validate';
 
 // Rate limit: IP당 1분에 최대 10회 (GET + POST 합산)
 const rsvpLimiter = createRateLimiter({ windowMs: 60_000, max: 10 });
@@ -36,7 +37,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const coupleId = searchParams.get('couple_id');
-    if (!coupleId) return NextResponse.json({ error: 'couple_id required' }, { status: 400 });
+    if (!isUUID(coupleId)) return NextResponse.json({ error: 'couple_id required (UUID)' }, { status: 400 });
 
     const supabase = anonClient();
 
@@ -83,19 +84,22 @@ export async function POST(request) {
     const body = await request.json();
     const { couple_id, name, side, attending, meal_count, phone, message } = body;
 
-    if (!couple_id || !name?.trim()) {
-      return NextResponse.json({ error: 'couple_id, name required' }, { status: 400 });
+    if (!isUUID(couple_id)) {
+      return NextResponse.json({ error: 'couple_id required (UUID)' }, { status: 400 });
     }
     if (attending === undefined || attending === null) {
       return NextResponse.json({ error: 'attending required' }, { status: 400 });
     }
 
-    // 입력값 길이 제한
-    const safeName    = String(name).trim().slice(0, 50);
+    const nameResult = sanitizeString(name, { maxLen: 50, fieldName: '이름' });
+    if (!nameResult.ok) return NextResponse.json({ error: nameResult.error }, { status: 400 });
+
+    // 입력값 정제 (validate 유틸 + 기존 패턴 통합)
+    const safeName    = nameResult.value;
     const safePhone   = phone ? String(phone).trim().slice(0, 20) : null;
     const safeMessage = message ? String(message).trim().slice(0, 500) : null;
-    const safeSide    = ['groom', 'bride'].includes(side) ? side : null;
-    const safeMeals   = Math.min(Math.max(Number(meal_count) || 1, 1), 20);
+    const safeSide    = isOneOf(side, ['groom', 'bride']) ? side : null;
+    const safeMeals   = sanitizeInt(meal_count, { min: 1, max: 20, fallback: 1 });
 
     const supabase = serviceClient();
 

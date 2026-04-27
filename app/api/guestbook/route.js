@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+import { isUUID, sanitizeString } from '@/lib/validate';
 
 // POST: IP당 1분에 최대 5건 (스팸 방어)
 const guestbookWriteLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
@@ -35,7 +36,9 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const invitationId = searchParams.get('invitation_id');
-    if (!invitationId) return NextResponse.json({ error: 'invitation_id required' }, { status: 400 });
+    if (!invitationId || !isUUID(invitationId)) {
+      return NextResponse.json({ error: 'invitation_id required (UUID)' }, { status: 400 });
+    }
 
     const supabase = anonClient();
     const { data, error } = await supabase
@@ -63,20 +66,23 @@ export async function POST(request) {
     const body = await request.json();
     const { invitation_id, name, message } = body;
 
-    if (!invitation_id || !name?.trim() || !message?.trim()) {
-      return NextResponse.json({ error: 'invitation_id, name, message required' }, { status: 400 });
+    if (!isUUID(invitation_id)) {
+      return NextResponse.json({ error: 'invitation_id required (UUID)' }, { status: 400 });
     }
-    if (message.trim().length > 200) {
-      return NextResponse.json({ error: '메시지는 200자 이내로 입력해주세요.' }, { status: 400 });
-    }
+
+    const nameResult = sanitizeString(name, { maxLen: 50, fieldName: '이름' });
+    if (!nameResult.ok) return NextResponse.json({ error: nameResult.error }, { status: 400 });
+
+    const msgResult = sanitizeString(message, { maxLen: 200, fieldName: '메시지' });
+    if (!msgResult.ok) return NextResponse.json({ error: msgResult.error }, { status: 400 });
 
     const supabase = serviceClient();
     const { data, error } = await supabase
       .from('invitation_guestbook')
       .insert({
         invitation_id,
-        name: name.trim(),
-        message: message.trim(),
+        name: nameResult.value,
+        message: msgResult.value,
       })
       .select('id, name, message, created_at')
       .single();
