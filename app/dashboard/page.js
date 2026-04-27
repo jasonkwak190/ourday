@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
 import { AlertCircle, ChevronRight, CalendarDays, Wallet, MessageSquare, BookOpen } from 'lucide-react';
@@ -32,6 +33,11 @@ function getUrgentItems(items, weddingDate) {
 
 export default function DashboardPage() {
   const router = useRouter();
+  // useCouple 훅으로 세션 + 유저 조회 공통화
+  const { coupleId, userData, loading: authLoading } = useCouple(
+    'couple_id, onboarding_dismissed, name, role'
+  );
+
   const [loading,     setLoading]     = useState(true);
   const [couple,      setCouple]      = useState(null);
   const [items,       setItems]       = useState([]);
@@ -42,62 +48,51 @@ export default function DashboardPage() {
   const [latestNote,  setLatestNote]  = useState(null);
   const [error,       setError]       = useState('');
   const [onboardingDismissed, setOnboardingDismissed] = useState(false);
-  const [coupleId, setCoupleId] = useState(null);
-  const [userName, setUserName] = useState('');
-  const [userRole, setUserRole] = useState('');
+  const userName = userData?.name  || '';
+  const userRole = userData?.role  || '';
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!coupleId) { setLoading(false); return; }
+
+    if (userData?.onboarding_dismissed) setOnboardingDismissed(true);
+
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/'); return; }
-
-      const { data: user } = await supabase
-        .from('users')
-        .select('couple_id, onboarding_dismissed, name, role')
-        .eq('id', session.user.id)
-        .single();
-
-      if (!user?.couple_id) { setLoading(false); return; }
-
-      const cId = user.couple_id;
-      setCoupleId(cId);
-      if (user.onboarding_dismissed) setOnboardingDismissed(true);
-      if (user.name) setUserName(user.name);
-      if (user.role) setUserRole(user.role);
       const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes, noteRes] = await Promise.all([
-        supabase.from('couples').select('*').eq('id', cId).single(),
-        supabase.from('checklist_items').select('*').eq('couple_id', cId),
-        supabase.from('decisions').select('id, title, status').eq('couple_id', cId),
-        supabase.from('budget_items').select('estimated_amount, actual_amount, category, name').eq('couple_id', cId),
-        supabase.from('vendors').select('id, name, type, balance, balance_due, contract_status').eq('couple_id', cId),
-        supabase.from('invitations').select('id').eq('couple_id', cId).maybeSingle(),
-        supabase.from('couple_notes').select('content, updated_at').eq('couple_id', cId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('couples').select('id, wedding_date, groom_name, bride_name, total_budget').eq('id', coupleId).single(),
+        supabase.from('checklist_items').select('id, title, is_done, due_months_before, due_date, assigned_to').eq('couple_id', coupleId),
+        supabase.from('decisions').select('id, title, status').eq('couple_id', coupleId),
+        supabase.from('budget_items').select('estimated_amount, actual_amount').eq('couple_id', coupleId),
+        supabase.from('vendors').select('id, name, type, balance, balance_due, contract_status').eq('couple_id', coupleId),
+        supabase.from('invitations').select('id').eq('couple_id', coupleId).maybeSingle(),
+        supabase.from('couple_notes').select('content, updated_at').eq('couple_id', coupleId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
       ]);
 
-      if (coupleRes.error) { setError('데이터를 불러오지 못했어요.'); }
-      else {
-        setCouple(coupleRes.data);
-        setItems(itemsRes.data || []);
-        setDecisions(decisionsRes.data || []);
-        setBudgetItems(budgetRes.data || []);
-        setVendors(vendorsRes.data || []);
-        if (noteRes.data?.content) setLatestNote(noteRes.data);
+      if (coupleRes.error) { setError('데이터를 불러오지 못했어요.'); setLoading(false); return; }
 
-        const invId = invRes.data?.id || null;
-        if (invId) {
-          const { data: gbData } = await supabase
-            .from('invitation_guestbook')
-            .select('id, name, message, created_at')
-            .eq('invitation_id', invId)
-            .order('created_at', { ascending: false })
-            .limit(3);
-          setGuestbook(gbData || []);
-        }
+      setCouple(coupleRes.data);
+      setItems(itemsRes.data || []);
+      setDecisions(decisionsRes.data || []);
+      setBudgetItems(budgetRes.data || []);
+      setVendors(vendorsRes.data || []);
+      if (noteRes.data?.content) setLatestNote(noteRes.data);
+
+      // 방명록: 청첩장 id 확보 후 비동기로 로드 (N+1 방지 — 블로킹 없이 병렬 처리)
+      const invId = invRes.data?.id || null;
+      if (invId) {
+        supabase
+          .from('invitation_guestbook')
+          .select('id, name, message, created_at')
+          .eq('invitation_id', invId)
+          .order('created_at', { ascending: false })
+          .limit(3)
+          .then(({ data }) => setGuestbook(data || []));
       }
+
       setLoading(false);
     };
     load();
-  }, [router]);
+  }, [authLoading, coupleId, userData]);
 
   async function toggleItem(id, current) {
     setItems(prev => prev.map(it => it.id === id ? { ...it, is_done: !current } : it));

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import { MessageSquarePlus, Pencil, Trash2 } from 'lucide-react';
@@ -20,12 +20,12 @@ const STATUS_TAGS = {
 };
 
 export default function DecisionsPage() {
-  const router = useRouter();
+  const { coupleId, userData, loading: authLoading } = useCouple('couple_id, role');
+  const myRole = userData?.role ?? null;
+
   const [loading, setLoading] = useState(true);
   const [decisions, setDecisions] = useState([]);
   const [filter, setFilter] = useState('all');
-  const [myRole, setMyRole] = useState(null);
-  const [coupleId, setCoupleId] = useState(null);
   const [saving, setSaving] = useState(false);
 
   // 의견 편집
@@ -56,25 +56,19 @@ export default function DecisionsPage() {
   const [editTitleText, setEditTitleText] = useState('');
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!coupleId) { setLoading(false); return; }
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/'); return; }
-
-      const { data: user } = await supabase
-        .from('users').select('couple_id, role').eq('id', session.user.id).single();
-
-      if (!user?.couple_id) { router.push('/setup'); return; }
-      setCoupleId(user.couple_id);
-      setMyRole(user.role);
-
       const { data } = await supabase
-        .from('decisions').select('*').eq('couple_id', user.couple_id).order('created_at');
-
+        .from('decisions')
+        .select('id, title, groom_opinion, bride_opinion, final_decision, status, created_at')
+        .eq('couple_id', coupleId)
+        .order('created_at');
       setDecisions(data || []);
       setLoading(false);
     };
     load();
-  }, [router]);
+  }, [authLoading, coupleId]);
 
   // Realtime 구독
   useEffect(() => {

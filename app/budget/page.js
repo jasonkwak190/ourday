@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import { Wallet, Store, AlertTriangle, Edit3 } from 'lucide-react';
@@ -198,11 +198,11 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
 
 /* ─── 메인 ────────────────────────────────────────────────────── */
 export default function BudgetPage() {
-  const router = useRouter();
   const today  = new Date();
 
+  const { coupleId, loading: authLoading } = useCouple('couple_id');
+
   const [loading,     setLoading]     = useState(true);
-  const [coupleId,    setCoupleId]    = useState(null);
   const [vendors,     setVendors]     = useState([]);
   const [totalBudget, setTotalBudget] = useState(0);
 
@@ -228,23 +228,19 @@ export default function BudgetPage() {
 
   /* ─ 데이터 로드 ─ */
   useEffect(() => {
+    if (authLoading) return;
+    if (!coupleId) { setLoading(false); return; }
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/'); return; }
-      const { data: user } = await supabase.from('users').select('couple_id').eq('id', session.user.id).single();
-      if (!user?.couple_id) { router.push('/setup'); return; }
-      const cId = user.couple_id;
-      setCoupleId(cId);
       const [coupleRes, vendorRes] = await Promise.all([
-        supabase.from('couples').select('total_budget').eq('id', cId).single(),
-        supabase.from('vendors').select('*').eq('couple_id', cId).order('created_at'),
+        supabase.from('couples').select('total_budget').eq('id', coupleId).single(),
+        supabase.from('vendors').select('id, type, name, contact_name, contact_phone, deposit, balance, balance_due, contract_status, memo, created_at').eq('couple_id', coupleId).order('created_at'),
       ]);
       setTotalBudget(coupleRes.data?.total_budget || 0);
       setVendors(vendorRes.data || []);
       setLoading(false);
     };
     load();
-  }, [router]);
+  }, [authLoading, coupleId]);
 
   /* ─ Realtime ─ */
   useEffect(() => {

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/navigation';
 import { Search, X, Send, Link2, Edit2, Trash2, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
+import { useCouple } from '@/lib/useCouple';
 import { openExternalUrl } from '@/lib/openUrl';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
@@ -45,17 +45,27 @@ function isSameDay(a, b) {
          da.getDate()     === db.getDate();
 }
 
-/* ─── 링크 미리보기 캐시 (세션 수준) ────────────────────────── */
-const previewCache = new Map();
+/* ─── 링크 미리보기 캐시 — LRU (최대 50개, 세션 수준) ──────── */
+const PREVIEW_CACHE_MAX = 50;
+const previewCache = new Map(); // insertion-order = LRU order
+function cacheSet(key, value) {
+  if (previewCache.has(key)) previewCache.delete(key); // 갱신 시 순서 재배치
+  previewCache.set(key, value);
+  if (previewCache.size > PREVIEW_CACHE_MAX) {
+    previewCache.delete(previewCache.keys().next().value); // oldest evict
+  }
+}
+function cacheGet(key) { return previewCache.get(key); }
+function cacheHas(key) { return previewCache.has(key); }
 
 function useLinkPreview(url) {
-  const [preview, setPreview] = useState(previewCache.get(url) ?? null);
-  const [loading, setLoading] = useState(!previewCache.has(url) && !!url);
+  const [preview, setPreview] = useState(cacheHas(url) ? cacheGet(url) : null);
+  const [loading, setLoading] = useState(!cacheHas(url) && !!url);
 
   useEffect(() => {
     if (!url) return;
-    if (previewCache.has(url)) {
-      setPreview(previewCache.get(url));
+    if (cacheHas(url)) {
+      setPreview(cacheGet(url));
       setLoading(false);
       return;
     }
@@ -65,17 +75,13 @@ function useLinkPreview(url) {
       .then(r => r.json())
       .then(data => {
         if (cancelled) return;
-        if (!data.error) {
-          previewCache.set(url, data);
-          setPreview(data);
-        } else {
-          previewCache.set(url, null);
-        }
+        cacheSet(url, data.error ? null : data);
+        setPreview(data.error ? null : data);
         setLoading(false);
       })
       .catch(() => {
         if (!cancelled) {
-          previewCache.set(url, null);
+          cacheSet(url, null);
           setLoading(false);
         }
       });
@@ -87,14 +93,13 @@ function useLinkPreview(url) {
 
 /* ─── 메인 페이지 ────────────────────────────────────────────── */
 export default function NotesPage() {
-  const router = useRouter();
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
 
+  const { coupleId, userData, userId: myUserId, loading: authLoading } = useCouple('couple_id, role, id');
+  const myRole = userData?.role ?? null;
+
   const [loading,  setLoading]  = useState(true);
-  const [myRole,   setMyRole]   = useState(null);
-  const [myUserId, setMyUserId] = useState(null);
-  const [coupleId, setCoupleId] = useState(null);
   const [notes,    setNotes]    = useState([]);
 
   const [content,  setContent]  = useState('');
@@ -118,29 +123,19 @@ export default function NotesPage() {
     : notes;
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!coupleId) { setLoading(false); return; }
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/'); return; }
-
-      const { data: userData } = await supabase
-        .from('users').select('couple_id, role, id').eq('id', session.user.id).single();
-      if (!userData?.couple_id) { setLoading(false); return; }
-
-      setMyRole(userData.role);
-      setMyUserId(userData.id);
-      setCoupleId(userData.couple_id);
-
       const { data: notesData } = await supabase
         .from('couple_notes')
-        .select('*')
-        .eq('couple_id', userData.couple_id)
+        .select('id, couple_id, user_id, role, content, link_url, created_at, updated_at')
+        .eq('couple_id', coupleId)
         .order('created_at', { ascending: true });
-
       setNotes(notesData || []);
       setLoading(false);
     };
     init();
-  }, [router]);
+  }, [authLoading, coupleId]);
 
   useEffect(() => {
     if (!coupleId) return;

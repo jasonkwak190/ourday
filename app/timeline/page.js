@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import Icon from '@/components/Icon';
@@ -249,19 +250,22 @@ export default function TimelinePage() {
   const [calMonth,    setCalMonth]    = useState(todayDt.getMonth());
   const [calSelected, setCalSelected] = useState(null);
 
+  const { coupleId: cId, loading: authLoading } = useCouple('couple_id');
+
   /* ─ 데이터 로드 ─ */
   useEffect(() => {
+    if (authLoading) return;
+    if (!cId) { router.push('/setup'); return; }
+    setCoupleId(cId);
+
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/'); return; }
-      const { data: user } = await supabase
-        .from('users').select('couple_id').eq('id', session.user.id).single();
-      if (!user?.couple_id) { router.push('/setup'); return; }
-      const cId = user.couple_id;
-      setCoupleId(cId);
       const [coupleRes, itemsRes, vendorRes] = await Promise.all([
         supabase.from('couples').select('wedding_date, venue_tour_checked').eq('id', cId).single(),
-        supabase.from('checklist_items').select('*').eq('couple_id', cId).order('due_months_before', { ascending: false }),
+        // select('*') 제거 → 실제 사용 컬럼만
+        supabase.from('checklist_items')
+          .select('id, title, is_done, due_months_before, due_date, assigned_to, memo, couple_id')
+          .eq('couple_id', cId)
+          .order('due_months_before', { ascending: false }),
         supabase.from('vendors').select('id,name,type,balance_due,contract_status').eq('couple_id', cId),
       ]);
       setWeddingDate(coupleRes.data?.wedding_date || null);
@@ -271,7 +275,7 @@ export default function TimelinePage() {
       setLoading(false);
     };
     load();
-  }, [router]);
+  }, [authLoading, cId, router]);
 
   /* ─ 웨딩홀 투어 체크 Supabase 저장 ─ */
   async function saveVenueChecked(next) {
@@ -375,8 +379,8 @@ export default function TimelinePage() {
     setMenuId(null);
   }
 
-  /* ─ 필터 ─ */
-  function filterItems() {
+  /* ─ 필터 (useMemo — items/activeTab/weddingDate 바뀔 때만 재계산) ─ */
+  const displayed = useMemo(() => {
     if (activeTab === 'all') return items;
 
     if (activeTab === 'current') {
@@ -396,12 +400,10 @@ export default function TimelinePage() {
       });
     }
 
-    // 특정 기간 탭
     return items.filter(i => i.due_months_before === activeTab);
-  }
+  }, [items, activeTab, weddingDate]);
 
-  const displayed = filterItems();
-  const doneCount = displayed.filter(i => i.is_done).length;
+  const doneCount = useMemo(() => displayed.filter(i => i.is_done).length, [displayed]);
 
   // 날짜 미리보기 (추가 폼)
   function getPreviewDate(mode, months, dueDate, wDate) {

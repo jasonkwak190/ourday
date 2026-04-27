@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { useCouple } from '@/lib/useCouple';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
 import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2 } from 'lucide-react';
@@ -15,9 +15,9 @@ const SIDE_LABEL = { groom: '신랑측', bride: '신부측' };
 const SIDE_COLOR = { groom: 'var(--rose)', bride: 'var(--purple)' };
 
 export default function GuestsPage() {
-  const router = useRouter();
+  const { coupleId, loading: authLoading } = useCouple('couple_id');
+
   const [loading, setLoading]     = useState(true);
-  const [coupleId, setCoupleId]   = useState(null);
   const [guests, setGuests]       = useState([]);
   const [rsvpList, setRsvpList]   = useState([]);
   const [budgetItems, setBudgetItems] = useState([]);
@@ -48,22 +48,14 @@ export default function GuestsPage() {
   const [invitationId, setInvitationId] = useState(null);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!coupleId) { setLoading(false); return; }
     const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.push('/'); return; }
-
-      const { data: user } = await supabase
-        .from('users').select('couple_id').eq('id', session.user.id).single();
-      if (!user?.couple_id) { router.push('/setup'); return; }
-
-      const cId = user.couple_id;
-      setCoupleId(cId);
-
       const [guestRes, budgetRes, rsvpRes, invRes] = await Promise.all([
-        supabase.from('guests').select('*').eq('couple_id', cId).order('created_at'),
-        supabase.from('budget_items').select('actual_amount').eq('couple_id', cId),
-        supabase.from('rsvp_responses').select('*').eq('couple_id', cId).order('created_at', { ascending: false }),
-        supabase.from('invitations').select('id').eq('couple_id', cId).maybeSingle(),
+        supabase.from('guests').select('id, name, side, relation, meal_count, phone, memo, gift_amount, created_at').eq('couple_id', coupleId).order('created_at'),
+        supabase.from('budget_items').select('actual_amount').eq('couple_id', coupleId),
+        supabase.from('rsvp_responses').select('id, name, side, attending, meal_count, message, created_at').eq('couple_id', coupleId).order('created_at', { ascending: false }),
+        supabase.from('invitations').select('id').eq('couple_id', coupleId).maybeSingle(),
       ]);
 
       setGuests(guestRes.data || []);
@@ -73,19 +65,19 @@ export default function GuestsPage() {
       const invId = invRes.data?.id || null;
       setInvitationId(invId);
       if (invId) {
-        const { data: gbData } = await supabase
+        supabase
           .from('invitation_guestbook')
           .select('id, name, message, created_at')
           .eq('invitation_id', invId)
           .order('created_at', { ascending: false })
-          .limit(50);
-        setGuestbook(gbData || []);
+          .limit(50)
+          .then(({ data }) => setGuestbook(data || []));
       }
 
       setLoading(false);
     };
     load();
-  }, [router]);
+  }, [authLoading, coupleId]);
 
   // Realtime — guests
   useEffect(() => {
