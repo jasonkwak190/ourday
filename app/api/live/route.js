@@ -3,6 +3,10 @@ export const dynamic = 'force-dynamic';
 // 슬라이드쇼용 — event_code 기반, 인증 불필요 (커플이 공유한 링크)
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+
+// IP당 1분에 최대 60건 (슬라이드쇼 폴링 고려, 브루트포스 방어)
+const liveLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
 
 function serviceClient() {
   return createClient(
@@ -15,6 +19,11 @@ function serviceClient() {
 // GET /api/live?code=xxxxxxxx
 export async function GET(request) {
   try {
+    const ip = getClientIp(request);
+    if (!liveLimiter(ip)) {
+      return NextResponse.json({ error: '요청이 너무 많아요.' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     if (!code) return NextResponse.json({ error: 'code required' }, { status: 400 });
