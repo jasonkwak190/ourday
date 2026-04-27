@@ -141,6 +141,27 @@ Vercel Dashboard에 `CRON_SECRET` 등록 완료. 매일 KST 03:00 자동 파기 
 
 ---
 
+### MT-013 · Supabase Storage — invitation-covers 버킷 생성 (필수)
+**목적**: 청첩장 커버 사진 업로드를 위한 public Storage 버킷
+**실행 위치**: Supabase Dashboard → Storage
+
+1. **새 버킷 생성**:
+   - 이름: `invitation-covers`
+   - Public bucket: **ON** (공개 URL 필요)
+   - File size limit: 10MB
+   - Allowed MIME types: `image/jpeg, image/png, image/webp`
+
+2. **RLS 정책** (SQL Editor에서 실행):
+```sql
+-- service role이 업로드하므로 RLS 정책 불필요
+-- (API 라우트에서 service role key 사용)
+-- 버킷 자체를 public으로 설정하면 됨
+```
+
+3. **완료 후 동작**: 청첩장 편집 → 커버 사진 섹션 → "갤러리에서 사진 선택" 버튼으로 업로드 가능
+
+---
+
 ### MT-012 · 청첩장 — invitations 테이블 컬럼 추가 (DB 마이그레이션)
 **목적**: 경쟁사 표준 필드 추가 (부모 성함, 공지사항, 다중 사진)
 **실행 위치**: Supabase Dashboard → SQL Editor

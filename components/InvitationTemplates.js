@@ -113,7 +113,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       </div>
       {inv.message && (
         <div style={{ padding: '40px 32px', textAlign: 'center', borderBottom: '1px solid #f2f4f6' }}>
-          <p style={{ fontSize: 15, lineHeight: 2, color: '#4e5968', whiteSpace: 'pre-line', margin: 0 }}>{inv.message}</p>
+          <p style={{ fontSize: 15, lineHeight: 2, color: '#4e5968', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.message}</p>
         </div>
       )}
       {(inv.venue_name || inv.venue_address) && (
@@ -154,7 +154,7 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       </div>
       {inv.message && (
         <div style={{ margin: '0 24px 24px', padding: '28px 24px', backgroundColor: 'rgba(201,168,130,0.12)', borderRadius: 16, textAlign: 'center', border: '1px solid rgba(201,168,130,0.3)' }}>
-          <p style={{ fontSize: 15, lineHeight: 2, color: '#5c3d2e', whiteSpace: 'pre-line', margin: 0 }}>{inv.message}</p>
+          <p style={{ fontSize: 15, lineHeight: 2, color: '#5c3d2e', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.message}</p>
         </div>
       )}
       {(inv.venue_name || inv.venue_address) && (
@@ -197,7 +197,7 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
             <Icon name="floret" size={13} color="#d4879a" />
             <Icon name="floret" size={13} color="#d4879a" />
           </div>
-          <p style={{ fontSize: 15, lineHeight: 2, color: '#6b3549', whiteSpace: 'pre-line', margin: 0 }}>{inv.message}</p>
+          <p style={{ fontSize: 15, lineHeight: 2, color: '#6b3549', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.message}</p>
         </div>
       )}
       {(inv.venue_name || inv.venue_address) && (
@@ -439,7 +439,7 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
       {inv.message && (
         <div style={{ margin: '0 24px 28px', padding: '28px 24px', backgroundColor: '#F5F0E8', borderRadius: 4, textAlign: 'center', border: '1px solid rgba(201,169,110,0.22)' }}>
           <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 16px' }}>· message ·</p>
-          <p style={{ fontFamily: SERIF_KO, fontSize: 14.5, lineHeight: 2.1, color: '#3d3530', whiteSpace: 'pre-line', margin: 0 }}>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 14.5, lineHeight: 2.1, color: '#3d3530', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>
             {inv.message}
           </p>
         </div>

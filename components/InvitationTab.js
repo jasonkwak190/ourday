@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { Copy, Check, Eye, Save, X, ExternalLink, Plus } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Copy, Check, Eye, Save, X, ExternalLink, Plus, Camera, Loader } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
@@ -155,6 +155,9 @@ export default function InvitationTab({ coupleId }) {
   const [copied,           setCopied]           = useState(false);
   const [showPreview,      setShowPreview]      = useState(false);
   const [inv,              setInv]              = useState(null);
+  const [uploadingCover,   setUploadingCover]   = useState(false);
+  const [coverError,       setCoverError]       = useState('');
+  const coverInputRef = useRef(null);
   const [enabledSections,  setEnabledSections]  = useState(
     SECTIONS.filter(s => s.required).map(s => s.key)
   );
@@ -263,6 +266,30 @@ export default function InvitationTab({ coupleId }) {
     setTimeout(() => setCopied(false), 2000);
   }
 
+  async function handleCoverUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file || !coupleId) return;
+    setCoverError('');
+    setUploadingCover(true);
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('couple_id', coupleId);
+
+    try {
+      const res  = await fetch('/api/invitation/cover', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) { setCoverError(json.error || '업로드 실패'); }
+      else { update('cover_image_url', json.url); }
+    } catch {
+      setCoverError('업로드 중 오류가 발생했어요.');
+    } finally {
+      setUploadingCover(false);
+      // 같은 파일 재선택 허용
+      if (coverInputRef.current) coverInputRef.current.value = '';
+    }
+  }
+
   function update(key, value) {
     setForm(f => ({ ...f, [key]: value }));
   }
@@ -367,7 +394,112 @@ export default function InvitationTab({ coupleId }) {
             )}
           </div>
 
-          {/* 필드들 */}
+          {/* 커버 사진: 파일 업로드 UI */}
+          {section.key === 'cover' ? (
+            <div>
+              {/* hidden file input */}
+              <input
+                ref={coverInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/heic,.heic,.jpg,.jpeg,.png,.webp"
+                style={{ display: 'none' }}
+                onChange={handleCoverUpload}
+              />
+
+              {form.cover_image_url ? (
+                /* 이미지 있을 때 */
+                <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', aspectRatio: '3/2' }}>
+                  <img
+                    src={form.cover_image_url}
+                    alt="커버 사진"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  {/* 오버레이 버튼 */}
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 50%)',
+                    display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+                    padding: '12px 14px',
+                  }}>
+                    <button
+                      onClick={() => coverInputRef.current?.click()}
+                      disabled={uploadingCover}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 6,
+                        padding: '7px 14px', borderRadius: 20,
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        border: 'none', cursor: 'pointer',
+                        fontSize: 13, fontWeight: 600, color: '#191f28',
+                      }}
+                    >
+                      <Camera size={14} />
+                      사진 변경
+                    </button>
+                    <button
+                      onClick={() => update('cover_image_url', '')}
+                      style={{
+                        width: 32, height: 32, borderRadius: '50%',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
+                        border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <X size={14} color="#191f28" />
+                    </button>
+                  </div>
+                  {uploadingCover && (
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      backgroundColor: 'rgba(0,0,0,0.5)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <Loader size={28} color="white" style={{ animation: 'spin 1s linear infinite' }} />
+                      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* 이미지 없을 때: 업로드 영역 */
+                <button
+                  onClick={() => coverInputRef.current?.click()}
+                  disabled={uploadingCover}
+                  style={{
+                    width: '100%', aspectRatio: '3/2',
+                    border: '2px dashed var(--toss-border)',
+                    borderRadius: 16, backgroundColor: 'var(--toss-bg)',
+                    cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center', gap: 8,
+                  }}
+                >
+                  {uploadingCover ? (
+                    <>
+                      <Loader size={28} color="var(--champagne)" style={{ animation: 'spin 1s linear infinite' }} />
+                      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+                      <p style={{ fontSize: 13, color: 'var(--toss-text-tertiary)', margin: 0 }}>업로드 중...</p>
+                    </>
+                  ) : (
+                    <>
+                      <Camera size={28} color="var(--toss-text-tertiary)" />
+                      <p style={{ fontSize: 13, color: 'var(--toss-text-secondary)', margin: 0, fontWeight: 600 }}>
+                        갤러리에서 사진 선택
+                      </p>
+                      <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', margin: 0 }}>
+                        jpg · png · webp · 최대 10MB
+                      </p>
+                    </>
+                  )}
+                </button>
+              )}
+              {coverError && (
+                <p style={{ fontSize: 12, color: 'var(--toss-red)', marginTop: 6 }}>{coverError}</p>
+              )}
+              <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', marginTop: 8, lineHeight: 1.5 }}>
+                카카오톡 공유 시 미리보기 이미지로 사용돼요
+              </p>
+            </div>
+          ) : (
+          /* 일반 필드들 */
           <div className="flex flex-col gap-3">
             {section.fields.map(({ key, label, type, placeholder }) => {
               const accountVal = key === 'groom_name' ? accountNames.groom
@@ -401,11 +533,20 @@ export default function InvitationTab({ coupleId }) {
                   {type === 'textarea' ? (
                     <textarea
                       value={form[key]}
-                      onChange={e => update(key, e.target.value)}
+                      onChange={e => {
+                        update(key, e.target.value);
+                        // auto-resize
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
+                      onFocus={e => {
+                        e.target.style.height = 'auto';
+                        e.target.style.height = e.target.scrollHeight + 'px';
+                      }}
                       placeholder={placeholder}
                       rows={3}
                       className="input-field"
-                      style={{ resize: 'none', lineHeight: 1.6 }}
+                      style={{ resize: 'none', lineHeight: 1.6, overflow: 'hidden', minHeight: 80 }}
                     />
                   ) : (
                     <input
@@ -420,17 +561,6 @@ export default function InvitationTab({ coupleId }) {
               );
             })}
           </div>
-
-          {/* 커버 사진 미리보기 */}
-          {section.key === 'cover' && form.cover_image_url && (
-            <div className="mt-3 rounded-xl overflow-hidden" style={{ aspectRatio: '1.9/1', backgroundColor: 'var(--toss-bg)' }}>
-              <img
-                src={form.cover_image_url}
-                alt="썸네일 미리보기"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                onError={e => { e.target.style.display = 'none'; }}
-              />
-            </div>
           )}
         </div>
       ))}
