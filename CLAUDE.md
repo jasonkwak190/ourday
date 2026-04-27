@@ -258,11 +258,11 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [x] select('*') → 명시적 컬럼 최적화 + LRU 캐시
 - [x] SUPABASE.md 누락 컬럼 보완 + 버그 사고 기록
 - [ ] **Sentry DSN 등록** — sentry.io 프로젝트 생성 → `NEXT_PUBLIC_SENTRY_DSN` Vercel 환경변수 추가 (수동)
-- [ ] 입력값 서버 검증 강화 — API Route name/message 길이·타입 체크
-- [ ] 번들 사이즈 분석 — `@next/bundle-analyzer` 측정 후 최적화
-- [ ] Lighthouse 측정 — LCP/CLS/INP 실측 (프로덕션 URL 기준)
-- [ ] 접근성(a11y) 점검 — 아이콘 버튼 aria-label, 색상 대비율 WCAG AA
-- [ ] `rsvp_responses.message` 컬럼 DB에서 DROP (Supabase 대시보드 수동)
+- [x] 입력값 서버 검증 강화 — `lib/validate.js` isUUID/sanitizeString/sanitizeInt, guestbook+rsvp 적용
+- [x] 번들 사이즈 분석 — 총 1,372KB(gzip 416KB), Supabase Realtime이 최대 청크, lucide tree-shaking 정상
+- [ ] **Lighthouse 측정** — LCP/CLS/INP 실측 (프로덕션 URL 기준, 수동)
+- [x] 접근성(a11y) 점검 — BottomNav aria-label/aria-current/aria-expanded, notes 버튼 aria-label 추가
+- [ ] `rsvp_responses.message` 컬럼 DB에서 DROP (Supabase 대시보드 수동, MANUAL_TASKS MT-006)
 
 ### 🚀 출시 준비
 
