@@ -1,5 +1,6 @@
 import './globals.css';
 import BackButtonHandler from '@/components/BackButtonHandler';
+import CookieBanner from '@/components/CookieBanner';
 
 export const metadata = {
   title: 'Ourday · 우리의 날',
@@ -46,6 +47,7 @@ export default function RootLayout({ children }) {
       <body>
         <BackButtonHandler />
         {children}
+        <CookieBanner />
       </body>
     </html>
   );

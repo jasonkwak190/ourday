@@ -41,7 +41,7 @@ export default function SignupPage() {
     e.preventDefault();
     setError('');
 
-    if (!agreed)                    { setError('개인정보처리방침에 동의해주세요.'); return; }
+    if (!agreed)                    { setError('이용약관 및 개인정보처리방침에 동의해주세요.'); return; }
     if (!name.trim())               { setError('이름을 입력해주세요.'); return; }
     if (password.length < 6)        { setError('비밀번호는 6자 이상이어야 해요.'); return; }
     if (password !== confirmPw)     { setError('비밀번호가 일치하지 않아요.'); return; }
@@ -122,6 +122,12 @@ export default function SignupPage() {
           <span style={{ fontWeight: 700, color: 'var(--ink)' }}>[필수]&nbsp;</span>
           <span style={{ color: 'var(--ink-2)' }}>
             서비스 이용을 위한{' '}
+            <Link href="/terms" target="_blank"
+              style={{ color: 'var(--champagne)', fontWeight: 600, textDecoration: 'underline' }}
+              onClick={e => e.stopPropagation()}>
+              이용약관
+            </Link>
+            {' '}및{' '}
             <Link href="/privacy" target="_blank"
               style={{ color: 'var(--champagne)', fontWeight: 600, textDecoration: 'underline' }}
               onClick={e => e.stopPropagation()}>

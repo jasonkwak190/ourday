@@ -17,7 +17,11 @@ export default function SettingsPage() {
   const [partner,   setPartner]   = useState(null); // 상대방 정보
   const [copied,    setCopied]    = useState(false);
   const [canShare,  setCanShare]  = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showLogoutConfirm,  setShowLogoutConfirm]  = useState(false);
+  const [showDeleteConfirm,  setShowDeleteConfirm]  = useState(false);
+  const [deleteInput,        setDeleteInput]        = useState('');
+  const [deleteLoading,      setDeleteLoading]      = useState(false);
+  const [deleteError,        setDeleteError]        = useState('');
 
   useEffect(() => {
     const load = async () => {
@@ -69,6 +73,26 @@ export default function SettingsPage() {
   async function handleLogout() {
     await supabase.auth.signOut();
     router.push('/');
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteLoading(true);
+    setDeleteError('');
+    try {
+      const res = await fetch('/api/delete-account', { method: 'DELETE' });
+      const json = await res.json();
+      if (!res.ok) {
+        setDeleteError(json.error || '삭제에 실패했어요.');
+        setDeleteLoading(false);
+        return;
+      }
+      // 성공 → 세션 정리 후 랜딩으로
+      await supabase.auth.signOut();
+      router.push('/');
+    } catch {
+      setDeleteError('네트워크 오류가 발생했어요. 다시 시도해주세요.');
+      setDeleteLoading(false);
+    }
   }
 
   if (loading) {
@@ -268,6 +292,109 @@ export default function SettingsPage() {
         >
           로그아웃
         </button>
+      )}
+
+      {/* 이용약관·개인정보처리방침 링크 */}
+      <div className="flex gap-4 justify-center mt-6 mb-2">
+        {[
+          { href: '/terms', label: '이용약관' },
+          { href: '/privacy', label: '개인정보처리방침' },
+        ].map(({ href, label }) => (
+          <a
+            key={href}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ fontSize: 12, color: 'var(--ink-3)', textDecoration: 'underline' }}
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+
+      {/* 계정 탈퇴 */}
+      {!showDeleteConfirm ? (
+        <button
+          onClick={() => { setShowDeleteConfirm(true); setDeleteInput(''); setDeleteError(''); }}
+          className="w-full font-medium mt-2 mb-4"
+          style={{
+            height: 44, borderRadius: 12, fontSize: 13,
+            backgroundColor: 'transparent',
+            color: 'var(--ink-4)',
+            border: 'none',
+            cursor: 'pointer',
+            textDecoration: 'underline',
+          }}
+        >
+          계정 탈퇴
+        </button>
+      ) : (
+        <div
+          className="card mb-4 mt-2"
+          style={{ border: '1.5px solid var(--toss-red-light)', backgroundColor: 'rgba(255,59,48,0.04)' }}
+        >
+          <p className="text-sm font-semibold mb-1" style={{ color: 'var(--toss-red)' }}>
+            계정을 삭제하면 복구할 수 없어요
+          </p>
+          {partner && (
+            <div
+              className="flex items-start gap-2 mb-3 p-3 rounded-xl"
+              style={{ backgroundColor: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.2)' }}
+            >
+              <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--toss-red)', margin: 0, fontWeight: 600 }}>
+                파트너 <strong>{partner.name}</strong>님과 함께 작성한{' '}
+                체크리스트·예산·하객 명단 등 모든 데이터가{' '}
+                <span style={{ textDecoration: 'underline' }}>파트너 계정에서도 함께 삭제</span>됩니다.
+              </p>
+            </div>
+          )}
+          <p className="text-xs mb-4" style={{ color: 'var(--toss-text-tertiary)' }}>
+            {partner
+              ? '탈퇴하면 커플 연동이 해제되며, 두 분이 함께 쌓은 모든 준비 기록이 영구 삭제됩니다.'
+              : '작성한 체크리스트, 예산, 하객 명단 등 모든 데이터가 삭제됩니다.'}
+          </p>
+          <label className="text-xs font-semibold block mb-1.5" style={{ color: 'var(--toss-text-secondary)' }}>
+            확인을 위해 <strong style={{ color: 'var(--toss-red)' }}>탈퇴합니다</strong> 를 입력해주세요
+          </label>
+          <input
+            className="input-field"
+            type="text"
+            placeholder="탈퇴합니다"
+            value={deleteInput}
+            onChange={e => setDeleteInput(e.target.value)}
+            style={{ marginBottom: 12 }}
+            autoComplete="off"
+          />
+          {deleteError && (
+            <p className="text-xs mb-3" style={{ color: 'var(--toss-red)' }}>{deleteError}</p>
+          )}
+          <div className="flex gap-2">
+            <button
+              className="btn-outline flex-1"
+              onClick={() => { setShowDeleteConfirm(false); setDeleteInput(''); setDeleteError(''); }}
+              disabled={deleteLoading}
+            >
+              취소
+            </button>
+            <button
+              onClick={handleDeleteAccount}
+              disabled={deleteInput !== '탈퇴합니다' || deleteLoading}
+              className="flex-1 font-semibold"
+              style={{
+                height: 48, borderRadius: 12,
+                backgroundColor: deleteInput === '탈퇴합니다' ? 'var(--toss-red)' : 'var(--toss-border)',
+                color: 'white',
+                border: 'none',
+                cursor: deleteInput === '탈퇴합니다' ? 'pointer' : 'not-allowed',
+                fontSize: 14,
+                transition: 'background-color 0.15s',
+              }}
+            >
+              {deleteLoading ? '삭제 중...' : '탈퇴하기'}
+            </button>
+          </div>
+        </div>
       )}
 
       <BottomNav active="home" />

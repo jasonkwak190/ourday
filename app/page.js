@@ -311,6 +311,10 @@ export default function LandingPage() {
           <span style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 16, color: 'var(--ink)', letterSpacing: '-0.02em' }}>D</span>
         </div>
         <div style={{ fontSize: 11, color: 'var(--ink-4)', lineHeight: 2 }}>
+          <a href="/terms" style={{ color: 'var(--ink-4)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
+            이용약관
+          </a>
+          <span style={{ margin: '0 8px', color: 'var(--rule-strong)' }}>·</span>
           <a href="/privacy" style={{ color: 'var(--ink-4)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
             개인정보처리방침
           </a>
