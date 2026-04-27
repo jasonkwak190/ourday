@@ -141,6 +141,31 @@ Vercel Dashboard에 `CRON_SECRET` 등록 완료. 매일 KST 03:00 자동 파기 
 
 ---
 
+### MT-012 · 청첩장 — invitations 테이블 컬럼 추가 (DB 마이그레이션)
+**목적**: 경쟁사 표준 필드 추가 (부모 성함, 공지사항, 다중 사진)
+**실행 위치**: Supabase Dashboard → SQL Editor
+
+```sql
+-- 부모 성함 (한국 청첩장 표준)
+alter table invitations
+  add column if not exists groom_father text,
+  add column if not exists groom_mother text,
+  add column if not exists bride_father text,
+  add column if not exists bride_mother text;
+
+-- 공지사항 / 전세버스·주차 안내
+alter table invitations
+  add column if not exists notice text;
+
+-- 사진 URLs (JSON 배열, 최대 10장)
+alter table invitations
+  add column if not exists photos jsonb default '[]'::jsonb;
+```
+
+**마이그레이션 후**: `InvitationTab.js` FIELDS 배열에 부모 성함·공지사항 섹션 추가 필요 (코드 준비 완료, 컬럼 생성 후 주석 해제)
+
+---
+
 ## 완료된 수동 작업 ✅
 
 | 항목 | 완료일 | 비고 |

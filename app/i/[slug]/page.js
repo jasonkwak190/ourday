@@ -6,6 +6,85 @@ import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 
 const FONT = "'Pretendard Variable','Pretendard',-apple-system,sans-serif";
+const SERIF_EN = "'Cormorant Garamond', serif";
+
+// ── 오프닝 커버 ──────────────────────────────────────────────────────
+function InvitationCover({ inv, onOpen }) {
+  const [sliding, setSliding] = useState(false);
+
+  function handleTap() {
+    if (sliding) return;
+    setSliding(true);
+    setTimeout(onOpen, 650);
+  }
+
+  // 날짜 포매터 (커버용: YYYY. MM. DD)
+  function coverDate(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr);
+    return `${d.getFullYear()} · ${String(d.getMonth() + 1).padStart(2, '0')} · ${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  return (
+    <div
+      onClick={handleTap}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 300,
+        backgroundColor: '#1A1613',
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer',
+        transform: sliding ? 'translateY(-100%)' : 'translateY(0)',
+        transition: 'transform 0.65s cubic-bezier(0.76, 0, 0.24, 1)',
+        userSelect: 'none',
+      }}
+    >
+      {/* 내부 코너 프레임 */}
+      <div style={{
+        position: 'absolute', inset: 20,
+        border: '1px solid rgba(201,169,110,0.25)',
+        borderRadius: 4, pointerEvents: 'none',
+      }} />
+
+      {/* O·D 모노그램 */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }}>
+        <span style={{ fontFamily: SERIF_EN, fontSize: 80, fontWeight: 500, color: '#FAF8F5', lineHeight: 1, letterSpacing: '-0.03em' }}>O</span>
+        <span style={{ width: 9, height: 9, borderRadius: '50%', backgroundColor: '#C9A96E', flexShrink: 0 }} />
+        <span style={{ fontFamily: SERIF_EN, fontSize: 80, fontWeight: 500, color: '#FAF8F5', lineHeight: 1, letterSpacing: '-0.03em' }}>D</span>
+      </div>
+
+      {/* 커플명 */}
+      <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 20, color: '#C9A96E', letterSpacing: '0.06em', margin: '0 0 10px', textAlign: 'center' }}>
+        {inv.groom_name || '신랑'} &amp; {inv.bride_name || '신부'}
+      </p>
+
+      {/* 날짜 */}
+      {inv.wedding_date && (
+        <p style={{ fontFamily: SERIF_EN, fontSize: 12, color: 'rgba(201,169,110,0.55)', letterSpacing: '0.12em', margin: 0 }}>
+          {coverDate(inv.wedding_date)}
+        </p>
+      )}
+
+      {/* 탭 힌트 */}
+      <div style={{ position: 'absolute', bottom: 56, textAlign: 'center' }}>
+        <p style={{
+          fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 12,
+          color: 'rgba(201,169,110,0.45)', letterSpacing: '0.08em',
+          animation: 'tap-hint 2.2s ease-in-out infinite',
+        }}>
+          tap to open
+        </p>
+      </div>
+
+      <style>{`
+        @keyframes tap-hint {
+          0%, 100% { opacity: 0.45; transform: translateY(0); }
+          50% { opacity: 0.9; transform: translateY(-5px); }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 // ── 신랑 SVG (수트 실루엣) ───────────────────────────────────────────
 function GroomSvg({ selected, accent }) {
@@ -61,6 +140,7 @@ export default function InvitationViewPage({ params }) {
   const [loading,     setLoading]     = useState(true);
   const [copied,      setCopied]      = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [coverOpen,   setCoverOpen]   = useState(false); // 오프닝 애니메이션 완료 여부
 
   // ── 통합 폼 상태 ─────────────────────────────────────────────────
   const [name,      setName]      = useState('');
@@ -181,15 +261,22 @@ export default function InvitationViewPage({ params }) {
 
   const groomName   = inv.groom_name || '신랑';
   const brideName   = inv.bride_name || '신부';
-  const accentColor = inv.template === 'classic' ? '#7a5c40'
-                    : inv.template === 'floral'  ? '#c4617a'
+  const accentColor = inv.template === 'classic'   ? '#7a5c40'
+                    : inv.template === 'floral'    ? '#c4617a'
+                    : inv.template === 'editorial' ? '#C9A96E'
                     : '#3182f6';
-  const sectionBg   = inv.template === 'classic' ? '#fdf8f0'
-                    : inv.template === 'floral'  ? '#fff8fa'
+  const sectionBg   = inv.template === 'classic'   ? '#fdf8f0'
+                    : inv.template === 'floral'    ? '#fff8fa'
+                    : inv.template === 'editorial' ? '#FAF8F5'
                     : '#f8f9fa';
 
   return (
     <div style={{ fontFamily: FONT, backgroundColor: sectionBg }}>
+
+      {/* ── 오프닝 커버 ── */}
+      {!coverOpen && (
+        <InvitationCover inv={inv} onOpen={() => setCoverOpen(true)} />
+      )}
 
       {/* ── 청첩장 템플릿 ── */}
       <InvitationRenderer

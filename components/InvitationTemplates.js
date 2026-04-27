@@ -364,16 +364,114 @@ export function Guestbook({ invitationId, accentColor = '#3182f6', guestName, on
   );
 }
 
+// ═══════════════════════════════════════════════════════
+// 4. Ourday 에디토리얼
+// ═══════════════════════════════════════════════════════
+export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAccount }) {
+  const SERIF_EN = "'Cormorant Garamond', serif";
+  const SERIF_KO = "'Noto Serif KR', serif";
+
+  return (
+    <div style={{ minHeight: '100dvh', backgroundColor: '#FAF8F5', fontFamily: FONT, maxWidth: 430, margin: '0 auto' }}>
+
+      {/* ── 커버 이미지 ── */}
+      {inv.cover_image_url && (
+        <div style={{ width: '100%', aspectRatio: '3/4', overflow: 'hidden', position: 'relative' }}>
+          <img
+            src={inv.cover_image_url}
+            alt="wedding"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
+          />
+          {/* 이미지 위 그라디언트 오버레이 */}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 60%, rgba(26,22,19,0.5) 100%)' }} />
+        </div>
+      )}
+
+      {/* ── 히어로 ── */}
+      <div style={{ padding: inv.cover_image_url ? '48px 32px 48px' : '72px 32px 48px', textAlign: 'center' }}>
+
+        {/* 소형 O·D 모노그램 */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 32 }}>
+          <span style={{ fontFamily: SERIF_EN, fontSize: 24, fontWeight: 500, color: '#1A1613', lineHeight: 1 }}>O</span>
+          <span style={{ width: 5, height: 5, borderRadius: '50%', backgroundColor: '#C9A96E', display: 'inline-block' }} />
+          <span style={{ fontFamily: SERIF_EN, fontSize: 24, fontWeight: 500, color: '#1A1613', lineHeight: 1 }}>D</span>
+        </div>
+
+        {/* 키커 */}
+        <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 11, color: '#b0935a', letterSpacing: '0.16em', marginBottom: 28, margin: '0 0 28px' }}>
+          · Wedding Invitation ·
+        </p>
+
+        {/* 이름 */}
+        <div style={{ marginBottom: 28 }}>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 30, fontWeight: 500, color: '#1A1613', margin: 0, letterSpacing: '-0.01em', lineHeight: 1.15 }}>
+            {inv.groom_name || '신랑'}
+          </p>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 22, color: '#C9A96E', margin: '10px 0', letterSpacing: '0.06em' }}>
+            &amp;
+          </p>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 30, fontWeight: 500, color: '#1A1613', margin: 0, letterSpacing: '-0.01em', lineHeight: 1.15 }}>
+            {inv.bride_name || '신부'}
+          </p>
+        </div>
+
+        {/* 샴페인 플러리시 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '28px 0' }}>
+          <div style={{ flex: 1, height: 1, backgroundColor: '#C9A96E', opacity: 0.25 }} />
+          <span style={{ fontFamily: SERIF_EN, fontSize: 12, color: '#C9A96E', opacity: 0.5, lineHeight: 1 }}>◆</span>
+          <div style={{ flex: 1, height: 1, backgroundColor: '#C9A96E', opacity: 0.25 }} />
+        </div>
+
+        {/* 날짜 */}
+        {inv.wedding_date && (
+          <p style={{ fontFamily: SERIF_KO, fontSize: 16, fontWeight: 500, color: '#3d3530', margin: '0 0 6px' }}>
+            {formatDate(inv.wedding_date)}
+          </p>
+        )}
+        {inv.wedding_time && (
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#b0935a', margin: 0, letterSpacing: '0.04em' }}>
+            {inv.wedding_time}
+          </p>
+        )}
+      </div>
+
+      {/* ── 메시지 ── */}
+      {inv.message && (
+        <div style={{ margin: '0 24px 28px', padding: '28px 24px', backgroundColor: '#F5F0E8', borderRadius: 4, textAlign: 'center', border: '1px solid rgba(201,169,110,0.22)' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 16px' }}>· message ·</p>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 14.5, lineHeight: 2.1, color: '#3d3530', whiteSpace: 'pre-line', margin: 0 }}>
+            {inv.message}
+          </p>
+        </div>
+      )}
+
+      {/* ── 예식장 ── */}
+      {(inv.venue_name || inv.venue_address) && (
+        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: 'white', borderRadius: 4, border: '1px solid rgba(201,169,110,0.28)' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 12px' }}>· venue ·</p>
+          {inv.venue_name && (
+            <p style={{ fontFamily: SERIF_KO, fontSize: 17, fontWeight: 500, color: '#1A1613', margin: '0 0 6px' }}>{inv.venue_name}</p>
+          )}
+          {inv.venue_address && (
+            <p style={{ fontFamily: SERIF_EN, fontSize: 12, color: '#b0935a', margin: 0, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+              <MapPin size={11} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
+            </p>
+          )}
+        </div>
+      )}
+
+      <BottomActions inv={inv} copied={copied} copyUrl={copyUrl} showAccount={showAccount} setShowAccount={setShowAccount} accentColor="#C9A96E" />
+    </div>
+  );
+}
+
 // ─── 템플릿 라우터 ────────────────────────────────────────────────────
 // 템플릿만 렌더링. 방명록·RSVP는 페이지에서 직접 처리.
 export function InvitationRenderer({ inv, copied, copyUrl, showAccount, setShowAccount }) {
   const props = { inv, copied, copyUrl, showAccount, setShowAccount };
 
-  return (
-    <>
-      {inv.template === 'classic' && <ClassicTemplate {...props} />}
-      {inv.template === 'floral'  && <FloralTemplate  {...props} />}
-      {inv.template !== 'classic' && inv.template !== 'floral' && <MinimalTemplate {...props} />}
-    </>
-  );
+  if (inv.template === 'classic')   return <ClassicTemplate  {...props} />;
+  if (inv.template === 'floral')    return <FloralTemplate   {...props} />;
+  if (inv.template === 'editorial') return <EditorialTemplate {...props} />;
+  return <MinimalTemplate {...props} />;
 }

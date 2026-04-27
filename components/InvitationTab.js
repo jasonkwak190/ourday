@@ -7,9 +7,10 @@ import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
 
 const TEMPLATES = [
-  { key: 'minimal', label: '미니멀',  icon: 'diamond', desc: '깔끔하고 모던한 스타일' },
-  { key: 'classic', label: '클래식',  icon: 'ring',    desc: '우아하고 격식있는 스타일' },
-  { key: 'floral',  label: '플라워',  icon: 'floret',  desc: '로맨틱하고 따뜻한 스타일' },
+  { key: 'editorial', label: 'Ourday',  icon: 'diamond', desc: '잉크·샴페인 에디토리얼' },
+  { key: 'minimal',   label: '미니멀',  icon: 'diamond', desc: '깔끔하고 모던한 스타일' },
+  { key: 'classic',   label: '클래식',  icon: 'ring',    desc: '우아하고 격식있는 스타일' },
+  { key: 'floral',    label: '플라워',  icon: 'floret',  desc: '로맨틱하고 따뜻한 스타일' },
 ];
 
 const FIELDS = [
@@ -260,21 +261,21 @@ export default function InvitationTab({ coupleId }) {
       {/* 템플릿 선택 */}
       <div className="card mb-4">
         <p className="text-sm font-bold mb-3" style={{ color: 'var(--toss-text-primary)' }}>템플릿</p>
-        <div className="flex gap-2">
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
           {TEMPLATES.map(t => (
             <button
               key={t.key}
               onClick={() => update('template', t.key)}
               style={{
-                flex: 1, padding: '12px 8px', borderRadius: 16, cursor: 'pointer',
-                border: `2px solid ${form.template === t.key ? 'var(--toss-blue)' : 'var(--toss-border)'}`,
-                backgroundColor: form.template === t.key ? 'var(--toss-blue-light)' : 'var(--toss-bg)',
+                flexShrink: 0, width: 88, padding: '12px 8px', borderRadius: 16, cursor: 'pointer',
+                border: `2px solid ${form.template === t.key ? 'var(--champagne)' : 'var(--toss-border)'}`,
+                backgroundColor: form.template === t.key ? 'var(--paper)' : 'var(--toss-bg)',
                 transition: 'all 0.15s',
               }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 4 }}>
                 <Icon name={t.icon} size={20} color={form.template === t.key ? 'var(--champagne)' : 'var(--ink-3)'} />
               </div>
-              <p style={{ fontSize: 12, fontWeight: 700, color: form.template === t.key ? 'var(--toss-blue)' : 'var(--toss-text-primary)' }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: form.template === t.key ? 'var(--champagne)' : 'var(--toss-text-primary)' }}>
                 {t.label}
               </p>
               <p style={{ fontSize: 10, color: 'var(--toss-text-tertiary)', marginTop: 2, lineHeight: 1.4 }}>
