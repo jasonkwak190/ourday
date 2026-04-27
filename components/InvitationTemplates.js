@@ -5,12 +5,63 @@ import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import Icon from '@/components/Icon';
 
-// ─── 날짜 포매터 ────────────────────────────────────────────────────
+// ─── 날짜 포매터 (timezone 버그 방지: UTC 파싱 대신 로컬 날짜로 처리) ──
 export function formatDate(dateStr) {
   if (!dateStr) return '';
-  const d = new Date(dateStr);
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
   const days = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+  return `${y}년 ${m}월 ${d}일 (${days[date.getDay()]})`;
+}
+
+// ─── 지도 embed (OSM + Nominatim 무료 지오코딩) ──────────────────────
+function MapEmbed({ address }) {
+  const [embedUrl, setEmbedUrl] = useState('');
+  const [status, setStatus]     = useState('loading'); // loading | ok | fail
+
+  useEffect(() => {
+    if (!address) { setStatus('fail'); return; }
+    let cancelled = false;
+    fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
+      { headers: { 'Accept-Language': 'ko,en' } }
+    )
+      .then(r => r.json())
+      .then(data => {
+        if (cancelled) return;
+        if (data[0]) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          const d   = 0.004;
+          const bbox = `${lng-d},${lat-d},${lng+d},${lat+d}`;
+          setEmbedUrl(`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`);
+          setStatus('ok');
+        } else {
+          setStatus('fail');
+        }
+      })
+      .catch(() => { if (!cancelled) setStatus('fail'); });
+    return () => { cancelled = true; };
+  }, [address]);
+
+  if (!address || status === 'fail') return null;
+
+  return (
+    <div style={{ marginTop: 14, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', height: 180, backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      {status === 'loading' ? (
+        <p style={{ fontSize: 12, color: '#aaa', margin: 0 }}>지도 불러오는 중...</p>
+      ) : (
+        <iframe
+          src={embedUrl}
+          width="100%"
+          height="180"
+          style={{ border: 0, display: 'block' }}
+          loading="lazy"
+          title="예식장 지도"
+        />
+      )}
+    </div>
+  );
 }
 
 // ─── 사진 슬라이드 캐러셀 ──────────────────────────────────────────────
@@ -96,8 +147,10 @@ function AccountRow({ label, value }) {
 export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccount, accentColor = '#B89968' }) {
   return (
     <div style={{ padding: '0 24px 48px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-      {inv.venue_map_url && (
-        <a href={inv.venue_map_url} target="_blank" rel="noreferrer"
+      {(inv.venue_map_url || inv.venue_address) && (
+        <a
+          href={inv.venue_map_url || `https://maps.google.com/maps?q=${encodeURIComponent(inv.venue_address)}`}
+          target="_blank" rel="noreferrer"
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, textDecoration: 'none', fontWeight: 700, fontSize: 15, backgroundColor: accentColor, color: 'white' }}>
           <MapPin size={18} />
           지도 보기
@@ -187,6 +240,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
               <MapPin size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
             </p>
           )}
+          <MapEmbed address={inv.venue_address} />
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
@@ -253,7 +307,8 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
         <div style={{ margin: '0 24px 24px', padding: '24px', backgroundColor: 'white', borderRadius: 16, border: '1px solid #e8ddd0' }}>
           <p style={{ fontSize: 12, letterSpacing: '0.15em', color: '#6b4c30', marginBottom: 10, textTransform: 'uppercase', fontWeight: 600 }}>예 식 장</p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d2b1f', margin: '0 0 6px' }}>{inv.venue_name}</p>}
-          {inv.venue_address && <p style={{ fontSize: 13, color: '#9a8068', margin: 0 }}>{inv.venue_address}</p>}
+          {inv.venue_address && <p style={{ fontSize: 13, color: '#9a8068', margin: '0 0 0' }}>{inv.venue_address}</p>}
+          <MapEmbed address={inv.venue_address} />
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
@@ -328,7 +383,8 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
             <MapPin size={12} color="#b05070" />예 식 장
           </p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d1a25', margin: '0 0 6px' }}>{inv.venue_name}</p>}
-          {inv.venue_address && <p style={{ fontSize: 13, color: '#9c7080', margin: 0 }}>{inv.venue_address}</p>}
+          {inv.venue_address && <p style={{ fontSize: 13, color: '#9c7080', margin: '0 0 0' }}>{inv.venue_address}</p>}
+          <MapEmbed address={inv.venue_address} />
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
@@ -571,12 +627,12 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
 
         {/* 날짜 */}
         {inv.wedding_date && (
-          <p style={{ fontFamily: SERIF_KO, fontSize: 16, fontWeight: 500, color: '#3d3530', margin: '0 0 6px' }}>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 18, fontWeight: 600, color: '#1A1613', margin: '0 0 8px', letterSpacing: '-0.01em' }}>
             {formatDate(inv.wedding_date)}
           </p>
         )}
         {inv.wedding_time && (
-          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 14, color: '#7a5520', margin: 0, letterSpacing: '0.04em' }}>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 15, color: '#5a4a3a', margin: 0, fontWeight: 500 }}>
             {inv.wedding_time}
           </p>
         )}
@@ -636,6 +692,7 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
               <MapPin size={12} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
             </p>
           )}
+          <MapEmbed address={inv.venue_address} />
         </div>
       )}
 
