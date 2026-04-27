@@ -62,6 +62,8 @@ module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   org: 'ourday',
   project: 'ourday-nextjs',
   silent: true,
+  // CSP/광고차단기 우회: /monitoring 경로로 프록시
+  tunnelRoute: '/monitoring',
   // 소스맵은 프로덕션 빌드에서만 업로드
   sourcemaps: {
     disable: process.env.NODE_ENV !== 'production',

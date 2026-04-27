@@ -1,7 +1,6 @@
 import './globals.css';
 import BackButtonHandler from '@/components/BackButtonHandler';
 import CookieBanner from '@/components/CookieBanner';
-import SentryInit from '@/components/SentryInit';
 
 export const metadata = {
   title: 'Ourday · 우리의 날',
@@ -54,7 +53,6 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <SentryInit />
         <BackButtonHandler />
         {children}
         <CookieBanner />
