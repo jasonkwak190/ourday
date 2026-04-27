@@ -364,6 +364,42 @@ export default function BudgetPage() {
         <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>budget &amp; vendors</p>
       </div>
 
+      {/* ── 예산 초과 경고 ── */}
+      {totalBudget > 0 && totalExpected > totalBudget && (
+        <div className="flex items-start gap-3 mb-4 px-4 py-3 rounded-2xl"
+          style={{ backgroundColor: '#FFF0F0', border: '1.5px solid var(--toss-red)' }}>
+          <AlertTriangle size={18} color="var(--toss-red)" style={{ flexShrink: 0, marginTop: 1 }} />
+          <div>
+            <p className="text-sm font-semibold" style={{ color: 'var(--toss-red)' }}>예산 초과</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--toss-red)', opacity: 0.8 }}>
+              예상 총액이 설정 예산보다{' '}
+              <span className="font-bold">{(totalExpected - totalBudget).toLocaleString()}만원</span> 초과됐어요
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── 잔금 D-7 긴급 경고 ── */}
+      {urgentVendors.length > 0 && (
+        <div className="flex items-start gap-3 mb-4 px-4 py-3 rounded-2xl"
+          style={{ backgroundColor: '#FFFBEA', border: '1.5px solid var(--toss-yellow, #F5A623)' }}>
+          <AlertTriangle size={18} color="var(--toss-yellow, #F5A623)" style={{ flexShrink: 0, marginTop: 1 }} />
+          <div style={{ flex: 1 }}>
+            <p className="text-sm font-semibold" style={{ color: '#8B6914' }}>잔금 마감 임박</p>
+            {urgentVendors.map(v => {
+              const diff = Math.ceil((new Date(v.balance_due) - today) / (1000 * 60 * 60 * 24));
+              return (
+                <p key={v.id} className="text-xs mt-0.5" style={{ color: '#8B6914' }}>
+                  <span className="font-semibold">{v.name}</span> —{' '}
+                  {diff < 0 ? `${Math.abs(diff)}일 연체` : diff === 0 ? '오늘 마감!' : `D-${diff}`}{' '}
+                  ({(v.balance || 0).toLocaleString()}만원)
+                </p>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── 예산 요약 카드 ── */}
       <div className="card mb-4">
         {/* 총예산 헤더 */}

@@ -17,6 +17,14 @@ export const metadata = {
     siteName: 'Ourday',
     title: 'Ourday · 우리의 날',
     description: '결혼을 앞둔 커플이 함께 결혼 준비를 관리하는 웹앱',
+    url: 'https://ourday-rust.vercel.app',
+    images: [{ url: 'https://ourday-rust.vercel.app/og-image.png', width: 1200, height: 630, alt: 'Ourday' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Ourday · 우리의 날',
+    description: '결혼을 앞둔 커플이 함께 결혼 준비를 관리하는 웹앱',
+    images: ['https://ourday-rust.vercel.app/og-image.png'],
   },
 };
 

@@ -20,8 +20,8 @@ const CSP = [
   `font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net`,
   // API 통신: Supabase (REST + Realtime WebSocket)
   `connect-src 'self' ${SUPABASE_URL} ${SUPABASE_WS} https://t1.kakaocdn.net`,
-  // 이미지: 자신 + Supabase Storage + data URI + blob (사진 업로드 미리보기)
-  `img-src 'self' ${SUPABASE_URL} data: blob: https://t1.kakaocdn.net`,
+  // 이미지: 자신 + Supabase Storage + data URI + blob + 외부 OG 이미지 (link preview 썸네일)
+  `img-src 'self' ${SUPABASE_URL} data: blob: https:`,
   // 프레임: 카카오 지도 iframe 허용
   `frame-src https://map.kakao.com`,
   // 폼: 자신만

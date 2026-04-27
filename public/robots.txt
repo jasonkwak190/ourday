@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+Disallow: /dashboard
+Disallow: /timeline
+Disallow: /budget
+Disallow: /guests
+Disallow: /decisions
+Disallow: /notes
+Disallow: /settings
+Disallow: /setup
+Disallow: /setup-profile
+Disallow: /connect
+Disallow: /invitation
+Disallow: /gallery
+Disallow: /vendors
+Disallow: /api/
+
+Sitemap: https://ourday-rust.vercel.app/sitemap.xml

@@ -250,6 +250,26 @@ export default function DashboardPage() {
         </button>
       </div>
 
+      {/* ── 잔금 긴급 알림 (D-3 이하 또는 연체) ── */}
+      {pendingBalances.some(v => v.dday <= 3) && (
+        <button
+          onClick={() => router.push('/budget')}
+          className="w-full flex items-center gap-3 mb-4 px-4 py-3 rounded-2xl text-left"
+          style={{ backgroundColor: '#FFF0F0', border: '1.5px solid var(--toss-red)', cursor: 'pointer' }}
+        >
+          <AlertCircle size={18} color="var(--toss-red)" style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--toss-red)' }}>잔금 마감 긴급!</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--toss-red)', opacity: 0.8 }}>
+              {pendingBalances.filter(v => v.dday <= 3).map(v =>
+                `${v.name} ${v.dday < 0 ? `(${Math.abs(v.dday)}일 연체)` : v.dday === 0 ? '(오늘!)' : `(D-${v.dday})`}`
+              ).join(' · ')}
+            </p>
+          </div>
+          <ChevronRight size={16} color="var(--toss-red)" />
+        </button>
+      )}
+
       {/* ── 인사말 섹션 ── */}
       {userName && (
         <div style={{ padding: '4px 4px 14px' }}>
