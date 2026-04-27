@@ -1,25 +1,31 @@
 import * as Sentry from '@sentry/nextjs';
 
-console.log('[instrumentation-client] loading, DSN:', process.env.NEXT_PUBLIC_SENTRY_DSN ? 'SET' : 'MISSING');
-
 if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
 
-    // 진단용: 강제 활성화 + 디버그 로그
-    enabled: true,
-    debug: true,
-
-    tracesSampleRate: 0,
+    // 샘플링: 프로덕션 10%, 개발 0%
+    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 0,
     replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 0,
+    replaysOnErrorSampleRate: process.env.NODE_ENV === 'production' ? 1.0 : 0,
+
+    enabled: process.env.NODE_ENV === 'production',
 
     sendDefaultPii: false,
-  });
 
-  console.log('[instrumentation-client] Sentry.init done, sending test message...');
-  Sentry.captureMessage('[instrumentation-client] init verification ' + new Date().toISOString());
-  Sentry.flush(5000).then((ok) => {
-    console.log('[instrumentation-client] flush result:', ok);
+    ignoreErrors: [
+      'NetworkError',
+      'Failed to fetch',
+      'Load failed',
+      'ChunkLoadError',
+      /^ResizeObserver loop/,
+    ],
+
+    beforeSend(event) {
+      if (event.request?.url?.includes('/login') || event.request?.url?.includes('/signup')) {
+        delete event.request.data;
+      }
+      return event;
+    },
   });
 }
