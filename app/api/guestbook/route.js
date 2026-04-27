@@ -4,8 +4,10 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
 
-// IP당 1분에 최대 5건 (스팸 방어)
-const guestbookLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
+// POST: IP당 1분에 최대 5건 (스팸 방어)
+const guestbookWriteLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
+// GET: IP당 1분에 최대 60건 (슬라이드쇼/공개 페이지 폴링 고려)
+const guestbookReadLimiter  = createRateLimiter({ windowMs: 60_000, max: 60 });
 
 function serviceClient() {
   return createClient(
@@ -26,6 +28,11 @@ function anonClient() {
 // GET /api/guestbook?invitation_id=xxx  — 방명록 목록 (공개)
 export async function GET(request) {
   try {
+    const ip = getClientIp(request);
+    if (!guestbookReadLimiter(ip)) {
+      return NextResponse.json({ error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+
     const { searchParams } = new URL(request.url);
     const invitationId = searchParams.get('invitation_id');
     if (!invitationId) return NextResponse.json({ error: 'invitation_id required' }, { status: 400 });
@@ -49,7 +56,7 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     const ip = getClientIp(request);
-    if (!guestbookLimiter(ip)) {
+    if (!guestbookWriteLimiter(ip)) {
       return NextResponse.json({ error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' }, { status: 429 });
     }
 
