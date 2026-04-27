@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { Copy, Check, Eye, Save, X, ExternalLink } from 'lucide-react';
+import { Copy, Check, Eye, Save, X, ExternalLink, Plus } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
@@ -13,29 +13,60 @@ const TEMPLATES = [
   { key: 'floral',    label: '플라워',  icon: 'floret',  desc: '로맨틱하고 따뜻한 스타일' },
 ];
 
-const FIELDS = [
-  { section: '신랑·신부', icon: 'rings', fields: [
-    { key: 'groom_name',    label: '신랑 이름',   placeholder: '홍길동' },
-    { key: 'bride_name',    label: '신부 이름',   placeholder: '김영희' },
-  ]},
-  { section: '날짜·시간', icon: 'calendar', fields: [
-    { key: 'wedding_date',  label: '결혼 날짜',   type: 'date' },
-    { key: 'wedding_time',  label: '시간',        placeholder: '오후 1시 30분' },
-  ]},
-  { section: '예식장', icon: 'venue', fields: [
-    { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
-    { key: 'venue_address', label: '주소',        placeholder: '서울시 강남구 ...' },
-    { key: 'venue_map_url', label: '지도 링크',   placeholder: 'https://map.kakao.com/...' },
-  ]},
-  { section: '계좌번호', icon: 'wallet', fields: [
-    { key: 'account_groom', label: '신랑측 계좌', placeholder: '은행명 000-0000-0000 홍길동' },
-    { key: 'account_bride', label: '신부측 계좌', placeholder: '은행명 000-0000-0000 김영희' },
-  ]},
-  { section: '초대 메시지', icon: 'invite', fields: [
-    { key: 'message', label: '메시지', type: 'textarea',
-      placeholder: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.' },
-  ]},
+// required: true → 항상 표시, 삭제 불가
+// required: false → 섹션 추가/제거 가능
+const SECTIONS = [
+  {
+    key: 'names', label: '신랑·신부', icon: 'rings', required: true,
+    fields: [
+      { key: 'groom_name', label: '신랑 이름', placeholder: '홍길동' },
+      { key: 'bride_name', label: '신부 이름', placeholder: '김영희' },
+    ],
+  },
+  {
+    key: 'datetime', label: '날짜·시간', icon: 'calendar', required: true,
+    fields: [
+      { key: 'wedding_date', label: '결혼 날짜', type: 'date' },
+      { key: 'wedding_time', label: '시간', placeholder: '오후 1시 30분' },
+    ],
+  },
+  {
+    key: 'venue', label: '예식장', icon: 'venue', required: false,
+    fields: [
+      { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
+      { key: 'venue_address', label: '주소',        placeholder: '서울시 강남구 ...' },
+      { key: 'venue_map_url', label: '지도 링크',   placeholder: 'https://map.kakao.com/...' },
+    ],
+  },
+  {
+    key: 'message', label: '초대 메시지', icon: 'invite', required: false,
+    fields: [
+      { key: 'message', label: '메시지', type: 'textarea',
+        placeholder: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.' },
+    ],
+  },
+  {
+    key: 'account', label: '계좌번호', icon: 'wallet', required: false,
+    fields: [
+      { key: 'account_groom', label: '신랑측 계좌', placeholder: '은행명 000-0000-0000 홍길동' },
+      { key: 'account_bride', label: '신부측 계좌', placeholder: '은행명 000-0000-0000 김영희' },
+    ],
+  },
+  {
+    key: 'cover', label: '커버 사진', icon: 'camera', required: false,
+    fields: [
+      { key: 'cover_image_url', label: '사진 URL', type: 'url',
+        placeholder: 'https://i.imgur.com/example.jpg' },
+    ],
+  },
 ];
+
+// 섹션이 "활성화됐다고 볼 수 있는" 기본값 계산 (기존 데이터 기반)
+function inferEnabledSections(existing) {
+  return SECTIONS
+    .filter(s => s.required || (existing && s.fields.some(f => existing[f.key])))
+    .map(s => s.key);
+}
 
 // ─── 미리보기 모달 ────────────────────────────────────────────────────
 function PreviewModal({ form, onClose, onSave, saving }) {
@@ -118,14 +149,17 @@ function PreviewModal({ form, onClose, onSave, saving }) {
 
 // ─── 메인 컴포넌트 ────────────────────────────────────────────────────
 export default function InvitationTab({ coupleId }) {
-  const [loading,      setLoading]      = useState(true);
-  const [saving,       setSaving]       = useState(false);
-  const [saved,        setSaved]        = useState(false);
-  const [copied,       setCopied]       = useState(false);
-  const [showPreview,  setShowPreview]  = useState(false);
-  const [inv,          setInv]          = useState(null);
-  const [form,         setForm]         = useState({
-    template: 'minimal',
+  const [loading,          setLoading]          = useState(true);
+  const [saving,           setSaving]           = useState(false);
+  const [saved,            setSaved]            = useState(false);
+  const [copied,           setCopied]           = useState(false);
+  const [showPreview,      setShowPreview]      = useState(false);
+  const [inv,              setInv]              = useState(null);
+  const [enabledSections,  setEnabledSections]  = useState(
+    SECTIONS.filter(s => s.required).map(s => s.key)
+  );
+  const [form, setForm] = useState({
+    template: 'editorial',
     groom_name: '', bride_name: '',
     wedding_date: '', wedding_time: '',
     venue_name: '', venue_address: '', venue_map_url: '',
@@ -159,8 +193,8 @@ export default function InvitationTab({ coupleId }) {
 
       if (existing) {
         setInv(existing);
-        setForm({
-          template:        existing.template        || 'minimal',
+        const loaded = {
+          template:        existing.template        || 'editorial',
           groom_name:      groomName || existing.groom_name    || '',
           bride_name:      brideName || existing.bride_name    || '',
           wedding_date:    existing.wedding_date  || coupleRes.data?.wedding_date || '',
@@ -172,14 +206,18 @@ export default function InvitationTab({ coupleId }) {
           account_bride:   existing.account_bride || '',
           message:         existing.message       || '',
           cover_image_url: existing.cover_image_url || '',
-        });
+        };
+        setForm(loaded);
+        setEnabledSections(inferEnabledSections(loaded));
       } else {
-        setForm(f => ({
-          ...f,
+        const defaults = {
           groom_name:   groomName,
           bride_name:   brideName,
           wedding_date: coupleRes.data?.wedding_date || '',
-        }));
+        };
+        setForm(f => ({ ...f, ...defaults }));
+        // 신규: 필수 + 예식장 + 메시지 기본 활성화
+        setEnabledSections(['names', 'datetime', 'venue', 'message']);
       }
       setLoading(false);
     };
@@ -229,6 +267,24 @@ export default function InvitationTab({ coupleId }) {
     setForm(f => ({ ...f, [key]: value }));
   }
 
+  // 섹션 추가
+  function addSection(key) {
+    setEnabledSections(prev => [...prev, key]);
+  }
+
+  // 섹션 제거 + 필드 초기화
+  function removeSection(key) {
+    const section = SECTIONS.find(s => s.key === key);
+    if (!section || section.required) return;
+    const cleared = {};
+    section.fields.forEach(f => { cleared[f.key] = ''; });
+    setForm(prev => ({ ...prev, ...cleared }));
+    setEnabledSections(prev => prev.filter(k => k !== key));
+  }
+
+  // 비활성 선택 섹션 목록
+  const disabledSections = SECTIONS.filter(s => !s.required && !enabledSections.includes(s.key));
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -248,7 +304,7 @@ export default function InvitationTab({ coupleId }) {
         />
       )}
 
-      {/* 상단 열람 횟수 */}
+      {/* 열람 횟수 */}
       {inv && (
         <div className="flex justify-end mb-3">
           <span className="text-xs px-2 py-1 rounded-full tabular-nums"
@@ -286,15 +342,34 @@ export default function InvitationTab({ coupleId }) {
         </div>
       </div>
 
-      {/* 입력 폼 */}
-      {FIELDS.map(({ section, icon, fields }) => (
-        <div key={section} className="card mb-4">
-          <p className="text-sm font-bold mb-3 flex items-center gap-1.5" style={{ color: 'var(--toss-text-primary)' }}>
-            <Icon name={icon} size={15} color="var(--champagne)" />
-            {section}
-          </p>
+      {/* ── 활성 섹션 폼 ── */}
+      {SECTIONS.filter(s => enabledSections.includes(s.key)).map(section => (
+        <div key={section.key} className="card mb-3">
+          {/* 섹션 헤더 */}
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-sm font-bold flex items-center gap-1.5" style={{ color: 'var(--toss-text-primary)' }}>
+              <Icon name={section.icon} size={15} color="var(--champagne)" />
+              {section.label}
+            </p>
+            {!section.required && (
+              <button
+                onClick={() => removeSection(section.key)}
+                style={{
+                  width: 24, height: 24, borderRadius: 8,
+                  border: '1px solid var(--toss-border)',
+                  backgroundColor: 'var(--toss-bg)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <X size={12} color="var(--toss-text-tertiary)" />
+              </button>
+            )}
+          </div>
+
+          {/* 필드들 */}
           <div className="flex flex-col gap-3">
-            {fields.map(({ key, label, type, placeholder }) => {
+            {section.fields.map(({ key, label, type, placeholder }) => {
               const accountVal = key === 'groom_name' ? accountNames.groom
                                : key === 'bride_name' ? accountNames.bride
                                : null;
@@ -345,40 +420,50 @@ export default function InvitationTab({ coupleId }) {
               );
             })}
           </div>
+
+          {/* 커버 사진 미리보기 */}
+          {section.key === 'cover' && form.cover_image_url && (
+            <div className="mt-3 rounded-xl overflow-hidden" style={{ aspectRatio: '1.9/1', backgroundColor: 'var(--toss-bg)' }}>
+              <img
+                src={form.cover_image_url}
+                alt="썸네일 미리보기"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={e => { e.target.style.display = 'none'; }}
+              />
+            </div>
+          )}
         </div>
       ))}
 
-      {/* 카카오톡 공유 썸네일 사진 */}
-      <div className="card mb-4">
-        <p className="text-sm font-bold mb-1" style={{ color: 'var(--toss-text-primary)' }}>
-          <span className="flex items-center gap-1.5">
-            <Icon name="camera" size={15} color="var(--champagne)" />
-            공유 썸네일 사진
-          </span>
-          <span className="text-xs font-normal" style={{ color: 'var(--toss-text-tertiary)' }}>(선택)</span>
-        </p>
-        <p className="text-xs mb-3" style={{ color: 'var(--toss-text-tertiary)', lineHeight: 1.6 }}>
-          카카오톡 등 링크 공유 시 미리보기 이미지로 쓰여요.{'\n'}
-          사진 URL을 붙여넣으세요 (Google Drive 공개 링크, imgur 등)
-        </p>
-        <input
-          type="url"
-          value={form.cover_image_url}
-          onChange={e => update('cover_image_url', e.target.value)}
-          placeholder="https://i.imgur.com/example.jpg"
-          className="input-field"
-        />
-        {form.cover_image_url && (
-          <div className="mt-3 rounded-xl overflow-hidden" style={{ aspectRatio: '1.9/1', backgroundColor: 'var(--toss-bg)' }}>
-            <img
-              src={form.cover_image_url}
-              alt="썸네일 미리보기"
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              onError={e => { e.target.style.display = 'none'; }}
-            />
+      {/* ── 섹션 추가 ── */}
+      {disabledSections.length > 0 && (
+        <div className="mb-4" style={{ padding: '16px 0 4px' }}>
+          <p className="text-xs font-semibold mb-2" style={{ color: 'var(--toss-text-tertiary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Plus size={11} />
+            섹션 추가
+          </p>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {disabledSections.map(s => (
+              <button
+                key={s.key}
+                onClick={() => addSection(s.key)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '7px 12px', borderRadius: 20,
+                  border: '1.5px dashed var(--toss-border)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--toss-text-secondary)',
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <Icon name={s.icon} size={13} color="var(--champagne)" />
+                {s.label}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* 미리보기 + 저장 버튼 */}
       <div className="flex gap-3 mb-3">
