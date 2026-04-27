@@ -1,6 +1,6 @@
 # Ourday — Supabase 스키마 & 정책 정리
 
-> 마지막 업데이트: 2026-04-21 (v2)  
+> 마지막 업데이트: 2026-04-27 (v3)  
 > 총 13개 테이블 · **13개 전부 활성** · 보류 없음
 
 ---
@@ -27,6 +27,7 @@
 | wedding_type | text | hall / hotel / outdoor / small |
 | total_budget | integer | 총 예산 (만원 단위) |
 | wedding_region | text | 결혼식 지역 |
+| venue_tour_checked | jsonb | 예식장 투어 체크 상태 (timeline 투어 섹션에서 사용) |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
@@ -58,6 +59,7 @@ create policy "커플 멤버만 수정" on couples
 | role | text | groom / bride |
 | couple_id | uuid | couples(id) 참조 (nullable, 연동 전) |
 | email | text | 이메일 (표시용) |
+| onboarding_dismissed | boolean | 대시보드 온보딩 배너 닫기 여부 (default false) |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
@@ -84,13 +86,16 @@ create policy "같은 커플 파트너 조회" on users
 | id | uuid PK | |
 | couple_id | uuid | couples(id) 참조, cascade delete |
 | title | text NOT NULL | 항목명 |
-| due_months_before | numeric | 결혼식 N개월 전 |
+| due_months_before | numeric | 결혼식 N개월 전 (period 모드) |
+| due_date | date | 직접 지정 날짜 (date 모드, due_months_before 대신 사용) |
 | assigned_to | text | groom / bride / both |
 | is_done | boolean | 완료 여부 (default false) |
 | memo | text | 메모 |
 | time_period | text | 시기 구분 (UI 필터용) |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
+
+> ⚠️ **due_date vs due_months_before**: 둘 중 하나만 사용. `due_date`가 있으면 date 모드 (절대 날짜), 없으면 `due_months_before`로 결혼일 기준 계산.
 
 **RLS**: 같은 couple_id 커플만
 ```sql
@@ -442,6 +447,31 @@ RLS를 우회하지 않고 서버 API Route(`/api/rsvp`)에서 `SUPABASE_SERVICE
 
 ### 남은 것
 - [ ] `rsvp_responses.message` 컬럼 — DB에서 DROP 해도 됨 (항상 null, 앱에서 미사용)
+
+---
+
+## ⚠️ select 컬럼 변경 시 주의사항 (2026-04-27 사고 기록)
+
+### 발생한 버그
+`select('*')` → 명시적 컬럼 리스트로 최적화하는 과정에서 **존재하지 않는 컬럼을 포함**시켜 Supabase 쿼리 에러 발생.
+
+```js
+// ❌ 잘못된 코드 — groom_name, bride_name은 invitations 테이블 컬럼
+supabase.from('couples').select('id, wedding_date, groom_name, bride_name, total_budget')
+// → PostgreSQL ERROR: column "groom_name" does not exist
+```
+
+### 근본 원인
+1. JSX에 `couple?.groom_name` 참조가 있었음 → 해당 컬럼이 `couples` 테이블에 있다고 **잘못 추론**
+2. 실제로 `groom_name`, `bride_name`은 `invitations` 테이블 컬럼
+3. 기존 `select('*')` 는 없는 컬럼을 요청하면 에러를 내지 않고(컬럼 자체가 없으면 그냥 반환 안 함), `couple?.groom_name`은 `undefined`로 처리되어 조용히 UI가 렌더링 안 됨
+4. 명시적 select로 바꾸자 Supabase가 에러 반환 → 전체 페이지 에러 상태
+
+### 재발 방지 규칙
+- **`select('*')` → 명시적 컬럼 변경 전에 반드시 이 문서(SUPABASE.md) 대조**
+- JSX에서 `obj.컬럼명` 패턴이 있다고 해서 그 컬럼이 해당 테이블에 있다고 단정 금지
+- 확신이 없으면 `select('*')` 유지 (성능 최적화보다 정확성 우선)
+- 새 컬럼 추가 시 **즉시 이 문서 업데이트**
 
 ### Supabase Storage
 - `guest-photos` 버킷: 하객 업로드 사진 저장
