@@ -1,11 +1,43 @@
 # MANUAL_TASKS.md — 사람이 직접 해야 하는 작업 목록
 
 > Claude가 자동화할 수 없는 작업들. 출시 전 반드시 완료할 것.
-> 마지막 업데이트: 2026-04-23
+> 마지막 업데이트: 2026-04-27
 
 ---
 
 ## 🔴 CRITICAL — 출시 전 필수
+
+### MT-005 · Sentry DSN 등록 (2026-04-27 추가)
+**코드 준비**: `@sentry/nextjs` 설치 완료, 설정 파일 3개 생성됨  
+**남은 것**: DSN만 등록하면 즉시 활성화
+
+**절차**:
+1. https://sentry.io 가입 (무료 플랜으로 충분)
+2. **New Project** → Platform: **Next.js** → 프로젝트명: `ourday`
+3. 생성 후 나오는 DSN 값 복사 (형식: `https://xxxxx@oyyy.ingest.sentry.io/zzzzz`)
+4. Vercel Dashboard → Settings → Environment Variables:
+   - Key: `NEXT_PUBLIC_SENTRY_DSN`
+   - Value: 복사한 DSN
+   - Environment: Production + Preview
+5. (선택) 소스맵 업로드를 위해:
+   - Sentry → Settings → Auth Tokens → 새 토큰 생성
+   - Vercel에 `SENTRY_AUTH_TOKEN` 추가
+6. `git push` → 배포 후 Sentry Issues 탭에서 에러 수신 확인
+
+**확인 방법**: 배포 후 의도적으로 존재하지 않는 페이지 접근 → Sentry에 이벤트 수신되면 성공
+
+---
+
+### MT-006 · `rsvp_responses.message` 컬럼 DROP
+**현재 상태**: 항상 NULL (RSVP 폼에서 제거됨, 방명록으로 통합)  
+**방법**: Supabase Dashboard → Table Editor → rsvp_responses → message 컬럼 삭제  
+또는 SQL 에디터에서:
+```sql
+alter table rsvp_responses drop column if exists message;
+```
+**주의**: 이미 수집된 데이터 없으므로 안전하게 DROP 가능
+
+---
 
 ### MT-001 · assetlinks.json — 프로덕션 SHA-256 지문 추가
 **파일**: `public/.well-known/assetlinks.json`

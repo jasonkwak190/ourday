@@ -201,7 +201,7 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 
 ---
 
-## TODO 체크리스트 (2026-04-24 기준)
+## TODO 체크리스트 (2026-04-27 기준)
 
 > 완료된 항목 ✅ / 진행 중 🔄 / 미착수 ⬜
 
@@ -246,9 +246,29 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [ ] 오프라인 지원 (Service Worker 캐시)
 - [ ] 좌석 배치도
 
+### 🛡️ 보안 / 코드 품질 (2026-04-27 추가)
+
+- [x] CSP (Content-Security-Policy) 헤더 추가 — next.config.js
+- [x] Sentry 에러 모니터링 설치 — client/server/edge 분리 설정
+- [x] 에러 바운더리 — `app/error.js` + `app/global-error.js`
+- [x] guestbook GET rate limit 누락 → 추가 (60req/min)
+- [x] API Route 인증 전수 조사 — 이상 없음 확인
+- [x] Realtime 구독 클린업 전수 조사 — 전 채널 removeChannel 확인
+- [x] useCouple 훅 공통화 (dashboard/timeline/budget/decisions/guests/notes)
+- [x] select('*') → 명시적 컬럼 최적화 + LRU 캐시
+- [x] SUPABASE.md 누락 컬럼 보완 + 버그 사고 기록
+- [ ] **Sentry DSN 등록** — sentry.io 프로젝트 생성 → `NEXT_PUBLIC_SENTRY_DSN` Vercel 환경변수 추가 (수동)
+- [ ] 입력값 서버 검증 강화 — API Route name/message 길이·타입 체크
+- [ ] 번들 사이즈 분석 — `@next/bundle-analyzer` 측정 후 최적화
+- [ ] Lighthouse 측정 — LCP/CLS/INP 실측 (프로덕션 URL 기준)
+- [ ] 접근성(a11y) 점검 — 아이콘 버튼 aria-label, 색상 대비율 WCAG AA
+- [ ] `rsvp_responses.message` 컬럼 DB에서 DROP (Supabase 대시보드 수동)
+
 ### 🚀 출시 준비
 
 - [ ] Google Play 개발자 계정 등록 ($25, 수동)
 - [ ] App Store 개발자 계정 등록 ($99/년, 수동)
 - [ ] 실기기 최종 테스트 (Android + iOS)
 - [ ] 개인정보처리방침 법적 검토
+- [ ] Google Play Console 데이터 보안 양식 작성 (MANUAL_TASKS.md MT-004 참조)
+- [ ] assetlinks.json 프로덕션 SHA-256 지문 추가 (MANUAL_TASKS.md MT-001 참조)

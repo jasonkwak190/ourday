@@ -1,6 +1,6 @@
 # CHECKPOINT.md — Ourday 개발 현황
 
-> 마지막 업데이트: 2026-04-21
+> 마지막 업데이트: 2026-04-27
 
 ---
 
@@ -123,17 +123,51 @@ npx cap sync          # 네이티브 플러그인 변경 시에만 필요
 
 ---
 
+## 🛠️ 2026-04-27 작업 내역
+
+### 코드 최적화
+- `lib/useCouple.js` 공통 훅 생성 — 10개 페이지 세션 보일러플레이트 제거
+- dashboard/timeline/budget/decisions/guests/notes `useCouple` 적용
+- `select('*')` → 명시적 컬럼 리스트로 교체 (불필요 데이터 전송 감소)
+- dashboard N+1 쿼리 개선 (guestbook 비동기 분리)
+- timeline `filterItems/doneCount` useMemo 적용
+- notes 링크 프리뷰 캐시 무제한 Map → LRU(50개) 교체
+
+### 보안 강화
+- CSP 헤더 추가 (script/style/font/connect/img/frame-src 명시)
+- Sentry 설치 — `@sentry/nextjs@10.50.0` (client/server/edge 분리)
+- `app/error.js` + `app/global-error.js` 에러 바운더리
+- guestbook GET rate limit 추가 (60req/min)
+- `app/api/invitation/cover` + `photo` 소유권 검증 추가
+
+### 버그 수정
+- dashboard `couples` select에 존재하지 않는 `groom_name/bride_name` 포함 → 제거
+- SUPABASE.md 누락 컬럼 3개 추가 (`venue_tour_checked`, `due_date`, `onboarding_dismissed`)
+- 청첩장 커버 날짜 timezone 버그 수정
+- 정보 공유란 "신랑 신랑" 중복 레이블 버그 수정
+- 링크 미리보기 썸네일 referrerPolicy 누락 수정
+
+### OAuth
+- Google OAuth 가입 시 `users` 테이블 stub 생성 DB 트리거 추가
+
+---
+
 ## 🔴 남은 작업
 
 | 항목 | 우선순위 | 비고 |
 |------|----------|------|
+| **Sentry DSN 등록** | 🔴 출시 전 | sentry.io 프로젝트 → NEXT_PUBLIC_SENTRY_DSN |
+| **입력값 서버 검증** | 🔴 출시 전 | API Route 길이·타입 체크 |
+| **번들 사이즈 분석** | 🟠 | bundle-analyzer 측정 |
+| **Lighthouse 측정** | 🟠 | LCP/CLS/INP 프로덕션 기준 |
+| **a11y 점검** | 🟠 | aria-label, 색상 대비율 WCAG AA |
 | Google Play 개발자 계정 등록 | 🔴 출시 전 | $25 일회성 |
+| App Store 개발자 계정 등록 | 🔴 출시 전 | $99/년 |
 | Google OAuth Supabase 설정 | 🟡 | Supabase → Auth → Providers |
 | 카카오 OAuth Supabase 설정 | 🟡 | developers.kakao.com |
-| 앱 아이콘 재디자인 | 🟡 나중에 | 현재 링 디자인, 추후 수정 예정 |
 | 푸시 알림 | 🟢 다음 | D-day·할일 리마인더 |
 | 오프라인 지원 | 🟢 다음 | Service Worker 캐시 |
-| 카카오톡 공유 버튼 | 🟢 다음 | 청첩장 공유용 |
+| `rsvp_responses.message` DROP | 🟢 | Supabase 대시보드 수동 |
 
 ---
 
