@@ -67,28 +67,41 @@ function InvitationCover({ inv, onOpen }) {
 
       {/* 탭 힌트 */}
       <div style={{
-        position: 'absolute', bottom: 48,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-        animation: 'tap-hint 2s ease-in-out infinite',
+        position: 'absolute', bottom: 40,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+        animation: 'tap-hint 1.8s ease-in-out infinite',
       }}>
-        {/* 위 방향 화살표 3줄 */}
-        <svg width="20" height="28" viewBox="0 0 20 28" fill="none">
-          <polyline points="2,20 10,12 18,20" stroke="rgba(201,169,110,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <polyline points="2,13 10,5 18,13"  stroke="rgba(201,169,110,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          <polyline points="2,6  10,-2 18,6"  stroke="rgba(201,169,110,1.0)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        {/* 위 방향 화살표 */}
+        <svg width="28" height="18" viewBox="0 0 28 18" fill="none">
+          <polyline points="2,16 14,4 26,16" stroke="#C9A96E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
-        <p style={{
-          fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13,
-          color: 'rgba(201,169,110,0.9)', letterSpacing: '0.12em', margin: 0,
+        {/* 알약 버튼 형태 */}
+        <div style={{
+          backgroundColor: 'rgba(201,169,110,0.18)',
+          border: '1.5px solid rgba(201,169,110,0.7)',
+          borderRadius: 99,
+          padding: '10px 24px',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
         }}>
-          tap to open
-        </p>
+          <p style={{
+            fontFamily: "'Noto Serif KR', serif", fontSize: 15, fontWeight: 500,
+            color: '#C9A96E', letterSpacing: '0.04em', margin: 0,
+          }}>
+            눌러서 열기
+          </p>
+          <p style={{
+            fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 11,
+            color: 'rgba(201,169,110,0.7)', letterSpacing: '0.1em', margin: 0,
+          }}>
+            tap to open
+          </p>
+        </div>
       </div>
 
       <style>{`
         @keyframes tap-hint {
-          0%, 100% { opacity: 1; transform: translateY(0); }
-          50% { opacity: 0.6; transform: translateY(-7px); }
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
         }
       `}</style>
     </div>
