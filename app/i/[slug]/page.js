@@ -18,11 +18,13 @@ function InvitationCover({ inv, onOpen }) {
     setTimeout(onOpen, 650);
   }
 
-  // 날짜 포매터 (커버용: YYYY. MM. DD)
+  // 날짜 포매터 (커버용: YYYY · MM · DD, timezone 버그 방지)
   function coverDate(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return `${d.getFullYear()} · ${String(d.getMonth() + 1).padStart(2, '0')} · ${String(d.getDate()).padStart(2, '0')}`;
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    return `${y}년 ${m}월 ${d}일 (${days[date.getDay()]})`;
   }
 
   return (
@@ -60,7 +62,7 @@ function InvitationCover({ inv, onOpen }) {
 
       {/* 날짜 */}
       {inv.wedding_date && (
-        <p style={{ fontFamily: SERIF_EN, fontSize: 12, color: 'rgba(201,169,110,0.55)', letterSpacing: '0.12em', margin: 0 }}>
+        <p style={{ fontFamily: "'Noto Serif KR', serif", fontSize: 18, fontWeight: 600, color: 'rgba(201,169,110,0.95)', letterSpacing: '0.02em', margin: 0 }}>
           {coverDate(inv.wedding_date)}
         </p>
       )}
@@ -90,10 +92,10 @@ function InvitationCover({ inv, onOpen }) {
             눌러서 열기
           </p>
           <p style={{
-            fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 11,
-            color: 'rgba(201,169,110,0.7)', letterSpacing: '0.1em', margin: 0,
+            fontFamily: "'Noto Serif KR', serif", fontSize: 12,
+            color: 'rgba(201,169,110,0.7)', letterSpacing: '0.04em', margin: 0,
           }}>
-            tap to open
+            화면을 터치해 주세요
           </p>
         </div>
       </div>
