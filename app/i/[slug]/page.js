@@ -386,8 +386,8 @@ export default function InvitationViewPage({ params }) {
                   >
                     <GroomSvg selected={side === 'groom'} accent={accentColor} />
                     <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: side === 'groom' ? accentColor : '#8b95a1',
+                      fontSize: 15, fontWeight: 700,
+                      color: '#191f28',
                     }}>
                       {groomName}측
                     </span>
@@ -408,8 +408,8 @@ export default function InvitationViewPage({ params }) {
                   >
                     <BrideSvg selected={side === 'bride'} accent={accentColor} />
                     <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: side === 'bride' ? accentColor : '#8b95a1',
+                      fontSize: 15, fontWeight: 700,
+                      color: '#191f28',
                     }}>
                       {brideName}측
                     </span>
@@ -444,8 +444,8 @@ export default function InvitationViewPage({ params }) {
                       <Check size={18} color="white" strokeWidth={2.5} />
                     </div>
                     <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: attending === true ? '#3182f6' : '#8b95a1',
+                      fontSize: 15, fontWeight: 700,
+                      color: '#191f28',
                     }}>
                       참석할게요
                     </span>
@@ -473,8 +473,8 @@ export default function InvitationViewPage({ params }) {
                       <X size={18} color="white" strokeWidth={2.5} />
                     </div>
                     <span style={{
-                      fontSize: 13, fontWeight: 700,
-                      color: attending === false ? '#8b95a1' : '#b0b8c1',
+                      fontSize: 15, fontWeight: 700,
+                      color: '#191f28',
                     }}>
                       참석이 어려워요
                     </span>
@@ -582,14 +582,14 @@ export default function InvitationViewPage({ params }) {
                     padding: '14px 16px', border: '1px solid var(--rule, #e8e2d9)',
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
-                      <p style={{ fontFamily: "'Noto Serif KR', serif", fontWeight: 500, fontSize: 13, color: 'var(--ink, #1a1613)', margin: 0 }}>
+                      <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: '#191f28', margin: 0 }}>
                         {entry.name}
                       </p>
-                      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 10, color: 'var(--champagne-2, #b0935a)', margin: 0, letterSpacing: '0.04em' }}>
+                      <p style={{ fontFamily: FONT, fontSize: 12, color: '#8b95a1', margin: 0 }}>
                         {timeAgo(entry.created_at)}
                       </p>
                     </div>
-                    <p style={{ fontFamily: "'Noto Serif KR', serif", fontSize: 13, color: 'var(--ink-2, #3d3530)', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
+                    <p style={{ fontFamily: FONT, fontSize: 14, color: '#4e5968', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                       {entry.message}
                     </p>
                   </div>
@@ -619,14 +619,14 @@ function FormCard({ children }) {
 function FieldLabel({ children, required, optional }) {
   return (
     <p style={{
-      fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic',
-      fontSize: 11, color: 'var(--champagne-2, #b0935a)', letterSpacing: '0.06em',
+      fontFamily: FONT, fontStyle: 'normal',
+      fontSize: 15, fontWeight: 700, color: '#191f28',
       marginBottom: 10, margin: '0 0 10px',
       display: 'flex', alignItems: 'center', gap: 4,
     }}>
       {children}
-      {required && <span style={{ fontFamily: 'inherit', fontStyle: 'normal', color: 'var(--clay, #c4617a)', fontSize: 9 }}>*</span>}
-      {optional && <span style={{ fontFamily: 'inherit', fontStyle: 'normal', color: '#c9d1d9', fontSize: 9 }}>opt</span>}
+      {required && <span style={{ color: '#ff4d4f', fontSize: 13, lineHeight: 1 }}>*</span>}
+      {optional && <span style={{ color: '#b0b8c1', fontSize: 12, fontWeight: 400 }}>(선택)</span>}
     </p>
   );
 }
@@ -634,9 +634,9 @@ function FieldLabel({ children, required, optional }) {
 function Divider({ label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '28px 0 20px' }}>
-      <div style={{ flex: 1, height: 1, backgroundColor: 'var(--rule-strong, #e5e8eb)' }} />
-      <p style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: 'var(--champagne-2, #b0935a)', letterSpacing: '0.08em', margin: 0 }}>· {label} ·</p>
-      <div style={{ flex: 1, height: 1, backgroundColor: 'var(--rule-strong, #e5e8eb)' }} />
+      <div style={{ flex: 1, height: 1, backgroundColor: '#e5e8eb' }} />
+      <p style={{ fontFamily: FONT, fontSize: 14, fontWeight: 700, color: '#191f28', letterSpacing: '0.02em', margin: 0, whiteSpace: 'nowrap' }}>{label}</p>
+      <div style={{ flex: 1, height: 1, backgroundColor: '#e5e8eb' }} />
     </div>
   );
 }
