@@ -90,7 +90,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
           <Heart size={16} color="#c9d1d9" fill="#c9d1d9" />
           <div style={{ height: 1, flex: 1, backgroundColor: '#e5e8eb' }} />
         </div>
-        <p style={{ fontSize: 13, letterSpacing: '0.15em', color: '#8b95a1', marginBottom: 20, textTransform: 'uppercase' }}>
+        <p style={{ fontSize: 13, letterSpacing: '0.15em', color: '#4e5968', marginBottom: 20, textTransform: 'uppercase', fontWeight: 600 }}>
           Wedding Invitation
         </p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, marginBottom: 24 }}>
@@ -118,7 +118,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       )}
       {(inv.venue_name || inv.venue_address) && (
         <div style={{ padding: '32px', borderBottom: '1px solid #f2f4f6' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#8b95a1', marginBottom: 12, textTransform: 'uppercase' }}>Location</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.1em', color: '#4e5968', marginBottom: 12, textTransform: 'uppercase', fontWeight: 600 }}>Location</p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#191f28', margin: '0 0 6px' }}>{inv.venue_name}</p>}
           {inv.venue_address && (
             <p style={{ fontSize: 13, color: '#8b95a1', margin: 0, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
@@ -129,7 +129,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
         <div style={{ padding: '28px 32px', borderBottom: '1px solid #f2f4f6' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#8b95a1', marginBottom: 14, textTransform: 'uppercase' }}>Family</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.1em', color: '#4e5968', marginBottom: 14, textTransform: 'uppercase', fontWeight: 600 }}>Family</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {(inv.groom_father || inv.groom_mother) && (
               <p style={{ fontSize: 13, color: '#4e5968', margin: 0 }}>
@@ -148,7 +148,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       )}
       {inv.notice && (
         <div style={{ padding: '28px 32px', borderBottom: '1px solid #f2f4f6' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.1em', color: '#8b95a1', marginBottom: 12, textTransform: 'uppercase' }}>Notice</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.1em', color: '#4e5968', marginBottom: 12, textTransform: 'uppercase', fontWeight: 600 }}>Notice</p>
           <p style={{ fontSize: 14, lineHeight: 2, color: '#4e5968', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.notice}</p>
         </div>
       )}
@@ -165,7 +165,7 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
     <div style={{ minHeight: '100dvh', backgroundColor: '#fdf8f0', fontFamily: FONT, maxWidth: 430, margin: '0 auto' }}>
       <div style={{ textAlign: 'center', padding: '56px 32px 40px' }}>
         <p style={{ fontSize: 28, letterSpacing: '0.08em', marginBottom: 8 }}>✦ ✦ ✦</p>
-        <p style={{ fontSize: 11, letterSpacing: '0.2em', color: '#9a8068', marginBottom: 32, textTransform: 'uppercase' }}>
+        <p style={{ fontSize: 12, letterSpacing: '0.2em', color: '#6b4c30', marginBottom: 32, textTransform: 'uppercase', fontWeight: 600 }}>
           Marriage Invitation
         </p>
         <div style={{ marginBottom: 24 }}>
@@ -184,14 +184,14 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       )}
       {(inv.venue_name || inv.venue_address) && (
         <div style={{ margin: '0 24px 24px', padding: '24px', backgroundColor: 'white', borderRadius: 16, border: '1px solid #e8ddd0' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.15em', color: '#9a8068', marginBottom: 10, textTransform: 'uppercase' }}>예 식 장</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.15em', color: '#6b4c30', marginBottom: 10, textTransform: 'uppercase', fontWeight: 600 }}>예 식 장</p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d2b1f', margin: '0 0 6px' }}>{inv.venue_name}</p>}
           {inv.venue_address && <p style={{ fontSize: 13, color: '#9a8068', margin: 0 }}>{inv.venue_address}</p>}
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
         <div style={{ margin: '0 24px 24px', padding: '24px', backgroundColor: 'white', borderRadius: 16, border: '1px solid #e8ddd0' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.15em', color: '#9a8068', marginBottom: 14, textTransform: 'uppercase' }}>혼 주</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.15em', color: '#6b4c30', marginBottom: 14, textTransform: 'uppercase', fontWeight: 600 }}>혼 주</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {(inv.groom_father || inv.groom_mother) && (
               <p style={{ fontSize: 13, color: '#5c3d2e', margin: 0 }}>
@@ -210,7 +210,7 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
       )}
       {inv.notice && (
         <div style={{ margin: '0 24px 24px', padding: '24px', backgroundColor: 'rgba(201,168,130,0.08)', borderRadius: 16, border: '1px solid rgba(201,168,130,0.3)' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.15em', color: '#9a8068', marginBottom: 10, textTransform: 'uppercase' }}>교통편·공지</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.15em', color: '#6b4c30', marginBottom: 10, textTransform: 'uppercase', fontWeight: 600 }}>교통편·공지</p>
           <p style={{ fontSize: 14, lineHeight: 2, color: '#5c3d2e', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.notice}</p>
         </div>
       )}
@@ -229,7 +229,7 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
         <div style={{ fontSize: 40, marginBottom: 4, lineHeight: 1, display: 'flex', justifyContent: 'center' }}>
           <Icon name="floret" size={40} color="#d4879a" />
         </div>
-        <p style={{ fontSize: 11, letterSpacing: '0.18em', color: '#d4879a', marginBottom: 28, textTransform: 'uppercase' }}>With Love</p>
+        <p style={{ fontSize: 12, letterSpacing: '0.18em', color: '#b05070', marginBottom: 28, textTransform: 'uppercase', fontWeight: 600 }}>With Love</p>
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 14, backgroundColor: 'white', borderRadius: 99, padding: '12px 28px', boxShadow: '0 4px 20px rgba(212,135,154,0.15)', marginBottom: 20 }}>
             <p style={{ fontSize: 20, fontWeight: 700, color: '#3d1a25', margin: 0 }}>{inv.groom_name || '신랑'}</p>
@@ -252,8 +252,8 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
       )}
       {(inv.venue_name || inv.venue_address) && (
         <div style={{ margin: '0 20px 20px', padding: '24px', backgroundColor: 'white', borderRadius: 20, boxShadow: '0 2px 16px rgba(212,135,154,0.1)', border: '1px solid rgba(212,135,154,0.15)' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#d4879a', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
-            <MapPin size={11} color="#d4879a" />예 식 장
+          <p style={{ fontSize: 12, letterSpacing: '0.12em', color: '#b05070', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4, fontWeight: 600 }}>
+            <MapPin size={12} color="#b05070" />예 식 장
           </p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d1a25', margin: '0 0 6px' }}>{inv.venue_name}</p>}
           {inv.venue_address && <p style={{ fontSize: 13, color: '#9c7080', margin: 0 }}>{inv.venue_address}</p>}
@@ -261,7 +261,7 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
         <div style={{ margin: '0 20px 20px', padding: '24px', backgroundColor: 'white', borderRadius: 20, boxShadow: '0 2px 16px rgba(212,135,154,0.1)', border: '1px solid rgba(212,135,154,0.15)' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#d4879a', marginBottom: 14 }}>혼 주</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.12em', color: '#b05070', marginBottom: 14, fontWeight: 600 }}>혼 주</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {(inv.groom_father || inv.groom_mother) && (
               <p style={{ fontSize: 13, color: '#6b3549', margin: 0 }}>
@@ -280,7 +280,7 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
       )}
       {inv.notice && (
         <div style={{ margin: '0 20px 20px', padding: '24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,240,245,0.9))', borderRadius: 20, boxShadow: '0 2px 16px rgba(212,135,154,0.1)', border: '1px solid rgba(212,135,154,0.15)' }}>
-          <p style={{ fontSize: 11, letterSpacing: '0.12em', color: '#d4879a', marginBottom: 10 }}>교통편·공지</p>
+          <p style={{ fontSize: 12, letterSpacing: '0.12em', color: '#b05070', marginBottom: 10, fontWeight: 600 }}>교통편·공지</p>
           <p style={{ fontSize: 14, lineHeight: 2, color: '#6b3549', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.notice}</p>
         </div>
       )}
@@ -473,7 +473,7 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
         </div>
 
         {/* 키커 */}
-        <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 11, color: '#b0935a', letterSpacing: '0.16em', marginBottom: 28, margin: '0 0 28px' }}>
+        <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#7a5520', letterSpacing: '0.16em', marginBottom: 28, margin: '0 0 28px' }}>
           · Wedding Invitation ·
         </p>
 
@@ -504,7 +504,7 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
           </p>
         )}
         {inv.wedding_time && (
-          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#b0935a', margin: 0, letterSpacing: '0.04em' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 14, color: '#7a5520', margin: 0, letterSpacing: '0.04em' }}>
             {inv.wedding_time}
           </p>
         )}
@@ -512,8 +512,8 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
 
       {/* ── 메시지 ── */}
       {inv.message && (
-        <div style={{ margin: '0 24px 28px', padding: '28px 24px', backgroundColor: '#F5F0E8', borderRadius: 4, textAlign: 'center', border: '1px solid rgba(201,169,110,0.22)' }}>
-          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 16px' }}>· message ·</p>
+        <div style={{ margin: '0 24px 28px', padding: '28px 24px', backgroundColor: '#F5F0E8', borderRadius: 4, textAlign: 'center', border: '1px solid rgba(122,85,32,0.25)' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#7a5520', letterSpacing: '0.14em', margin: '0 0 16px' }}>· message ·</p>
           <p style={{ fontFamily: SERIF_KO, fontSize: 14.5, lineHeight: 2.1, color: '#3d3530', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>
             {inv.message}
           </p>
@@ -522,21 +522,21 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
 
       {/* ── 혼주 성함 ── */}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
-        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: '#F5F0E8', borderRadius: 4, border: '1px solid rgba(201,169,110,0.22)' }}>
-          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 16px', textAlign: 'center' }}>· family ·</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: '#F5F0E8', borderRadius: 4, border: '1px solid rgba(122,85,32,0.25)' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#7a5520', letterSpacing: '0.14em', margin: '0 0 16px', textAlign: 'center' }}>· family ·</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {(inv.groom_father || inv.groom_mother) && (
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <p style={{ fontFamily: SERIF_KO, fontSize: 11, color: '#b0935a', margin: 0, minWidth: 44 }}>신랑 측</p>
-                <p style={{ fontFamily: SERIF_KO, fontSize: 14, color: '#3d3530', margin: 0, lineHeight: 1.7 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                <p style={{ fontFamily: SERIF_KO, fontSize: 12, color: '#9a7040', margin: 0, minWidth: 44, flexShrink: 0 }}>신랑 측</p>
+                <p style={{ fontFamily: SERIF_KO, fontSize: 15, color: '#3d3530', margin: 0, lineHeight: 1.7 }}>
                   {[inv.groom_father, inv.groom_mother].filter(Boolean).join(' · ')}
                 </p>
               </div>
             )}
             {(inv.bride_father || inv.bride_mother) && (
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                <p style={{ fontFamily: SERIF_KO, fontSize: 11, color: '#b0935a', margin: 0, minWidth: 44 }}>신부 측</p>
-                <p style={{ fontFamily: SERIF_KO, fontSize: 14, color: '#3d3530', margin: 0, lineHeight: 1.7 }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
+                <p style={{ fontFamily: SERIF_KO, fontSize: 12, color: '#9a7040', margin: 0, minWidth: 44, flexShrink: 0 }}>신부 측</p>
+                <p style={{ fontFamily: SERIF_KO, fontSize: 15, color: '#3d3530', margin: 0, lineHeight: 1.7 }}>
                   {[inv.bride_father, inv.bride_mother].filter(Boolean).join(' · ')}
                 </p>
               </div>
@@ -547,14 +547,14 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
 
       {/* ── 예식장 ── */}
       {(inv.venue_name || inv.venue_address) && (
-        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: 'white', borderRadius: 4, border: '1px solid rgba(201,169,110,0.28)' }}>
-          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 12px' }}>· venue ·</p>
+        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: 'white', borderRadius: 4, border: '1px solid rgba(122,85,32,0.3)' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#7a5520', letterSpacing: '0.14em', margin: '0 0 12px' }}>· venue ·</p>
           {inv.venue_name && (
             <p style={{ fontFamily: SERIF_KO, fontSize: 17, fontWeight: 500, color: '#1A1613', margin: '0 0 6px' }}>{inv.venue_name}</p>
           )}
           {inv.venue_address && (
-            <p style={{ fontFamily: SERIF_EN, fontSize: 12, color: '#b0935a', margin: 0, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
-              <MapPin size={11} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
+            <p style={{ fontFamily: SERIF_EN, fontSize: 13, color: '#7a5520', margin: 0, display: 'flex', alignItems: 'flex-start', gap: 4 }}>
+              <MapPin size={12} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
             </p>
           )}
         </div>
@@ -562,9 +562,9 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
 
       {/* ── 교통편·공지 ── */}
       {inv.notice && (
-        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: 'white', borderRadius: 4, border: '1px solid rgba(201,169,110,0.28)' }}>
-          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 10, color: '#b0935a', letterSpacing: '0.12em', margin: '0 0 12px' }}>· notice ·</p>
-          <p style={{ fontFamily: SERIF_KO, fontSize: 13, lineHeight: 2, color: '#4d4540', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>
+        <div style={{ margin: '0 24px 28px', padding: '24px', backgroundColor: 'white', borderRadius: 4, border: '1px solid rgba(122,85,32,0.3)' }}>
+          <p style={{ fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13, color: '#7a5520', letterSpacing: '0.14em', margin: '0 0 12px' }}>· notice ·</p>
+          <p style={{ fontFamily: SERIF_KO, fontSize: 14, lineHeight: 2, color: '#3d3530', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>
             {inv.notice}
           </p>
         </div>
