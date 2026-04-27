@@ -69,6 +69,10 @@ const SECTIONS = [
     ],
   },
   {
+    key: 'photos', label: '사진 슬라이드', icon: 'camera', required: false,
+    fields: [],
+  },
+  {
     key: 'cover', label: '커버 사진', icon: 'camera', required: false,
     fields: [
       { key: 'cover_image_url', label: '사진 URL', type: 'url',
@@ -80,7 +84,10 @@ const SECTIONS = [
 // 섹션이 "활성화됐다고 볼 수 있는" 기본값 계산 (기존 데이터 기반)
 function inferEnabledSections(existing) {
   return SECTIONS
-    .filter(s => s.required || (existing && s.fields.some(f => existing[f.key])))
+    .filter(s => s.required || (existing && (
+      s.fields.some(f => existing[f.key]) ||
+      (s.key === 'photos' && Array.isArray(existing.photos) && existing.photos.length > 0)
+    )))
     .map(s => s.key);
 }
 
@@ -173,7 +180,10 @@ export default function InvitationTab({ coupleId }) {
   const [inv,              setInv]              = useState(null);
   const [uploadingCover,   setUploadingCover]   = useState(false);
   const [coverError,       setCoverError]       = useState('');
+  const [uploadingPhoto,   setUploadingPhoto]   = useState(false);
+  const [photoError,       setPhotoError]       = useState('');
   const coverInputRef = useRef(null);
+  const photoInputRef = useRef(null);
   const [enabledSections,  setEnabledSections]  = useState(
     SECTIONS.filter(s => s.required).map(s => s.key)
   );
@@ -187,6 +197,7 @@ export default function InvitationTab({ coupleId }) {
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
     notice: '',
     cover_image_url: '',
+    photos: [],
   });
   const [accountNames, setAccountNames] = useState({ groom: '', bride: '' });
 
@@ -232,6 +243,7 @@ export default function InvitationTab({ coupleId }) {
           message:         existing.message       || '',
           notice:          existing.notice        || '',
           cover_image_url: existing.cover_image_url || '',
+          photos:          Array.isArray(existing.photos) ? existing.photos : [],
         };
         setForm(loaded);
         setEnabledSections(inferEnabledSections(loaded));
@@ -326,10 +338,43 @@ export default function InvitationTab({ coupleId }) {
   function removeSection(key) {
     const section = SECTIONS.find(s => s.key === key);
     if (!section || section.required) return;
-    const cleared = {};
-    section.fields.forEach(f => { cleared[f.key] = ''; });
-    setForm(prev => ({ ...prev, ...cleared }));
+    if (key === 'photos') {
+      setForm(prev => ({ ...prev, photos: [] }));
+    } else {
+      const cleared = {};
+      section.fields.forEach(f => { cleared[f.key] = ''; });
+      setForm(prev => ({ ...prev, ...cleared }));
+    }
     setEnabledSections(prev => prev.filter(k => k !== key));
+  }
+
+  // 사진 슬라이드 업로드
+  async function handlePhotoUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file || !coupleId) return;
+    if (form.photos.length >= 10) return;
+    setPhotoError('');
+    setUploadingPhoto(true);
+
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('couple_id', coupleId);
+
+    try {
+      const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) setPhotoError(json.error || '업로드 실패');
+      else setForm(f => ({ ...f, photos: [...f.photos, json.url] }));
+    } catch {
+      setPhotoError('업로드 중 오류가 발생했어요.');
+    } finally {
+      setUploadingPhoto(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  }
+
+  function removePhoto(index) {
+    setForm(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== index) }));
   }
 
   // 비활성 선택 섹션 목록
@@ -417,8 +462,70 @@ export default function InvitationTab({ coupleId }) {
             )}
           </div>
 
-          {/* 커버 사진: 파일 업로드 UI */}
-          {section.key === 'cover' ? (
+          {/* 사진 슬라이드 UI */}
+          {section.key === 'photos' ? (
+            <div>
+              <input
+                ref={photoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                style={{ display: 'none' }}
+                onChange={handlePhotoUpload}
+              />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+                {form.photos.map((url, i) => (
+                  <div key={i} style={{ position: 'relative', aspectRatio: '3/4', borderRadius: 10, overflow: 'hidden' }}>
+                    <img src={url} alt={`사진 ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <button
+                      onClick={() => removePhoto(i)}
+                      style={{
+                        position: 'absolute', top: 4, right: 4,
+                        width: 22, height: 22, borderRadius: '50%',
+                        backgroundColor: 'rgba(0,0,0,0.55)',
+                        border: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}
+                    >
+                      <X size={11} color="white" />
+                    </button>
+                    <div style={{
+                      position: 'absolute', bottom: 4, left: 0, right: 0,
+                      textAlign: 'center', fontSize: 10, color: 'rgba(255,255,255,0.7)',
+                    }}>
+                      {i + 1} / {form.photos.length}
+                    </div>
+                  </div>
+                ))}
+                {form.photos.length < 10 && (
+                  <button
+                    onClick={() => photoInputRef.current?.click()}
+                    disabled={uploadingPhoto}
+                    style={{
+                      aspectRatio: '3/4', borderRadius: 10,
+                      border: '2px dashed var(--toss-border)',
+                      backgroundColor: 'var(--toss-bg)',
+                      cursor: uploadingPhoto ? 'not-allowed' : 'pointer',
+                      display: 'flex', flexDirection: 'column',
+                      alignItems: 'center', justifyContent: 'center', gap: 6,
+                    }}
+                  >
+                    {uploadingPhoto
+                      ? <Loader size={20} color="var(--champagne)" style={{ animation: 'spin 1s linear infinite' }} />
+                      : <Plus size={22} color="var(--toss-text-tertiary)" />
+                    }
+                    <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', margin: 0 }}>
+                      {uploadingPhoto ? '업로드 중' : '추가'}
+                    </p>
+                  </button>
+                )}
+              </div>
+              {photoError && <p style={{ fontSize: 12, color: 'var(--toss-red)', marginTop: 6 }}>{photoError}</p>}
+              <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', marginTop: 8, lineHeight: 1.5 }}>
+                최대 10장 · jpg/png/webp · 10MB 이하 · 좌우로 넘겨볼 수 있어요
+              </p>
+              <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+            </div>
+          ) : section.key === 'cover' ? (
             <div>
               {/* hidden file input */}
               <input

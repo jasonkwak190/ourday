@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import Icon from '@/components/Icon';
@@ -11,6 +11,63 @@ export function formatDate(dateStr) {
   const d = new Date(dateStr);
   const days = ['일', '월', '화', '수', '목', '금', '토'];
   return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+}
+
+// ─── 사진 슬라이드 캐러셀 ──────────────────────────────────────────────
+function PhotoCarousel({ photos, accentColor = '#C9A96E' }) {
+  const [current, setCurrent] = useState(0);
+  const ref = useRef(null);
+
+  if (!photos?.length) return null;
+
+  function onScroll() {
+    if (!ref.current) return;
+    const idx = Math.round(ref.current.scrollLeft / ref.current.offsetWidth);
+    setCurrent(idx);
+  }
+
+  return (
+    <div>
+      {/* 스크롤 컨테이너 */}
+      <div
+        ref={ref}
+        onScroll={onScroll}
+        style={{
+          display: 'flex',
+          overflowX: 'auto',
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {photos.map((url, i) => (
+          <div key={i} style={{ flexShrink: 0, width: '100%', scrollSnapAlign: 'start' }}>
+            <img
+              src={url}
+              alt={`photo ${i + 1}`}
+              style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        ))}
+      </div>
+      {/* 인디케이터 도트 */}
+      {photos.length > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, padding: '14px 0 4px' }}>
+          {photos.map((_, i) => (
+            <div
+              key={i}
+              style={{
+                width: i === current ? 20 : 6, height: 6, borderRadius: 3,
+                backgroundColor: i === current ? accentColor : 'rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease',
+              }}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── 계좌번호 행 ─────────────────────────────────────────────────────
@@ -111,6 +168,11 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
           </p>
         )}
       </div>
+      {inv.photos?.length > 0 && (
+        <div style={{ borderBottom: '1px solid #f2f4f6' }}>
+          <PhotoCarousel photos={inv.photos} accentColor="#191f28" />
+        </div>
+      )}
       {inv.message && (
         <div style={{ padding: '40px 32px', textAlign: 'center', borderBottom: '1px solid #f2f4f6' }}>
           <p style={{ fontSize: 15, lineHeight: 2, color: '#4e5968', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.message}</p>
@@ -177,6 +239,11 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
         {inv.wedding_date && <p style={{ fontSize: 16, color: '#5c3d2e', fontWeight: 600, margin: 0 }}>{formatDate(inv.wedding_date)}</p>}
         {inv.wedding_time && <p style={{ fontSize: 14, color: '#9a8068', margin: '6px 0 0' }}>{inv.wedding_time}</p>}
       </div>
+      {inv.photos?.length > 0 && (
+        <div style={{ margin: '0 0 24px' }}>
+          <PhotoCarousel photos={inv.photos} accentColor="#7a5c40" />
+        </div>
+      )}
       {inv.message && (
         <div style={{ margin: '0 24px 24px', padding: '28px 24px', backgroundColor: 'rgba(201,168,130,0.12)', borderRadius: 16, textAlign: 'center', border: '1px solid rgba(201,168,130,0.3)' }}>
           <p style={{ fontSize: 15, lineHeight: 2, color: '#5c3d2e', whiteSpace: 'pre-line', wordBreak: 'keep-all', margin: 0 }}>{inv.message}</p>
@@ -240,6 +307,11 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
         {inv.wedding_date && <p style={{ fontSize: 15, color: '#6b3549', fontWeight: 600, margin: '0 0 6px' }}>{formatDate(inv.wedding_date)}</p>}
         {inv.wedding_time && <p style={{ fontSize: 14, color: '#d4879a', margin: 0 }}>{inv.wedding_time}</p>}
       </div>
+      {inv.photos?.length > 0 && (
+        <div style={{ margin: '0 0 20px' }}>
+          <PhotoCarousel photos={inv.photos} accentColor="#c4617a" />
+        </div>
+      )}
       {inv.message && (
         <div style={{ margin: '0 20px 20px', padding: '28px 24px', background: 'linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,240,245,0.9))', borderRadius: 20, textAlign: 'center', boxShadow: '0 2px 16px rgba(212,135,154,0.1)', border: '1px solid rgba(212,135,154,0.15)' }}>
           <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
@@ -509,6 +581,13 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
           </p>
         )}
       </div>
+
+      {/* ── 사진 슬라이드 ── */}
+      {inv.photos?.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <PhotoCarousel photos={inv.photos} accentColor="#C9A96E" />
+        </div>
+      )}
 
       {/* ── 메시지 ── */}
       {inv.message && (
