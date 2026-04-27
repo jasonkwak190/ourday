@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 
 export default function SentryInit() {
   useEffect(() => {
+    console.log('[SentryInit] useEffect fired, DSN:', process.env.NEXT_PUBLIC_SENTRY_DSN ? 'SET' : 'UNDEFINED');
     if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return;
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
