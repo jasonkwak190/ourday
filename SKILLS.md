@@ -342,3 +342,75 @@ Toss Slash의 `@toss/emotion-utils`는 emotion CSS-in-JS 전용 유틸이다.
 - `lucide-react` 아이콘: UI 액션(버튼, 네비)에 사용
 - 이모지: 섹션 타이틀, 카드 아이콘, 상태 표시에 사용
 - 둘을 혼용하지 말 것 (한 섹션은 아이콘 또는 이모지 중 하나로 통일)
+
+---
+
+## ERR-011 · Sentry 클라이언트 SDK가 Turbopack 빌드에서 초기화 안 됨
+
+**증상**
+- `next.config.js`에서 `withSentryConfig`로 감쌌고 `sentry.client.config.js`도 작성했지만,
+  Sentry 대시보드 Issues에 이벤트가 단 하나도 도달하지 않음 ("Get Started" 화면 그대로)
+- 브라우저 콘솔에 Sentry 관련 로그도 전혀 안 찍힘
+- DSN은 Vercel 환경변수에 정상 등록됨
+
+**원인**
+Next.js 15+ 기본 빌더가 **Turbopack**으로 바뀌면서 `withSentryConfig`의 webpack 플러그인이
+`sentry.client.config.js`를 **자동 주입하지 못함**. 결과적으로 클라이언트에서 `Sentry.init()`이
+한 번도 호출되지 않아 모든 이벤트 캡처가 실패한다 (서버 사이드는 `instrumentation.js` 덕에 정상 동작).
+
+useEffect에서 수동으로 `Sentry.init()`을 호출하는 컴포넌트(`SentryInit.js`)도 시도했으나,
+하이드레이션 타이밍 + `withSentryConfig`와의 race condition으로 transport 초기화 실패
+(`TypeError: Failed to fetch`) 발생.
+
+**해결**
+Next.js 15.3+ 공식 경로인 **`instrumentation-client.js`** 파일을 프로젝트 루트에 생성.
+이 파일은 Next.js가 클라이언트 번들에 자동 포함하므로 Turbopack/Webpack 무관하게 동작.
+
+```js
+// instrumentation-client.js (프로젝트 루트)
+import * as Sentry from '@sentry/nextjs';
+
+if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    enabled: process.env.NODE_ENV === 'production',
+    tracesSampleRate: 0.1,
+    // ... 나머지 설정
+  });
+}
+```
+
+**부수 이슈**
+1. **CSP `connect-src`** — Sentry 이벤트 전송 endpoint는 `https://o<orgId>.ingest.us.sentry.io`
+   처럼 **서브도메인** 형태이므로 와일드카드 필요:
+   ```
+   connect-src ... https://*.ingest.us.sentry.io https://*.ingest.sentry.io
+   ```
+   `https://ingest.us.sentry.io`(서브도메인 없이)는 **매칭 안 됨**.
+
+2. **`tunnelRoute`** — `withSentryConfig({ tunnelRoute: '/monitoring' })`는 광고차단기 우회용
+   인데, 빌드 시점 DSN 파싱 이슈 또는 rewrite 설정 문제로 정상 forward 안 되는 경우 있음.
+   CSP 와일드카드만 풀어주면 직접 ingest 가능하므로 **tunnelRoute 없어도 됨**.
+
+3. **`org` slug** — `withSentryConfig`의 `org` 옵션은 sourcemap 업로드에만 사용. Sentry
+   대시보드 URL의 슬러그(`<slug>.sentry.io`)와 일치해야 함. 이벤트 전송에는 영향 없지만
+   소스맵이 안 올라가니 정확히 맞춰둘 것.
+
+**재발 방지 규칙**
+- Next.js 15+ App Router에서 Sentry 클라이언트 init은 **반드시 `instrumentation-client.js`** 사용
+- `sentry.client.config.js`는 Pages Router 잔재 — App Router 프로젝트에서는 만들지 말 것
+- `useEffect` 안에서 `Sentry.init()`을 부르는 수동 핵 금지 (race condition)
+- CSP에 외부 endpoint 추가할 땐 **서브도메인 와일드카드(`https://*.domain.com`) 형태로**
+  넣을 것. 도메인만 적으면 서브도메인 매칭 실패
+- Sentry 디버깅 시 일시적으로 `enabled: true` + `debug: true` + `Sentry.captureMessage` +
+  `Sentry.flush()` 조합으로 단계별 로그 확인 → 어느 단계(init/capture/flush/transport)에서
+  막히는지 빠르게 식별 가능
+
+**참고 파일 구조 (App Router + Turbopack)**
+```
+프로젝트 루트/
+├── instrumentation.js          # 서버 사이드 (Node + Edge runtime 분기)
+├── instrumentation-client.js   # 클라이언트 사이드 (Sentry.init 직접 호출)
+├── sentry.server.config.js     # instrumentation.js가 import
+└── sentry.edge.config.js       # instrumentation.js가 import
+```
