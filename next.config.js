@@ -59,17 +59,16 @@ const nextConfig = {
 };
 
 module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
-  // Sentry 소스맵 업로드 (SENTRY_AUTH_TOKEN 환경변수 설정 시 활성화)
-  silent: true,
   org: 'ourday',
   project: 'ourday-nextjs',
+  silent: true,
   // 소스맵은 프로덕션 빌드에서만 업로드
   sourcemaps: {
     disable: process.env.NODE_ENV !== 'production',
   },
-  // 번들 크기 최소화
-  disableLogger: true,
   hideSourceMaps: true,
-  // 자동 계측 비활성화 (Supabase 쿼리는 직접 계측 안 함)
-  autoInstrumentServerFunctions: false,
+  // v10 방식으로 업데이트
+  webpack: {
+    treeshake: { removeDebugLogging: true },
+  },
 });
