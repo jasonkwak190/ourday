@@ -66,11 +66,20 @@ function InvitationCover({ inv, onOpen }) {
       )}
 
       {/* 탭 힌트 */}
-      <div style={{ position: 'absolute', bottom: 56, textAlign: 'center' }}>
+      <div style={{
+        position: 'absolute', bottom: 48,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        animation: 'tap-hint 2s ease-in-out infinite',
+      }}>
+        {/* 위 방향 화살표 3줄 */}
+        <svg width="20" height="28" viewBox="0 0 20 28" fill="none">
+          <polyline points="2,20 10,12 18,20" stroke="rgba(201,169,110,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points="2,13 10,5 18,13"  stroke="rgba(201,169,110,0.7)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <polyline points="2,6  10,-2 18,6"  stroke="rgba(201,169,110,1.0)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
         <p style={{
-          fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 12,
-          color: 'rgba(201,169,110,0.45)', letterSpacing: '0.08em',
-          animation: 'tap-hint 2.2s ease-in-out infinite',
+          fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 13,
+          color: 'rgba(201,169,110,0.9)', letterSpacing: '0.12em', margin: 0,
         }}>
           tap to open
         </p>
@@ -78,8 +87,8 @@ function InvitationCover({ inv, onOpen }) {
 
       <style>{`
         @keyframes tap-hint {
-          0%, 100% { opacity: 0.45; transform: translateY(0); }
-          50% { opacity: 0.9; transform: translateY(-5px); }
+          0%, 100% { opacity: 1; transform: translateY(0); }
+          50% { opacity: 0.6; transform: translateY(-7px); }
         }
       `}</style>
     </div>
