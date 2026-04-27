@@ -6,7 +6,6 @@ import { useEffect } from 'react';
 export default function SentryInit() {
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_SENTRY_DSN) return;
-    Sentry.captureMessage('[Test] Sentry init check ' + new Date().toISOString());
     Sentry.init({
       dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
       tracesSampleRate: 0.1,
@@ -28,6 +27,8 @@ export default function SentryInit() {
         return event;
       },
     });
+    // 초기화 확인용 테스트 (확인 후 제거)
+    Sentry.captureMessage('[Test] Sentry init check ' + new Date().toISOString());
   }, []);
   return null;
 }
