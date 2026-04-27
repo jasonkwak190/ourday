@@ -19,7 +19,7 @@ const CSP = [
   // 폰트: Google Fonts + JSDelivr
   `font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net`,
   // API 통신: Supabase (REST + Realtime WebSocket)
-  `connect-src 'self' ${SUPABASE_URL} ${SUPABASE_WS} https://t1.kakaocdn.net`,
+  `connect-src 'self' ${SUPABASE_URL} ${SUPABASE_WS} https://t1.kakaocdn.net https://ingest.us.sentry.io https://ingest.sentry.io`,
   // 이미지: 자신 + Supabase Storage + data URI + blob + 외부 OG 이미지 (link preview 썸네일)
   `img-src 'self' ${SUPABASE_URL} data: blob: https:`,
   // 프레임: 카카오 지도 iframe 허용
