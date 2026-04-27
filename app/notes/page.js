@@ -402,8 +402,10 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: align, gap: 2 }}>
       {/* 역할 배지 */}
       <span style={{ fontSize: 10, color: 'var(--toss-text-tertiary)',
-        paddingLeft: isGroom ? 4 : 0, paddingRight: isGroom ? 0 : 4 }}>
-        {bubbleColor.badge} {isGroom ? '신랑' : '신부'}
+        paddingLeft: isGroom ? 4 : 0, paddingRight: isGroom ? 0 : 4,
+        display: 'flex', alignItems: 'center', gap: 3 }}>
+        <Icon name={isGroom ? 'groom' : 'bride'} size={11} color="var(--toss-text-tertiary)" />
+        {isGroom ? '신랑' : '신부'}
       </span>
 
       {/* 말풍선 */}
@@ -486,11 +488,13 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
                     backgroundColor: 'rgba(255,255,255,0.85)' }}>
                     {preview.image && (
                       <img src={preview.image} alt=""
+                        referrerPolicy="no-referrer"
                         style={{ width: '100%', maxHeight: 130, objectFit: 'cover', display: 'block' }}
                         onError={e => { e.target.style.display = 'none'; }} />
                     )}
                     <div style={{ padding: '10px 12px', display: 'flex', alignItems: 'center', gap: 8 }}>
                       <img src={preview.favicon} alt=""
+                        referrerPolicy="no-referrer"
                         style={{ width: 18, height: 18, borderRadius: 4, flexShrink: 0 }}
                         onError={e => { e.target.style.display = 'none'; }} />
                       <div style={{ flex: 1, minWidth: 0 }}>

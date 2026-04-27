@@ -24,11 +24,17 @@ export async function GET(request) {
     return Response.json({ error: 'Invalid URL' }, { status: 400 });
   }
 
+  // 네이버 블로그: 데스크탑 URL → 모바일 URL로 변환 (봇 차단 우회)
+  let fetchUrl = url;
+  if (parsed.hostname === 'blog.naver.com') {
+    fetchUrl = url.replace('://blog.naver.com', '://m.blog.naver.com');
+  }
+
   try {
-    const res = await fetch(url, {
+    const res = await fetch(fetchUrl, {
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; Ourday-LinkPreview/1.0; +https://ourday.kr)',
+          'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
         Accept: 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(6000),
