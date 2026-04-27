@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 const MAX_SIZE = 10 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic']);
@@ -17,12 +18,27 @@ function serviceClient() {
 
 export async function POST(request) {
   try {
+    // ── 인증 + couple_id 소유권 검증 ──────────────────────────
+    const authClient = await createSupabaseServerClient();
+    const { data: { session } } = await authClient.auth.getSession();
+    if (!session) {
+      return NextResponse.json({ error: '로그인이 필요해요.' }, { status: 401 });
+    }
+    const { data: userData } = await authClient
+      .from('users').select('couple_id').eq('id', session.user.id).single();
+    // ──────────────────────────────────────────────────────────
+
     const formData = await request.formData();
     const file     = formData.get('file');
     const coupleId = formData.get('couple_id');
 
     if (!file || !coupleId) {
       return NextResponse.json({ error: '파일과 커플 ID가 필요해요.' }, { status: 400 });
+    }
+
+    // 요청한 couple_id가 실제 본인 커플인지 확인
+    if (!userData?.couple_id || userData.couple_id !== coupleId) {
+      return NextResponse.json({ error: '권한이 없어요.' }, { status: 403 });
     }
 
     const ext   = file.name.split('.').pop()?.toLowerCase() || '';

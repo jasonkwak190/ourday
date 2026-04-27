@@ -1,9 +1,19 @@
 export const dynamic = 'force-dynamic';
 
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+
+// IP당 1분에 최대 20건 (과도한 외부 fetch 방어)
+const previewLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
+
 // SSRF 방어: 허용할 공개 프로토콜만 허용, 내부망 주소 차단
 const BLOCKED_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i;
 
 export async function GET(request) {
+  const ip = getClientIp(request);
+  if (!previewLimiter(ip)) {
+    return Response.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
 

@@ -2,6 +2,10 @@ export const dynamic = 'force-dynamic';
 
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+
+// IP당 1분에 최대 5건 (스팸 방어)
+const guestbookLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
 
 function serviceClient() {
   return createClient(
@@ -44,6 +48,11 @@ export async function GET(request) {
 // POST /api/guestbook  — 방명록 등록 (비인증, service role)
 export async function POST(request) {
   try {
+    const ip = getClientIp(request);
+    if (!guestbookLimiter(ip)) {
+      return NextResponse.json({ error: '요청이 너무 많아요. 잠시 후 다시 시도해주세요.' }, { status: 429 });
+    }
+
     const body = await request.json();
     const { invitation_id, name, message } = body;
 
