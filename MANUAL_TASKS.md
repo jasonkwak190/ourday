@@ -7,6 +7,67 @@
 
 ## 🔴 CRITICAL — 출시 전 필수
 
+### MT-007 · rsvp_responses.message 컬럼 DROP ⭐ 1분
+**상태**: 미완료  
+**이유**: RSVP 폼에서 message 필드 제거됨, 방명록으로 통합. 컬럼은 항상 NULL이고 앱 코드에서 미사용.
+
+**Supabase Dashboard → SQL Editor에서 실행:**
+```sql
+alter table rsvp_responses drop column if exists message;
+```
+완료 후 CLAUDE.md 체크리스트 체크 (`rsvp_responses.message 컬럼 DB에서 DROP`)
+
+---
+
+### MT-008 · Sentry DSN 등록 ⭐ 10분
+**상태**: 미완료  
+**코드 준비**: `@sentry/nextjs` 설치 완료, `sentry.client.config.js` / `sentry.server.config.js` / `sentry.edge.config.js` 생성됨  
+**남은 것**: DSN 환경변수 1개만 등록하면 즉시 활성화
+
+**절차**:
+1. https://sentry.io/signup → GitHub 계정으로 가입
+2. **Create Project** → Platform: **Next.js** → 이름: `ourday` → Create
+3. 생성 후 화면에서 DSN 복사 (형식: `https://abc123@o12345.ingest.sentry.io/67890`)
+   - 못 찾으면: Settings → Projects → ourday → Client Keys (DSN)
+4. https://vercel.com → ourday 프로젝트 → **Settings → Environment Variables**
+   - Key: `NEXT_PUBLIC_SENTRY_DSN`
+   - Value: 복사한 DSN
+   - Environment: Production + Preview + Development **모두 체크**
+   - Save
+5. 재배포 트리거:
+   ```bash
+   git commit --allow-empty -m "chore: activate sentry" && git push
+   ```
+6. 프로덕션 URL 접속 → Sentry Issues 탭에서 이벤트 수신 확인
+
+완료 후 CLAUDE.md 체크리스트 체크 (`Sentry DSN 등록`)
+
+---
+
+### MT-009 · Lighthouse 성능 측정 ⭐ 5분
+**상태**: 미완료  
+**목적**: 앱 출시 전 Core Web Vitals 실측 확인
+
+**측정 방법**:
+1. Chrome에서 https://ourday-rust.vercel.app 접속
+2. DevTools(`F12`) → **Lighthouse** 탭
+3. Mode: **Navigation** / Device: **Mobile** / Categories: 전체 체크
+4. "Analyze page load" 클릭 → 결과 확인
+
+**목표 수치**:
+| 지표 | 목표 | 의미 |
+|------|------|------|
+| LCP | < 2.5초 | 최대 콘텐츠 렌더링 시간 |
+| CLS | < 0.1 | 레이아웃 흔들림 없음 |
+| INP | < 200ms | 터치 반응 속도 |
+| Performance | > 80 | 종합 점수 |
+
+**문제 발생 시**: 결과 스크린샷을 새 Claude 세션에 공유 → 원인 분석 + 수정 가능
+
+완료 후 CLAUDE.md 체크리스트 체크 (`Lighthouse 측정`)
+
+---
+
 ### MT-005 · Sentry DSN 등록 (2026-04-27 추가)
 **코드 준비**: `@sentry/nextjs` 설치 완료, 설정 파일 3개 생성됨  
 **남은 것**: DSN만 등록하면 즉시 활성화
