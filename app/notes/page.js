@@ -236,7 +236,7 @@ export default function NotesPage() {
             style={{ flex: 1, border: 'none', background: 'none', outline: 'none',
               fontSize: 14, color: 'var(--toss-text-primary)', fontFamily: 'inherit' }} />
           {search && (
-            <button onClick={() => setSearch('')}
+            <button onClick={() => setSearch('')} aria-label="검색 지우기"
               style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2 }}>
               <X size={14} color="var(--toss-text-tertiary)" />
             </button>
@@ -363,7 +363,7 @@ export default function NotesPage() {
               fontSize: 14, lineHeight: 1.5, backgroundColor: 'transparent',
               color: 'var(--toss-text-primary)', fontFamily: 'inherit', padding: '6px 0' }}
           />
-          <button onClick={handleSend} disabled={!content.trim() || sending}
+          <button onClick={handleSend} disabled={!content.trim() || sending} aria-label="전송"
             style={{ width: 36, height: 36, borderRadius: 10, border: 'none',
               cursor: content.trim() ? 'pointer' : 'not-allowed',
               backgroundColor: content.trim() ? 'var(--ink)' : 'var(--rule-strong)',

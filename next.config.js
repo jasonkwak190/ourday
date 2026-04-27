@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const { withSentryConfig } = require('@sentry/nextjs');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const SUPABASE_URL = 'https://eapmagibtipjbagitqmf.supabase.co';
 const SUPABASE_WS  = 'wss://eapmagibtipjbagitqmf.supabase.co';
@@ -55,7 +58,7 @@ const nextConfig = {
   },
 };
 
-module.exports = withSentryConfig(nextConfig, {
+module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   // Sentry 소스맵 업로드 (SENTRY_AUTH_TOKEN 환경변수 설정 시 활성화)
   silent: true,
   org: 'ourday',

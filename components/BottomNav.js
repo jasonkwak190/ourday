@@ -112,6 +112,8 @@ export default function BottomNav({ active }) {
             <button
               key={key}
               onClick={() => { setShowMore(false); router.push(href); }}
+              aria-label={label}
+              aria-current={isActive ? 'page' : undefined}
               style={{
                 flex: 1,
                 background: 'none',
@@ -141,6 +143,8 @@ export default function BottomNav({ active }) {
         {/* 더보기 버튼 */}
         <button
           onClick={() => setShowMore(v => !v)}
+          aria-label="더보기 메뉴"
+          aria-expanded={showMore}
           style={{
             flex: 1,
             background: 'none',
