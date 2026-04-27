@@ -225,8 +225,8 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [x] 이메일 가입·로그인 (Supabase Auth)
 - [x] 비밀번호 재설정 (`/reset-password`, `/reset-password/confirm`)
 - [x] OAuth 콜백 처리 (`/auth/callback`)
-- [ ] **Google OAuth** — Supabase Dashboard → Auth → Providers 설정 필요 (수동)
-- [ ] **카카오 OAuth** — developers.kakao.com 앱 설정 + Supabase 연결 필요 (수동)
+- [x] **Google OAuth** — Supabase Dashboard → Auth → Providers 설정 완료
+- [x] **카카오 OAuth** — developers.kakao.com 앱 설정 + Supabase 연결 완료
 
 ### 📤 공유 기능
 
@@ -257,7 +257,7 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [x] useCouple 훅 공통화 (dashboard/timeline/budget/decisions/guests/notes)
 - [x] select('*') → 명시적 컬럼 최적화 + LRU 캐시
 - [x] SUPABASE.md 누락 컬럼 보완 + 버그 사고 기록
-- [ ] **Sentry DSN 등록** — sentry.io 프로젝트 생성 → `NEXT_PUBLIC_SENTRY_DSN` Vercel 환경변수 추가 (수동)
+- [x] **Sentry DSN 등록** — `NEXT_PUBLIC_SENTRY_DSN` Vercel 환경변수 추가 완료
 - [x] 입력값 서버 검증 강화 — `lib/validate.js` isUUID/sanitizeString/sanitizeInt, guestbook+rsvp 적용
 - [x] 번들 사이즈 분석 — 총 1,372KB(gzip 416KB), Supabase Realtime이 최대 청크, lucide tree-shaking 정상
 - [ ] **Lighthouse 측정** — LCP/CLS/INP 실측 (프로덕션 URL 기준, 수동)
