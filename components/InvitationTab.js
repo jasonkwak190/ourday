@@ -53,6 +53,22 @@ const SECTIONS = [
     ],
   },
   {
+    key: 'parents', label: '혼주 성함', icon: 'rings', required: false,
+    fields: [
+      { key: 'groom_father', label: '신랑 아버지', placeholder: '홍○○' },
+      { key: 'groom_mother', label: '신랑 어머니', placeholder: '김○○' },
+      { key: 'bride_father', label: '신부 아버지', placeholder: '이○○' },
+      { key: 'bride_mother', label: '신부 어머니', placeholder: '박○○' },
+    ],
+  },
+  {
+    key: 'notice', label: '교통편·공지', icon: 'venue', required: false,
+    fields: [
+      { key: 'notice', label: '교통편 및 주차 안내', type: 'textarea',
+        placeholder: '• 지하철 2호선 강남역 3번 출구 도보 5분\n• 주차: 건물 지하 2층 (2시간 무료)\n• 전세버스: 오전 11시 ○○역 출발' },
+    ],
+  },
+  {
     key: 'cover', label: '커버 사진', icon: 'camera', required: false,
     fields: [
       { key: 'cover_image_url', label: '사진 URL', type: 'url',
@@ -164,10 +180,12 @@ export default function InvitationTab({ coupleId }) {
   const [form, setForm] = useState({
     template: 'editorial',
     groom_name: '', bride_name: '',
+    groom_father: '', groom_mother: '', bride_father: '', bride_mother: '',
     wedding_date: '', wedding_time: '',
     venue_name: '', venue_address: '', venue_map_url: '',
     account_groom: '', account_bride: '',
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
+    notice: '',
     cover_image_url: '',
   });
   const [accountNames, setAccountNames] = useState({ groom: '', bride: '' });
@@ -200,6 +218,10 @@ export default function InvitationTab({ coupleId }) {
           template:        existing.template        || 'editorial',
           groom_name:      groomName || existing.groom_name    || '',
           bride_name:      brideName || existing.bride_name    || '',
+          groom_father:    existing.groom_father || '',
+          groom_mother:    existing.groom_mother || '',
+          bride_father:    existing.bride_father || '',
+          bride_mother:    existing.bride_mother || '',
           wedding_date:    existing.wedding_date  || coupleRes.data?.wedding_date || '',
           wedding_time:    existing.wedding_time  || '',
           venue_name:      existing.venue_name    || '',
@@ -208,6 +230,7 @@ export default function InvitationTab({ coupleId }) {
           account_groom:   existing.account_groom || '',
           account_bride:   existing.account_bride || '',
           message:         existing.message       || '',
+          notice:          existing.notice        || '',
           cover_image_url: existing.cover_image_url || '',
         };
         setForm(loaded);
