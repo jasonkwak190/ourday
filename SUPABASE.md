@@ -266,8 +266,16 @@ create policy "커플만 업체 접근" on vendors
 | wedding_date | date | 결혼식 날짜 |
 | wedding_time | text | 결혼식 시간 |
 | venue_name | text | 예식장 이름 |
-| venue_address | text | 예식장 주소 |
-| venue_map_url | text | 지도 URL |
+| venue_address | text | 예식장 주소 (표시용) |
+| venue_map_url | text | 지도 URL (사용자 직접 지정 시) |
+| venue_road_address | text | 카카오 표준 도로명 주소 (2026-04-29 추가) |
+| venue_jibun_address | text | 카카오 표준 지번 주소 |
+| venue_sido | text | 시·도 (예: 서울특별시) — 통계 집계용 |
+| venue_sigungu | text | 시·군·구 (예: 강남구) — 통계 집계용 |
+| venue_bname | text | 읍·면·동 (예: 역삼동) |
+| venue_zonecode | text | 5자리 우편번호 |
+| venue_lat | double precision | 위도 (카카오 Geocoder, 지도 표시용) |
+| venue_lng | double precision | 경도 (카카오 Geocoder, 지도 표시용) |
 | account_groom | text | 신랑측 계좌 |
 | account_bride | text | 신부측 계좌 |
 | message | text | 인사말 |
@@ -289,6 +297,18 @@ create policy "커플만 청첩장 수정" on invitations
 create policy "공개 청첩장 조회 (slug)" on invitations
   for select using (true);  -- 모든 사람이 slug로 조회 가능 (공개 청첩장)
 ```
+
+**인덱스** (통계 집계용 — 인기 웨딩홀 / 평균 예산 by 지역):
+```sql
+create index if not exists invitations_sido_sigungu_idx
+  on invitations(venue_sido, venue_sigungu);
+```
+
+**주소 입력 흐름** (2026-04-29):
+1. `components/AddressSearch.js` — 다음 우편번호 팝업 (무료)
+2. 선택 시 표준화된 객체 반환: `{ road_address, jibun_address, sido, sigungu, bname, zonecode, lat, lng }`
+3. `lib/kakaoMaps.js` `geocodeAddress()` — 카카오 Geocoder로 위경도 변환
+4. 모두 invitations 테이블에 저장 → 공개 페이지에서 카카오 지도로 표시
 
 ---
 
