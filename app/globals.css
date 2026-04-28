@@ -116,6 +116,8 @@
   --rose:         var(--champagne);
   --rose-light:   var(--champagne-wash);
   --stone:        var(--ink-2);
+  /* ⚠️ --stone-light는 BORDER/구분선용 (var(--rule)에 매핑됨).
+     텍스트 색으로 쓰면 거의 안 보임 — 보조 텍스트는 var(--ink-3) 또는 var(--ink-4) 사용. */
   --stone-light:  var(--rule);
   --ink-soft:     var(--ink-2);
   --green:        var(--sage);

@@ -328,7 +328,7 @@ export default function DecisionsPage() {
                         의견 남기기
                       </button>
                     ) : (
-                      <p className="text-xs" style={{ color: 'var(--stone-light)' }}>없음</p>
+                      <p className="text-xs" style={{ color: 'var(--ink-3)' }}>없음</p>
                     )}
                   </div>
 
@@ -359,7 +359,7 @@ export default function DecisionsPage() {
                         의견 남기기
                       </button>
                     ) : (
-                      <p className="text-xs" style={{ color: 'var(--stone-light)' }}>없음</p>
+                      <p className="text-xs" style={{ color: 'var(--ink-3)' }}>없음</p>
                     )}
                   </div>
                 </div>

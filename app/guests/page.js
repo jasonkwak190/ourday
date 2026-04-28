@@ -389,7 +389,7 @@ export default function GuestsPage() {
                         {guest.phone && ` · ${guest.phone}`}
                       </p>
                       {guest.memo && guest.memo !== 'RSVP 자동 등록' && guest.memo !== 'RSVP 응답' && (
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--stone-light)' }}>{guest.memo}</p>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--ink-3)' }}>{guest.memo}</p>
                       )}
                     </div>
 
@@ -429,7 +429,7 @@ export default function GuestsPage() {
                                 {guest.gift_amount.toLocaleString()}만
                               </p>
                             ) : (
-                              <Icon name="gift" size={14} color="var(--stone-light)" />
+                              <Icon name="gift" size={14} color="var(--ink-4)" />
                             )}
                           </button>
                         )}
@@ -635,13 +635,13 @@ export default function GuestsPage() {
                             {r.attending ? `참석 · ${r.meal_count || 1}명` : '불참'}
                           </span>
                           {/* 명단 연결 상태 */}
-                          <span className="text-xs" style={{ color: inList ? 'var(--sage)' : 'var(--stone-light)' }}>
+                          <span className="text-xs" style={{ color: inList ? 'var(--sage)' : 'var(--ink-4)' }}>
                             {inList ? '명단 있음' : '—'}
                           </span>
                         </div>
                         {r.phone && <p className="text-xs mt-0.5" style={{ color: 'var(--stone)' }}>{r.phone}</p>}
                         {r.message && <p className="text-xs mt-1 italic" style={{ color: 'var(--stone)' }}>"{r.message}"</p>}
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--stone-light)' }}>
+                        <p className="text-xs mt-0.5" style={{ color: 'var(--ink-3)' }}>
                           {new Date(r.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </p>
                       </div>
@@ -697,7 +697,7 @@ export default function GuestsPage() {
                     <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
                       {msg.name}
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--stone-light)' }}>
+                    <p className="text-xs" style={{ color: 'var(--ink-3)' }}>
                       {new Date(msg.created_at).toLocaleDateString('ko-KR', {
                         month: 'short', day: 'numeric',
                       })}

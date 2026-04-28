@@ -975,7 +975,7 @@ export default function BudgetPage() {
                     )}
 
                     {vendor.memo && (
-                      <p className="text-xs mt-1.5" style={{ color: 'var(--stone-light)' }}>{vendor.memo}</p>
+                      <p className="text-xs mt-1.5" style={{ color: 'var(--ink-3)' }}>{vendor.memo}</p>
                     )}
                   </div>
 

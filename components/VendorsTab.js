@@ -296,11 +296,11 @@ export default function VendorsTab({ coupleId }) {
                     </p>
                     {(vendor.deposit != null || vendor.balance != null) && (
                       <div className="flex gap-3 mt-1.5">
-                        {vendor.deposit != null && <div><p className="text-xs" style={{ color: 'var(--stone-light)' }}>계약금</p><p className="text-xs font-medium" style={{ color: 'var(--ink-soft)' }}>{vendor.deposit.toLocaleString()}만원</p></div>}
-                        {vendor.balance != null && <div><p className="text-xs" style={{ color: 'var(--stone-light)' }}>잔금</p><p className="text-xs font-medium" style={{ color: 'var(--rose)' }}>{vendor.balance.toLocaleString()}만원</p></div>}
+                        {vendor.deposit != null && <div><p className="text-xs" style={{ color: 'var(--ink-3)' }}>계약금</p><p className="text-xs font-medium" style={{ color: 'var(--ink-soft)' }}>{vendor.deposit.toLocaleString()}만원</p></div>}
+                        {vendor.balance != null && <div><p className="text-xs" style={{ color: 'var(--ink-3)' }}>잔금</p><p className="text-xs font-medium" style={{ color: 'var(--rose)' }}>{vendor.balance.toLocaleString()}만원</p></div>}
                         {vendor.balance_due && (
                           <div>
-                            <p className="text-xs" style={{ color: 'var(--stone-light)' }}>납부일</p>
+                            <p className="text-xs" style={{ color: 'var(--ink-3)' }}>납부일</p>
                             <p className="text-xs font-medium" style={{ color: balanceDday !== null && balanceDday <= 7 ? 'var(--amber)' : 'var(--ink-soft)' }}>
                               {new Date(vendor.balance_due).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                               {balanceDday !== null && <span className="ml-1">({balanceDday === 0 ? '오늘!' : balanceDday < 0 ? '기한 초과' : `D-${balanceDday}`})</span>}
@@ -309,7 +309,7 @@ export default function VendorsTab({ coupleId }) {
                         )}
                       </div>
                     )}
-                    {vendor.memo && <p className="text-xs mt-1.5" style={{ color: 'var(--stone-light)' }}>{vendor.memo}</p>}
+                    {vendor.memo && <p className="text-xs mt-1.5" style={{ color: 'var(--ink-3)' }}>{vendor.memo}</p>}
                   </div>
                   <button onClick={e => { e.stopPropagation(); setMenuId(menuId === vendor.id ? null : vendor.id); }}
                     className="text-lg flex-shrink-0" style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}>···</button>
