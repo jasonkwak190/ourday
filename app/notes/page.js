@@ -263,16 +263,13 @@ export default function NotesPage() {
           backgroundColor: isGroom ? 'var(--champagne-wash)' : 'var(--rose-ed-wash)',
           border: `1px solid ${isGroom ? 'var(--champagne)' : 'var(--rose-ed)'}`,
         }}>
-          <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 10, color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)', letterSpacing: '0.04em' }}>
-            {isGroom ? 'groom' : 'bride'}
-          </span>
-          <span style={{ width: 3, height: 3, borderRadius: '50%', backgroundColor: isGroom ? 'var(--champagne)' : 'var(--rose-ed)', display: 'inline-block' }} />
-          <span style={{ fontSize: 11, fontWeight: 500, color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)' }}>
-            {isGroom ? '신랑' : '신부'} 으로 작성 중
+          <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isGroom ? 'var(--champagne)' : 'var(--rose-ed)', display: 'inline-block' }} />
+          <span style={{ fontSize: 12, fontWeight: 600, color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)' }}>
+            {isGroom ? '신랑' : '신부'}으로 작성 중
           </span>
         </div>
-        <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-4)' }}>
-          {filtered.length} notes
+        <span className="tabular-nums" style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 500 }}>
+          {filtered.length}개
         </span>
       </div>
 
