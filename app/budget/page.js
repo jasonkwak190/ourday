@@ -6,7 +6,6 @@ import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import { Wallet, Store, AlertTriangle, Edit3, Download, Paperclip, X, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
-import * as XLSX from 'xlsx';
 
 /* ─── 업체 종류 ────────────────────────────────────────────────── */
 const VENDOR_TYPES = [
@@ -355,8 +354,10 @@ export default function BudgetPage() {
   }, [coupleId]);
 
   /* ─ Excel 다운로드 (xlsx, 한글 헤더, 컬럼 너비 자동) ─ */
-  function downloadExcel() {
+  async function downloadExcel() {
     if (vendors.length === 0) return;
+    // xlsx는 600KB+로 큰 라이브러리 — 클릭 시점에만 lazy load
+    const XLSX = await import('xlsx');
     const today = new Date().toISOString().slice(0, 10);
     const headers = ['종류', '업체명', '담당자', '연락처', '계약금(만원)', '잔금(만원)', '합계(만원)', '잔금일', '계약상태', '메모'];
     const rows = vendors.map(v => {
