@@ -679,17 +679,19 @@ export default function TimelinePage() {
             )}
           </>
         ) : (
-          <div className="flex items-center justify-between gap-3">
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>결혼 날짜를 정해보세요</p>
-              <p style={{ fontSize: 12, color: 'var(--ink-3)', margin: '2px 0 0' }}>D-day · 진행률 · 마감 알림이 작동해요</p>
-            </div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>결혼 날짜를 정해보세요</p>
+            <p style={{ fontSize: 12, color: 'var(--ink-3)', margin: '2px 0 12px' }}>D-day · 진행률 · 마감 알림이 작동해요</p>
             <button
               onClick={() => router.push('/setup')}
-              className="btn-rose"
-              style={{ flexShrink: 0, padding: '8px 16px', fontSize: 13, height: 'auto' }}
+              style={{
+                backgroundColor: 'var(--ink)', color: 'var(--ivory)',
+                border: 'none', borderRadius: 999,
+                padding: '8px 16px', fontSize: 13, fontWeight: 500,
+                cursor: 'pointer',
+              }}
             >
-              설정
+              결혼 날짜 설정하기
             </button>
           </div>
         )}
