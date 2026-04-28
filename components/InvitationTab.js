@@ -288,25 +288,43 @@ export default function InvitationTab({ coupleId }) {
       updated_at: new Date().toISOString(),
     };
 
+    // 누락된 DB 컬럼이 있어도 저장이 막히지 않게 — 400 에러 메시지에서 컬럼명 추출 후 제외하고 재시도 (최대 12회)
+    async function tryUpsert(p) {
+      if (inv) {
+        return await supabase.from('invitations').update(p).eq('id', inv.id).select().single();
+      }
+      return await supabase.from('invitations').insert(p).select().single();
+    }
+
+    let currentPayload = payload;
+    let droppedCols = [];
     let savedData = null;
     let saveErr = null;
-    if (inv) {
-      const { data, error } = await supabase
-        .from('invitations').update(payload).eq('id', inv.id).select().single();
-      if (error) { console.error('[invitation] update error:', error.message); saveErr = error; }
-      else savedData = data;
-    } else {
-      const { data, error } = await supabase
-        .from('invitations').insert(payload).select().single();
-      if (error) { console.error('[invitation] insert error:', error.message); saveErr = error; }
-      else savedData = data;
+    for (let attempt = 0; attempt < 12; attempt++) {
+      const result = await tryUpsert(currentPayload);
+      if (!result.error) { savedData = result.data; saveErr = null; break; }
+      saveErr = result.error;
+      const msg = saveErr.message || '';
+      // PostgREST 에러: "Could not find the 'colname' column ..."
+      const m = msg.match(/['"]([a-z_][a-z0-9_]*)['"]\s+column/i);
+      if (!m || !m[1] || currentPayload[m[1]] === undefined) break;
+      const missingCol = m[1];
+      droppedCols.push(missingCol);
+      const { [missingCol]: _, ...trimmed } = currentPayload;
+      currentPayload = trimmed;
     }
+    if (droppedCols.length > 0) {
+      console.warn('[invitation] DB에 없는 컬럼 제외:', droppedCols);
+    }
+    if (saveErr) console.error('[invitation] save error:', saveErr.message);
 
     setSaving(false);
 
     // 저장 실패 — 사용자에게 명확히 알림 (가짜 성공 표시 방지)
     if (saveErr || !savedData) {
-      setSaveError('저장에 실패했어요. 네트워크를 확인하고 다시 시도해주세요.');
+      setSaveError(saveErr?.message?.includes('column')
+        ? `DB에 누락된 컬럼이 있어요. 관리자에게 문의해주세요. (${saveErr.message})`
+        : '저장에 실패했어요. 네트워크를 확인하고 다시 시도해주세요.');
       return;
     }
 
