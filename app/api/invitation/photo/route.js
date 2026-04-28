@@ -54,7 +54,10 @@ export async function POST(request) {
 
     const supabase = serviceClient();
     const realExt  = ext === 'heic' ? 'jpg' : ext;
-    const filename = `${coupleId}/photos/photo-${Date.now()}.${realExt}`;
+    // 파일명 충돌 방지: 같은 ms에 여러 요청 → Date.now() 같은 값 → upsert:false면 실패
+    // → 16바이트 랜덤 suffix로 고유성 보장
+    const rnd = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
+    const filename = `${coupleId}/photos/photo-${Date.now()}-${rnd}.${realExt}`;
     const buffer   = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadErr } = await supabase.storage
