@@ -468,7 +468,8 @@ body {
   max-width: 430px;
   margin: 0 auto;
   min-height: 100vh;
-  padding: 24px 20px calc(96px + env(safe-area-inset-bottom));
+  /* 하단 패딩: 12px(nav-bottom) + 64px(nav 높이) + 8px(여유) = 84px */
+  padding: 24px 20px calc(84px + env(safe-area-inset-bottom));
   background-color: var(--ivory);
 }
 
