@@ -179,7 +179,9 @@ export default function InvitationViewPage({ params }) {
   const [error,      setError]      = useState('');
 
   // ── 방명록 목록 ──────────────────────────────────────────────────
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries]         = useState([]);
+  const [entriesHasMore, setEntriesHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -191,16 +193,30 @@ export default function InvitationViewPage({ params }) {
       if (data) {
         await supabase.rpc('increment_view_count', { invitation_slug: slug });
 
-        // 방명록 목록 로드
+        // 방명록 목록 로드 (첫 30개)
         const res = await fetch(`/api/guestbook?invitation_id=${data.id}`);
         if (res.ok) {
           const json = await res.json();
           setEntries(json.data || []);
+          setEntriesHasMore(!!json.hasMore);
         }
       }
     };
     load();
   }, [slug]);
+
+  async function loadMoreEntries() {
+    if (!inv?.id || entries.length === 0 || loadingMore) return;
+    setLoadingMore(true);
+    const oldest = entries[entries.length - 1];
+    const res = await fetch(`/api/guestbook?invitation_id=${inv.id}&before=${encodeURIComponent(oldest.created_at)}`);
+    if (res.ok) {
+      const json = await res.json();
+      setEntries(prev => [...prev, ...(json.data || [])]);
+      setEntriesHasMore(!!json.hasMore);
+    }
+    setLoadingMore(false);
+  }
 
   async function copyUrl() {
     await navigator.clipboard.writeText(window.location.href);
@@ -629,6 +645,23 @@ export default function InvitationViewPage({ params }) {
                   </div>
                 ))}
               </div>
+              {entriesHasMore && (
+                <button
+                  onClick={loadMoreEntries}
+                  disabled={loadingMore}
+                  style={{
+                    width: '100%', marginTop: 12, padding: '12px 16px',
+                    background: 'transparent',
+                    border: '1px solid var(--rule, #e8e2d9)',
+                    borderRadius: 999,
+                    fontFamily: FONT, fontSize: 13, fontWeight: 600,
+                    color: 'var(--ink-3, #6E6459)',
+                    cursor: loadingMore ? 'wait' : 'pointer',
+                  }}
+                >
+                  {loadingMore ? '불러오는 중…' : '이전 메시지 더 보기'}
+                </button>
+              )}
             </div>
           )}
         </div>

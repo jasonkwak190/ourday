@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { isUUID, sanitizeString } from '@/lib/validate';
+import { maskName } from '@/lib/maskName';
 
 // POST: IP당 1분에 최대 5건 (스팸 방어)
 const guestbookWriteLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
@@ -26,7 +27,11 @@ function anonClient() {
   );
 }
 
-// GET /api/guestbook?invitation_id=xxx  — 방명록 목록 (공개)
+// GET /api/guestbook?invitation_id=xxx&before=ISO_DATE  — 방명록 목록 (공개)
+// before: 이 시각 이전 메시지만 (cursor pagination, "더 보기"용)
+//
+// 프라이버시: 이름은 마스킹된 채로 응답 (공개 페이지용).
+// 인증된 커플은 RLS를 통해 supabase에서 직접 invitation_guestbook 뷰 조회 → 원본 이름.
 export async function GET(request) {
   try {
     const ip = getClientIp(request);
@@ -36,20 +41,38 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const invitationId = searchParams.get('invitation_id');
+    const before = searchParams.get('before');
     if (!invitationId || !isUUID(invitationId)) {
       return NextResponse.json({ error: 'invitation_id required (UUID)' }, { status: 400 });
     }
 
     const supabase = anonClient();
-    const { data, error } = await supabase
+    let query = supabase
       .from('invitation_guestbook')
       .select('id, name, message, created_at')
       .eq('invitation_id', invitationId)
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(30);
+
+    if (before) {
+      query = query.lt('created_at', before);
+    }
+
+    const { data, error } = await query;
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-    return NextResponse.json({ data: data || [] });
+
+    // 이름 마스킹 (프라이버시)
+    const masked = (data || []).map(entry => ({
+      ...entry,
+      name: maskName(entry.name),
+    }));
+
+    // hasMore: 받은 결과가 limit과 같으면 더 있을 수 있음
+    return NextResponse.json({
+      data: masked,
+      hasMore: masked.length === 30,
+    });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
@@ -91,7 +114,9 @@ export async function POST(request) {
       console.error('[guestbook] insert error:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json({ success: true, data });
+    // 응답 시점부터 이름 마스킹 (공개 페이지에서 GET과 일관성)
+    const masked = data ? { ...data, name: maskName(data.name) } : data;
+    return NextResponse.json({ success: true, data: masked });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
