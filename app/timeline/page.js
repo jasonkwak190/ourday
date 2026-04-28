@@ -170,6 +170,89 @@ const VENUE_CHECKLIST = [
 ];
 
 /* ─── 기본 체크리스트 ─────────────────────────────────────────── */
+/* ─── 카테고리 매핑 ───────────────────────────────────────────────
+ * 33개 항목을 7개 영역으로 분류 → 진행률 가로 스크롤 + 영역 필터.
+ * 사용자 추가 custom 항목은 자동으로 '기타' 부여.
+ * (DB 컬럼 없이 title 기반 매핑 — 향후 DB column 추가 가능) */
+const CATEGORIES = ['식장', '스드메', '청첩장·하객', '신혼여행', '신혼집·예물', '예식 디테일', '기타'];
+
+const CATEGORY_PALETTE = {
+  '식장':        { bg: 'var(--champagne-wash)', fg: 'var(--champagne-2)' },
+  '스드메':      { bg: '#FCE4DD', fg: '#B85B41' },
+  '청첩장·하객': { bg: '#E0EAF6', fg: '#3766A8' },
+  '신혼여행':    { bg: '#DEEFE0', fg: '#3F8A55' },
+  '신혼집·예물': { bg: '#F4ECDA', fg: '#A37D2C' },
+  '예식 디테일': { bg: '#EFE3F0', fg: '#7A4582' },
+  '기타':        { bg: 'var(--rule)', fg: 'var(--ink-3)' },
+};
+
+const CATEGORY_BY_TITLE = {
+  '결혼 날짜 및 웨딩홀 확정': '식장',
+  '웨딩홀 투어 및 계약': '식장',
+  '웨딩홀 잔금 납부': '식장',
+
+  '스드메(스튜디오·드레스·메이크업) 업체 투어': '스드메',
+  '스튜디오 촬영 예약': '스드메',
+  '드레스·예복 계약': '스드메',
+  '웨딩 메이크업·헤어 계약': '스드메',
+  '드레스 최종 피팅': '스드메',
+
+  '청첩장 문구 작성 및 인쇄': '청첩장·하객',
+  '하객 명단 정리': '청첩장·하객',
+  '청첩장 발송': '청첩장·하객',
+  '하객 참석 여부 최종 확인': '청첩장·하객',
+
+  '신혼여행 목적지 결정': '신혼여행',
+  '신혼여행 항공·숙소 예약': '신혼여행',
+  '신혼여행 여행자보험 가입': '신혼여행',
+  '신혼여행 짐 준비': '신혼여행',
+
+  '혼수 목록 작성': '신혼집·예물',
+  '신혼집 탐색 시작': '신혼집·예물',
+  '혼수 구매 시작': '신혼집·예물',
+  '신혼집 계약 및 이사 준비': '신혼집·예물',
+  '예물(반지) 구매': '신혼집·예물',
+  '함 내용 준비': '신혼집·예물',
+
+  '주례·사회자 섭외': '예식 디테일',
+  '폐백 준비': '예식 디테일',
+  '꽃 장식 및 포토테이블 확정': '예식 디테일',
+  '부케·부토니어 예약': '예식 디테일',
+  '식순 최종 점검': '예식 디테일',
+  '부모님·주례님 감사 인사 준비': '예식 디테일',
+  '당일 타임라인 최종 확인': '예식 디테일',
+
+  '총 예산 협의': '기타',
+  '혼인신고서 준비': '기타',
+  '신부 피부·네일 케어': '기타',
+  '혼인신고서 제출': '기타',
+};
+
+function getItemCategory(item) {
+  return CATEGORY_BY_TITLE[item.title] || '기타';
+}
+
+/* ─── 항목 가이드 (핵심 10개) ─────────────────────────────────── */
+const ITEM_GUIDES = {
+  '결혼 날짜 및 웨딩홀 확정': '가장 먼저. 양가 형편 협의 + 웨딩홀 가능 일자 교차 확인. 일자가 정해져야 모든 일정이 시작돼요.',
+  '스드메(스튜디오·드레스·메이크업) 업체 투어': '본식 결과물 절반을 좌우. 인스타·블로그로 후보 3-5곳 추린 뒤 직접 투어. 패키지 vs 개별 결정.',
+  '스튜디오 촬영 예약': '예약 6개월 전 권장. 인기 스튜디오는 더 일찍 마감. 컨셉(프렌치·내추럴·키치 등) 미리 정해두면 미팅 효율적.',
+  '드레스·예복 계약': '드레스는 시즌 따라 1-3벌 대여. 가봉 일정 확보 필수. 예복은 본식·예복·턱시도 구분 확인.',
+  '청첩장 문구 작성 및 인쇄': '발송 4주 전엔 인쇄 완료. 양가 부모 성함·식장 주소·약도·교통편을 정확히. 모바일 청첩장과 함께 디자인.',
+  '하객 명단 정리': '식대 견적 + 답례품 수량 산정의 기준. 신랑·신부 측 분리해서 엑셀로 관리. 식사 여부 표시.',
+  '청첩장 발송': '본식 4-6주 전 발송. 우편 + 모바일 동시. 직장 동료는 상사·동료 구분해서 빠짐없이.',
+  '신혼여행 목적지 결정': '비자·항공권 가격·시즌 고려. 6-8개월 전 결정해야 항공권 좋은 가격에 잡힘.',
+  '신혼여행 항공·숙소 예약': '항공권 일찍 잡을수록 가격 유리. 패키지 vs 자유여행 결정. 신혼여행 보험 별도 가입.',
+  '하객 참석 여부 최종 확인': 'RSVP로 D-2~3주에 최종 확정. 식사 인원 식장에 통보 → 잔금 산정 정확.',
+  '식순 최종 점검': '입장·축가·축사·서약·이벤트 시간 분배. 식장 측과 1주일 전 리허설.',
+  '웨딩홀 잔금 납부': 'D-7~14일 전 잔금. 식대(인원수×단가) 정확히 확정 후 입금. 영수증 보관.',
+  '드레스 최종 피팅': 'D-7~14일 마지막 가봉. 체형 변화 점검. 본식 액세서리·이너 함께 착용해서 시뮬레이션.',
+  '혼인신고서 제출': '결혼식 전후 자유. 시청·구청 직접 방문 또는 정부24. 신분증·증인 2명 서명 필요.',
+};
+function getItemGuide(item) {
+  return ITEM_GUIDES[item.title] || null;
+}
+
 const DEFAULT_CHECKLIST = [
   { title: '결혼 날짜 및 웨딩홀 확정',                  due_months_before: 12, assigned_to: 'both'  },
   { title: '총 예산 협의',                               due_months_before: 12, assigned_to: 'both'  },
@@ -408,7 +491,25 @@ export default function TimelinePage() {
     return { total, done, pct, overdue, thisWeek };
   }, [items, weddingDate]);
 
-  /* ─ 필터 (useMemo — items/activeTab/weddingDate/myOnly 바뀔 때만 재계산) ─ */
+  /* ─ 카테고리별 진행률 (useMemo) ─ */
+  const categoryStats = useMemo(() => {
+    const map = {};
+    CATEGORIES.forEach(c => { map[c] = { total: 0, done: 0 }; });
+    items.forEach(i => {
+      const c = getItemCategory(i);
+      if (!map[c]) map[c] = { total: 0, done: 0 };
+      map[c].total++;
+      if (i.is_done) map[c].done++;
+    });
+    return CATEGORIES
+      .map(c => ({ name: c, ...map[c], pct: map[c].total > 0 ? Math.round(map[c].done / map[c].total * 100) : 0 }))
+      .filter(x => x.total > 0); // 빈 카테고리는 표시 안 함
+  }, [items]);
+
+  // 카테고리 필터 (null이면 전체)
+  const [categoryFilter, setCategoryFilter] = useState(null);
+
+  /* ─ 필터 (useMemo — items/activeTab/weddingDate/myOnly/categoryFilter 바뀔 때만 재계산) ─ */
   const displayed = useMemo(() => {
     // 1) 담당 필터 ("내 할 일만")
     let list = items;
@@ -416,7 +517,12 @@ export default function TimelinePage() {
       list = list.filter(i => i.assigned_to === userRole || i.assigned_to === 'both');
     }
 
-    // 2) 탭 필터
+    // 2) 카테고리 필터
+    if (categoryFilter) {
+      list = list.filter(i => getItemCategory(i) === categoryFilter);
+    }
+
+    // 3) 탭 필터
     if (activeTab === 'all') return list;
 
     // 'current' = "다가오는" — 미완료 항목 중 마감 4주 이내 OR 지난 마감
@@ -434,7 +540,7 @@ export default function TimelinePage() {
 
     // 특정 기간만
     return list.filter(i => i.due_months_before === activeTab);
-  }, [items, activeTab, weddingDate, myOnly, userRole]);
+  }, [items, activeTab, weddingDate, myOnly, userRole, categoryFilter]);
 
   const doneCount = useMemo(() => displayed.filter(i => i.is_done).length, [displayed]);
 
@@ -574,12 +680,31 @@ export default function TimelinePage() {
         </div>
 
         {memoExpanded && (
-          <MemoEditor item={item} onSave={async text => {
-            const memo = text.trim() || null;
-            setItems(prev => prev.map(it => it.id === item.id ? { ...it, memo } : it));
-            setExpandedMemo(null);
-            await supabase.from('checklist_items').update({ memo }).eq('id', item.id);
-          }} onClose={() => setExpandedMemo(null)} />
+          <>
+            {/* 항목 가이드 (있을 때만) — 펼침 시 사용자 메모 위에 표시 */}
+            {getItemGuide(item) && (
+              <div style={{
+                marginTop: 8,
+                padding: '10px 12px',
+                borderRadius: 10,
+                backgroundColor: 'var(--champagne-wash)',
+                borderLeft: '3px solid var(--champagne)',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--champagne-2)', letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0 }}>
+                  💡 가이드
+                </p>
+                <p style={{ fontSize: 12.5, color: 'var(--ink-2)', lineHeight: 1.6, margin: '4px 0 0' }}>
+                  {getItemGuide(item)}
+                </p>
+              </div>
+            )}
+            <MemoEditor item={item} onSave={async text => {
+              const memo = text.trim() || null;
+              setItems(prev => prev.map(it => it.id === item.id ? { ...it, memo } : it));
+              setExpandedMemo(null);
+              await supabase.from('checklist_items').update({ memo }).eq('id', item.id);
+            }} onClose={() => setExpandedMemo(null)} />
+          </>
         )}
 
         {isMenuOpen && (
@@ -721,6 +846,64 @@ export default function TimelinePage() {
           </div>
         )}
       </div>
+
+      {/* ── 카테고리 진행률 (가로 스크롤) ── */}
+      {items.length > 0 && categoryStats.length > 0 && (
+        <div className="mb-4">
+          <p className="t-kicker" style={{ marginBottom: 8 }}>· 카테고리별 진행률 ·</p>
+          <div
+            style={{
+              display: 'flex', gap: 8, overflowX: 'auto',
+              scrollbarWidth: 'none', msOverflowStyle: 'none',
+              paddingBottom: 4,
+              marginLeft: -4, marginRight: -4, paddingLeft: 4, paddingRight: 4,
+            }}
+          >
+            {/* 전체 토글 카드 */}
+            <button
+              onClick={() => setCategoryFilter(null)}
+              style={{
+                flexShrink: 0, minWidth: 96, padding: '12px 14px',
+                borderRadius: 14, border: 'none', cursor: 'pointer', textAlign: 'left',
+                backgroundColor: categoryFilter === null ? 'var(--ink)' : 'var(--paper)',
+                color: categoryFilter === null ? 'var(--ivory)' : 'var(--ink)',
+                transition: 'all 0.15s',
+              }}
+            >
+              <p style={{ fontSize: 11, opacity: 0.7, margin: 0 }}>전체</p>
+              <p className="tabular-nums" style={{ fontSize: 16, fontWeight: 700, margin: '2px 0 0' }}>
+                {stats.done}/{stats.total}
+              </p>
+            </button>
+            {categoryStats.map(cat => {
+              const isActive = categoryFilter === cat.name;
+              const palette  = CATEGORY_PALETTE[cat.name] || CATEGORY_PALETTE['기타'];
+              return (
+                <button
+                  key={cat.name}
+                  onClick={() => setCategoryFilter(isActive ? null : cat.name)}
+                  style={{
+                    flexShrink: 0, minWidth: 110, padding: '12px 14px',
+                    borderRadius: 14, border: 'none', cursor: 'pointer', textAlign: 'left',
+                    backgroundColor: isActive ? palette.fg : palette.bg,
+                    color: isActive ? '#fff' : palette.fg,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <p style={{ fontSize: 11, fontWeight: 600, margin: 0, whiteSpace: 'nowrap' }}>{cat.name}</p>
+                  <p className="tabular-nums" style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 0' }}>
+                    {cat.done}/{cat.total}
+                    <span style={{ fontSize: 11, opacity: 0.85, marginLeft: 6 }}>{cat.pct}%</span>
+                  </p>
+                  <div style={{ height: 3, backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.08)', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
+                    <div style={{ height: '100%', width: `${cat.pct}%`, backgroundColor: isActive ? '#fff' : palette.fg, transition: 'width 0.3s' }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ══ 리스트 뷰 ══ */}
       {viewMode === 'list' && (
