@@ -297,7 +297,17 @@ export default function DashboardPage() {
             letterSpacing: '0.05em',
             marginBottom: 4,
           }}>
-            · {userRole === 'groom' ? 'good morning, groom' : userRole === 'bride' ? 'good morning, bride' : 'good morning'} ·
+            · {(() => {
+              const h = new Date().getHours();
+              const t = h >= 5 && h < 12 ? 'good morning'
+                      : h >= 12 && h < 18 ? 'good afternoon'
+                      : h >= 18 && h < 22 ? 'good evening'
+                      : 'good night';
+              const suffix = userRole === 'groom' ? ', groom'
+                           : userRole === 'bride' ? ', bride'
+                           : '';
+              return `${t}${suffix}`;
+            })()} ·
           </div>
           <div style={{
             fontFamily: 'var(--font-serif-ko)',
