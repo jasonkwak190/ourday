@@ -240,7 +240,7 @@ function VendorAttachments({ vendor, onUpload, onOpen, onRemove }) {
       <div className="flex items-center justify-between mb-1.5">
         <p className="text-xs flex items-center gap-1" style={{ color: 'var(--stone)' }}>
           <Paperclip size={11} strokeWidth={2.2} />
-          첨부 ({items.length})
+          영수증·계약서 ({items.length})
         </p>
         <button
           onClick={() => fileRef.current?.click()}
@@ -257,7 +257,7 @@ function VendorAttachments({ vendor, onUpload, onOpen, onRemove }) {
           }}
         >
           {uploading ? <Loader2 size={11} className="animate-spin" /> : <Paperclip size={11} />}
-          {uploading ? '업로드 중' : '파일 추가'}
+          {uploading ? '업로드 중' : '사진·PDF 추가'}
         </button>
         <input
           ref={fileRef}
