@@ -489,7 +489,8 @@ export default function BudgetPage() {
       memo: form.memo.trim() || null,
     }).select().single();
     if (e) { setError('추가에 실패했어요.'); setSaving(false); return; }
-    setVendors(prev => [...prev, data]);
+    // Realtime INSERT 이벤트와 race condition 방지 — id 중복 체크
+    setVendors(prev => prev.find(v => v.id === data.id) ? prev : [...prev, data]);
     setForm(EMPTY_FORM); setShowForm(false); setSaving(false);
   }
 
