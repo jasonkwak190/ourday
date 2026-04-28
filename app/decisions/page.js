@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
@@ -19,6 +19,35 @@ const STATUS_TAGS = {
   discussing:  { label: '논의중', cls: 'tag-amber' },
   decided:     { label: '완료',   cls: 'tag-green' },
 };
+
+/* 자주 결정해야 하는 의사결정 템플릿 — 첫 사용자 가이드 */
+const DECISION_TEMPLATE = [
+  { title: '신혼여행 목적지',           cat: '신혼여행' },
+  { title: '신혼여행 일정 (며칠)',       cat: '신혼여행' },
+  { title: '웨딩홀 컨셉 (가든/호텔/채플)', cat: '식장' },
+  { title: '식순 이벤트 (축가·영상·사회)', cat: '예식 디테일' },
+  { title: '폐백 진행 여부',             cat: '예식 디테일' },
+  { title: '답례품 종류',                cat: '예식 디테일' },
+  { title: '부케 색상·꽃 종류',           cat: '예식 디테일' },
+  { title: '예물 종류·예산',              cat: '신혼집·예물' },
+  { title: '신혼집 위치',                cat: '신혼집·예물' },
+  { title: '혼인신고 일정 (식 전/후)',    cat: '기타' },
+];
+
+/* 카테고리 매핑 (체크리스트와 동일 7개) */
+const DECISION_CATEGORIES = ['식장', '스드메', '청첩장·하객', '신혼여행', '신혼집·예물', '예식 디테일', '기타'];
+
+/* 제목 키워드 → 카테고리 자동 추론 */
+function inferCategory(title) {
+  const t = (title || '').toLowerCase();
+  if (/웨딩홀|예식장|식장|폐백|식순/.test(t)) return /폐백|식순/.test(t) ? '예식 디테일' : '식장';
+  if (/스튜디오|드레스|메이크업|메이컵|헤어/.test(t)) return '스드메';
+  if (/청첩장|하객|명단/.test(t)) return '청첩장·하객';
+  if (/신혼여행|허니문|여행지/.test(t)) return '신혼여행';
+  if (/신혼집|혼수|이사|예물|예단|함/.test(t)) return '신혼집·예물';
+  if (/축가|사회|주례|영상|폐백|답례품|부케|식순|꽃/.test(t)) return '예식 디테일';
+  return '기타';
+}
 
 export default function DecisionsPage() {
   const { coupleId, userData, loading: authLoading } = useCouple('couple_id, role');
@@ -104,11 +133,54 @@ export default function DecisionsPage() {
       .from('decisions')
       .insert({ couple_id: coupleId, title: newTitle.trim(), status: 'undiscussed' })
       .select().single();
-    if (!error && data) setDecisions((prev) => [...prev, data]);
+    if (!error && data) setDecisions((prev) => prev.find(d => d.id === data.id) ? prev : [...prev, data]);
     setNewTitle('');
     setAdding(false);
     setSaving(false);
   }
+
+  /* 빠른 추가 — title 직접 받음 (인라인 입력에서 호출) */
+  async function quickAddDecision(title) {
+    const t = (title || '').trim();
+    if (!t || !coupleId) return;
+    const { data, error } = await supabase
+      .from('decisions')
+      .insert({ couple_id: coupleId, title: t, status: 'undiscussed' })
+      .select().single();
+    if (error) { console.error('[quickAddDecision]', error.message); return; }
+    if (data) setDecisions((prev) => prev.find(d => d.id === data.id) ? prev : [...prev, data]);
+  }
+
+  /* 통계 */
+  const decisionStats = useMemo(() => {
+    const total = decisions.length;
+    const decided = decisions.filter(d => d.status === 'decided').length;
+    const discussing = decisions.filter(d => d.status === 'discussing').length;
+    const undiscussed = decisions.filter(d => d.status === 'undiscussed').length;
+    const pct = total > 0 ? Math.round(decided / total * 100) : 0;
+    return { total, decided, discussing, undiscussed, pct };
+  }, [decisions]);
+
+  /* 카테고리별 통계 */
+  const decisionCategoryStats = useMemo(() => {
+    const map = {};
+    DECISION_CATEGORIES.forEach(c => { map[c] = { total: 0, decided: 0 }; });
+    decisions.forEach(d => {
+      const c = inferCategory(d.title);
+      if (!map[c]) map[c] = { total: 0, decided: 0 };
+      map[c].total++;
+      if (d.status === 'decided') map[c].decided++;
+    });
+    return DECISION_CATEGORIES
+      .map(c => ({ name: c, ...map[c], pct: map[c].total > 0 ? Math.round(map[c].decided / map[c].total * 100) : 0 }))
+      .filter(x => x.total > 0);
+  }, [decisions]);
+
+  /* 추천 결정 항목 — 이미 추가된 것은 제외 */
+  const availableTemplates = useMemo(() => {
+    const existing = new Set(decisions.map(d => d.title.toLowerCase()));
+    return DECISION_TEMPLATE.filter(t => !existing.has(t.title.toLowerCase()));
+  }, [decisions]);
 
   async function deleteDecision(id) {
     setDecisions((prev) => prev.filter((d) => d.id !== id));
@@ -202,6 +274,130 @@ export default function DecisionsPage() {
           together we decide
         </p>
       </div>
+
+      {/* ── 인사이트 헤더 카드 ── */}
+      {decisionStats.total > 0 && (
+        <div className="card mb-4" style={{ padding: '18px 20px' }}>
+          <div className="flex items-end justify-between mb-3">
+            <div>
+              <p style={{ fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>
+                · together we decide ·
+              </p>
+              <p className="tabular-nums" style={{ fontSize: 30, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.05, margin: '4px 0 0', letterSpacing: '-0.03em' }}>
+                {decisionStats.decided} <span style={{ fontSize: 18, color: 'var(--ink-4)', fontWeight: 600 }}>/ {decisionStats.total} 결정</span>
+              </p>
+            </div>
+            <p className="tabular-nums" style={{ fontSize: 26, fontWeight: 800, color: 'var(--champagne-2)', lineHeight: 1, margin: 0, letterSpacing: '-0.02em' }}>
+              {decisionStats.pct}%
+            </p>
+          </div>
+          <div style={{ height: 6, backgroundColor: 'var(--rule)', borderRadius: 999, overflow: 'hidden' }}>
+            <div style={{ height: '100%', width: `${decisionStats.pct}%`, backgroundColor: 'var(--champagne)', transition: 'width 0.4s ease' }} />
+          </div>
+          {(decisionStats.discussing > 0 || decisionStats.undiscussed > 0) && (
+            <div className="flex flex-wrap gap-2 mt-3">
+              {decisionStats.undiscussed > 0 && (
+                <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--paper)', color: 'var(--ink-3)', border: '1px solid var(--rule)' }}>
+                  미논의 {decisionStats.undiscussed}개
+                </span>
+              )}
+              {decisionStats.discussing > 0 && (
+                <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--ochre-wash, #F4ECDA)', color: 'var(--ochre, #A37D2C)' }}>
+                  논의중 {decisionStats.discussing}개
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── 빠른 결정 추가 인라인 ── */}
+      <div className="flex items-center gap-2 mb-3" style={{
+        padding: '6px 6px 6px 14px',
+        borderRadius: 999,
+        border: '1px solid var(--rule)',
+        backgroundColor: 'var(--paper)',
+      }}>
+        <span style={{ flexShrink: 0, color: 'var(--ink-4)', fontSize: 16, lineHeight: 1, fontWeight: 600 }}>+</span>
+        <input
+          type="text"
+          value={newTitle}
+          onChange={e => setNewTitle(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && newTitle.trim() && addDecision()}
+          placeholder="결정 항목 빠르게 추가 (예: 신혼집 위치)"
+          style={{
+            flex: 1, minWidth: 0,
+            border: 'none', outline: 'none',
+            backgroundColor: 'transparent',
+            fontSize: 14, color: 'var(--ink)',
+            fontFamily: 'var(--font-sans)',
+          }}
+        />
+        <button
+          onClick={() => newTitle.trim() && addDecision()}
+          disabled={!newTitle.trim() || saving}
+          style={{
+            flexShrink: 0,
+            padding: '7px 16px', borderRadius: 999,
+            backgroundColor: newTitle.trim() ? 'var(--ink)' : 'var(--rule)',
+            color: newTitle.trim() ? 'var(--ivory)' : 'var(--ink-4)',
+            border: 'none', cursor: newTitle.trim() ? 'pointer' : 'not-allowed',
+            fontSize: 13, fontWeight: 600,
+          }}
+        >
+          {saving ? '...' : '추가'}
+        </button>
+      </div>
+
+      {/* ── 추천 결정 항목 (이미 추가된 것 제외) ── */}
+      {availableTemplates.length > 0 && (
+        <div className="mb-4">
+          <p className="t-kicker" style={{ marginBottom: 8 }}>· 자주 결정하는 항목 ·</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {availableTemplates.slice(0, 8).map(({ title }) => (
+              <button
+                key={title}
+                onClick={() => quickAddDecision(title)}
+                style={{
+                  fontSize: 12, padding: '6px 12px', borderRadius: 999,
+                  backgroundColor: 'var(--paper)', color: 'var(--ink-2)',
+                  border: '1px dashed var(--rule-strong)',
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--champagne-wash)'; e.currentTarget.style.borderStyle = 'solid'; }}
+                onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--paper)'; e.currentTarget.style.borderStyle = 'dashed'; }}
+              >
+                + {title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── 카테고리 진행률 row ── */}
+      {decisionCategoryStats.length > 0 && (
+        <div className="mb-4">
+          <p className="t-kicker" style={{ marginBottom: 8 }}>· 카테고리별 진행 ·</p>
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: 4, marginLeft: -4, marginRight: -4, paddingLeft: 4, paddingRight: 4 }}>
+            {decisionCategoryStats.map(cat => (
+              <div key={cat.name} style={{
+                flexShrink: 0, minWidth: 110, padding: '10px 12px',
+                borderRadius: 12, backgroundColor: 'var(--paper)',
+                border: '1px solid var(--rule)',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 600, margin: 0, color: 'var(--ink-2)', whiteSpace: 'nowrap' }}>{cat.name}</p>
+                <p className="tabular-nums" style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 0', color: 'var(--ink)' }}>
+                  {cat.decided}/{cat.total}
+                  <span style={{ fontSize: 11, color: 'var(--ink-4)', fontWeight: 500, marginLeft: 6 }}>{cat.pct}%</span>
+                </p>
+                <div style={{ height: 3, backgroundColor: 'var(--rule)', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
+                  <div style={{ height: '100%', width: `${cat.pct}%`, backgroundColor: 'var(--champagne)', transition: 'width 0.3s' }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 필터 탭 */}
       <div className="flex gap-2 mb-4">
@@ -478,29 +674,7 @@ export default function DecisionsPage() {
         )}
       </div>
 
-      {/* 항목 추가 */}
-      {adding ? (
-        <div className="card flex flex-col gap-3 mb-4">
-          <input
-            className="input-field"
-            placeholder="결정해야 할 주제 (예: 신혼여행지)"
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-            autoFocus
-            onKeyDown={(e) => e.key === 'Enter' && addDecision()}
-          />
-          <div className="flex gap-2">
-            <button className="btn-outline flex-1" onClick={() => { setAdding(false); setNewTitle(''); }}>취소</button>
-            <button className="btn-rose flex-1" onClick={addDecision} disabled={saving || !newTitle.trim()}>
-              {saving ? '추가 중...' : '추가'}
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button className="btn-outline w-full" onClick={() => setAdding(true)}>
-          + 결정 항목 추가
-        </button>
-      )}
+      {/* 항목 추가는 페이지 상단의 인라인 입력으로 통합됨 — 기존 모달 폼/버튼 제거 */}
 
       <BottomNav active="decisions" />
     </div>
