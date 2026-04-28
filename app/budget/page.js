@@ -564,18 +564,39 @@ export default function BudgetPage() {
     window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
   }
 
-  /* ─ 첨부파일 삭제 ─ */
+  /* ─ 첨부파일 삭제 ─
+   * 순서: DB 먼저 → Storage. DB 실패 시 Storage 안 건드림.
+   * Storage 실패 시 DB는 이미 갱신됐지만 UI/DB 일관성 유지(고아 파일은 추후 cron 정리).
+   */
   async function removeAttachment(vendor, att) {
     const newList = (vendor.attachments || []).filter(a => a.path !== att.path);
+    const oldAttachments = vendor.attachments;
+
+    // 1) 낙관적 UI 업데이트
     setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, attachments: newList } : v));
-    const [storageRes, dbRes] = await Promise.all([
-      supabase.storage.from('vendor-attachments').remove([att.path]),
-      supabase.from('vendors').update({ attachments: newList }).eq('id', vendor.id),
-    ]);
-    if (storageRes.error || dbRes.error) {
-      // 실패 시 롤백
-      setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, attachments: vendor.attachments } : v));
-      alert('삭제에 실패했어요.');
+
+    // 2) DB 업데이트 (가장 중요한 단계)
+    const { error: dbError } = await supabase
+      .from('vendors')
+      .update({ attachments: newList })
+      .eq('id', vendor.id);
+
+    if (dbError) {
+      // DB 실패 → UI 롤백, Storage 안 건드림 (안전)
+      setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, attachments: oldAttachments } : v));
+      alert('삭제에 실패했어요. 다시 시도해주세요.');
+      return;
+    }
+
+    // 3) Storage 삭제 (실패해도 DB는 정합 유지 → 고아 파일만 남음)
+    const { error: storageError } = await supabase.storage
+      .from('vendor-attachments')
+      .remove([att.path]);
+
+    if (storageError) {
+      // 비파괴적 실패 — 로그만 남기고 사용자에겐 알림 안 함
+      // (DB는 정상 삭제됐고 사용자 입장에선 "삭제 성공"으로 보임)
+      console.warn('[vendor-attachments] orphan file:', att.path, storageError.message);
     }
   }
 

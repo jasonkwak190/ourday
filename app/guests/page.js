@@ -168,7 +168,12 @@ export default function GuestsPage() {
       phone: rsvp.phone || null,
       memo: 'RSVP 응답',
     }).select().single();
-    if (!e && data) setGuests(prev => [...prev, data]);
+    if (e) {
+      alert(`'${rsvp.name}' 명단 추가에 실패했어요. 다시 시도해주세요.`);
+      setAddingRsvpId(null);
+      return;
+    }
+    if (data) setGuests(prev => [...prev, data]);
     setAddingRsvpId(null);
   }
 

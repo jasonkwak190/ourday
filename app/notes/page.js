@@ -140,11 +140,26 @@ export default function NotesPage() {
 
   useEffect(() => {
     if (!coupleId) return;
+
+    // 사용자가 맨 아래 근처(200px 이내)에 있는지
+    const isNearBottom = () => {
+      if (!bottomRef.current) return true;
+      const rect = bottomRef.current.getBoundingClientRect();
+      return rect.top - window.innerHeight < 200;
+    };
+
     const channel = supabase.channel(`notes-${coupleId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_notes', filter: `couple_id=eq.${coupleId}` },
         (payload) => {
-          if (payload.eventType === 'INSERT')
+          if (payload.eventType === 'INSERT') {
+            const isNew = !notes.find(n => n.id === payload.new.id);
             setNotes(prev => prev.find(n => n.id === payload.new.id) ? prev : [...prev, payload.new]);
+            // 상대방 메시지 + 사용자가 맨 아래 근처일 때만 자동 스크롤
+            // (스크롤 위로 올려 과거 메시지 읽는 중이면 방해 안 함)
+            if (isNew && payload.new.user_id !== myUserId && isNearBottom()) {
+              setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            }
+          }
           if (payload.eventType === 'UPDATE')
             setNotes(prev => prev.map(n => n.id === payload.new.id ? payload.new : n));
           if (payload.eventType === 'DELETE')
@@ -152,7 +167,8 @@ export default function NotesPage() {
         })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [coupleId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coupleId, myUserId]);
 
   async function handleSend() {
     const text = content.trim();

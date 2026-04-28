@@ -679,25 +679,37 @@ export default function TimelinePage() {
             </button>
           </div>
 
-          {/* 전체 보기: 기간 + 날짜 + 미정 섹션 */}
-          {activeTab === 'all' ? (
-            <div className="flex flex-col gap-4 mb-4">
-              {items.length === 0 ? (
-                <div className="card text-center" style={{ padding: '32px 20px' }}>
-                  <p className="text-base font-bold mb-1" style={{ color: 'var(--ink)' }}>체크리스트가 비어있어요</p>
-                  <p className="text-sm mb-5" style={{ color: 'var(--stone)', lineHeight: 1.6 }}>
-                    많이 쓰는 결혼 준비 항목 {DEFAULT_CHECKLIST.length}개를<br />한 번에 불러올 수 있어요
-                  </p>
-                  {templateDone ? (
-                    <p className="text-sm font-semibold" style={{ color: 'var(--toss-blue)' }}>템플릿이 추가됐어요!</p>
-                  ) : (
-                    <button className="btn-rose w-full" onClick={loadTemplate} disabled={loadingTemplate}>
-                      {loadingTemplate ? '불러오는 중...' : '기본 체크리스트 불러오기'}
-                    </button>
-                  )}
-                  <p className="text-xs mt-3" style={{ color: 'var(--stone)' }}>불러온 후 항목을 자유롭게 수정·삭제할 수 있어요</p>
-                </div>
+          {/* 항목 0개 → 어떤 탭이든 템플릿 로드 우선 제안 (첫 진입 막힘 방지) */}
+          {items.length === 0 ? (
+            <div className="card text-center mb-4" style={{ padding: '32px 20px' }}>
+              <p className="text-base font-bold mb-1" style={{ color: 'var(--ink)' }}>체크리스트가 비어있어요</p>
+              <p className="text-sm mb-5" style={{ color: 'var(--stone)', lineHeight: 1.6 }}>
+                많이 쓰는 결혼 준비 항목 {DEFAULT_CHECKLIST.length}개를<br />한 번에 불러올 수 있어요
+              </p>
+              {templateDone ? (
+                <p className="text-sm font-semibold" style={{ color: 'var(--toss-blue)' }}>템플릿이 추가됐어요!</p>
               ) : (
+                <button className="btn-rose w-full" onClick={loadTemplate} disabled={loadingTemplate}>
+                  {loadingTemplate ? '불러오는 중...' : '기본 체크리스트 불러오기'}
+                </button>
+              )}
+              <p className="text-xs mt-3" style={{ color: 'var(--stone)' }}>불러온 후 항목을 자유롭게 수정·삭제할 수 있어요</p>
+              {!weddingDate && (
+                <button
+                  onClick={() => router.push('/setup')}
+                  style={{
+                    marginTop: 12, background: 'none', border: 'none', cursor: 'pointer',
+                    fontSize: 12, color: 'var(--ink-3)', textDecoration: 'underline',
+                  }}
+                >
+                  결혼 날짜 먼저 설정하기 →
+                </button>
+              )}
+            </div>
+          ) : activeTab === 'all' ? (
+            /* 전체 보기: 기간 + 날짜 + 미정 섹션 */
+            <div className="flex flex-col gap-4 mb-4">
+              {(
                 <>
                   {/* ── 타임라인 레일 (기간 기반) ── */}
                   <div className="timeline-rail">

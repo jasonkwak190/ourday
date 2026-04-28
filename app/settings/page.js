@@ -337,16 +337,21 @@ export default function SettingsPage() {
               style={{ backgroundColor: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.2)' }}
             >
               <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
-              <p className="text-xs leading-relaxed" style={{ color: 'var(--toss-red)', margin: 0, fontWeight: 600 }}>
-                파트너 <strong>{partner.name}</strong>님과 함께 작성한{' '}
-                체크리스트·예산·하객 명단 등 모든 데이터가{' '}
-                <span style={{ textDecoration: 'underline' }}>파트너 계정에서도 함께 삭제</span>됩니다.
-              </p>
+              <div style={{ flex: 1 }}>
+                <p className="text-xs leading-relaxed mb-1.5" style={{ color: 'var(--toss-red)', margin: 0, fontWeight: 700 }}>
+                  파트너 {partner.name}님 계정에도 영향을 줍니다
+                </p>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--toss-red)', margin: 0, opacity: 0.9 }}>
+                  탈퇴 시 두 분이 함께 만든 체크리스트·예산·업체·하객 명단·메모·청첩장이{' '}
+                  <strong style={{ textDecoration: 'underline' }}>{partner.name}님 계정에서도 모두 사라지며 복구할 수 없어요.</strong>
+                  {' '}{partner.name}님께 미리 알려주세요.
+                </p>
+              </div>
             </div>
           )}
           <p className="text-xs mb-4" style={{ color: 'var(--toss-text-tertiary)' }}>
             {partner
-              ? '탈퇴하면 커플 연동이 해제되며, 두 분이 함께 쌓은 모든 준비 기록이 영구 삭제됩니다.'
+              ? '탈퇴하면 커플 연동이 해제되며, 두 분이 함께 쌓은 모든 준비 기록이 영구 삭제됩니다. (내 로그인 정보 + 공유 데이터)'
               : '작성한 체크리스트, 예산, 하객 명단 등 모든 데이터가 삭제됩니다.'}
           </p>
           <label className="text-xs font-semibold block mb-1.5" style={{ color: 'var(--toss-text-secondary)' }}>
