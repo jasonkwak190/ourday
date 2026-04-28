@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import Icon from '@/components/Icon';
+import { loadKakaoMaps, geocodeAddress } from '@/lib/kakaoMaps';
 
 // ─── 날짜 포매터 (timezone 버그 방지: UTC 파싱 대신 로컬 날짜로 처리) ──
 export function formatDate(dateStr) {
@@ -14,51 +15,65 @@ export function formatDate(dateStr) {
   return `${y}년 ${m}월 ${d}일 (${days[date.getDay()]})`;
 }
 
-// ─── 지도 embed (OSM + Nominatim 무료 지오코딩) ──────────────────────
-function MapEmbed({ address }) {
-  const [embedUrl, setEmbedUrl] = useState('');
-  const [status, setStatus]     = useState('loading'); // loading | ok | fail
+// ─── 지도 embed (Kakao Maps SDK) ─────────────────────────────────────
+// inv.venue_lat / venue_lng가 있으면 즉시 사용, 없으면 venue_address로 geocoding fallback
+function MapEmbed({ address, lat, lng, venueName }) {
+  const containerRef = useRef(null);
+  const [status, setStatus] = useState('loading');
 
   useEffect(() => {
-    if (!address) { setStatus('fail'); return; }
+    if (!address && !lat) { setStatus('fail'); return; }
     let cancelled = false;
-    fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`,
-      { headers: { 'Accept-Language': 'ko,en' } }
-    )
-      .then(r => r.json())
-      .then(data => {
-        if (cancelled) return;
-        if (data[0]) {
-          const lat = parseFloat(data[0].lat);
-          const lng = parseFloat(data[0].lon);
-          const d   = 0.004;
-          const bbox = `${lng-d},${lat-d},${lng+d},${lat+d}`;
-          setEmbedUrl(`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`);
-          setStatus('ok');
-        } else {
-          setStatus('fail');
-        }
-      })
-      .catch(() => { if (!cancelled) setStatus('fail'); });
-    return () => { cancelled = true; };
-  }, [address]);
 
-  if (!address || status === 'fail') return null;
+    (async () => {
+      try {
+        const kakao = await loadKakaoMaps();
+        if (cancelled) return;
+
+        // 좌표가 이미 DB에 있으면 즉시 사용 (geocoding 호출 없음)
+        let coords = (lat && lng) ? { lat, lng } : null;
+        if (!coords) {
+          coords = await geocodeAddress(address);
+          if (cancelled) return;
+        }
+        if (!coords) { setStatus('fail'); return; }
+
+        const center = new kakao.maps.LatLng(coords.lat, coords.lng);
+        const map = new kakao.maps.Map(containerRef.current, {
+          center,
+          level: 3,
+          draggable: true,
+          scrollwheel: false,
+        });
+        new kakao.maps.Marker({ position: center, map, title: venueName || address });
+        setStatus('ok');
+      } catch (e) {
+        if (!cancelled) setStatus('fail');
+        console.warn('[MapEmbed] kakao failed:', e.message);
+      }
+    })();
+
+    return () => { cancelled = true; };
+  }, [address, lat, lng, venueName]);
+
+  if (status === 'fail') return null;
 
   return (
-    <div style={{ marginTop: 14, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)', height: 180, backgroundColor: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      {status === 'loading' ? (
-        <p style={{ fontSize: 12, color: '#aaa', margin: 0 }}>지도 불러오는 중...</p>
-      ) : (
-        <iframe
-          src={embedUrl}
-          width="100%"
-          height="180"
-          style={{ border: 0, display: 'block' }}
-          loading="lazy"
-          title="예식장 지도"
-        />
+    <div style={{
+      marginTop: 14, borderRadius: 8, overflow: 'hidden',
+      border: '1px solid rgba(0,0,0,0.08)',
+      height: 180, position: 'relative',
+      backgroundColor: '#f0f0f0',
+    }}>
+      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+      {status === 'loading' && (
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex',
+          alignItems: 'center', justifyContent: 'center',
+          backgroundColor: '#f0f0f0',
+        }}>
+          <p style={{ fontSize: 12, color: '#aaa', margin: 0 }}>지도 불러오는 중...</p>
+        </div>
       )}
     </div>
   );
@@ -151,11 +166,17 @@ export function BottomActions({ inv, copied, copyUrl, showAccount, setShowAccoun
     <div style={{ padding: '0 24px 48px', display: 'flex', flexDirection: 'column', gap: 12 }}>
       {(inv.venue_map_url || inv.venue_address) && (
         <a
-          href={inv.venue_map_url || `https://maps.google.com/maps?q=${encodeURIComponent(inv.venue_address)}`}
+          href={
+            inv.venue_map_url
+            || (inv.venue_lat && inv.venue_lng
+              ? `https://map.kakao.com/link/map/${encodeURIComponent(inv.venue_name || inv.venue_address)},${inv.venue_lat},${inv.venue_lng}`
+              : `https://map.kakao.com/?q=${encodeURIComponent(inv.venue_address)}`
+            )
+          }
           target="_blank" rel="noreferrer"
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, height: 52, borderRadius: 14, textDecoration: 'none', fontWeight: 700, fontSize: 15, backgroundColor: accentColor, color: 'white' }}>
           <MapPin size={18} />
-          지도 보기
+          카카오 지도로 보기
         </a>
       )}
       {(inv.account_groom || inv.account_bride) && (
@@ -242,7 +263,7 @@ export function MinimalTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
               <MapPin size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
             </p>
           )}
-          <MapEmbed address={inv.venue_address} />
+          <MapEmbed address={inv.venue_address} lat={inv.venue_lat} lng={inv.venue_lng} venueName={inv.venue_name} />
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
@@ -310,7 +331,7 @@ export function ClassicTemplate({ inv, copied, copyUrl, showAccount, setShowAcco
           <p style={{ fontSize: 15, letterSpacing: '0.1em', color: '#6b4c30', marginBottom: 10, fontWeight: 700 }}>예 식 장</p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d2b1f', margin: '0 0 6px' }}>{inv.venue_name}</p>}
           {inv.venue_address && <p style={{ fontSize: 13, color: '#9a8068', margin: '0 0 0' }}>{inv.venue_address}</p>}
-          <MapEmbed address={inv.venue_address} />
+          <MapEmbed address={inv.venue_address} lat={inv.venue_lat} lng={inv.venue_lng} venueName={inv.venue_name} />
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
@@ -386,7 +407,7 @@ export function FloralTemplate({ inv, copied, copyUrl, showAccount, setShowAccou
           </p>
           {inv.venue_name && <p style={{ fontSize: 17, fontWeight: 700, color: '#3d1a25', margin: '0 0 6px' }}>{inv.venue_name}</p>}
           {inv.venue_address && <p style={{ fontSize: 13, color: '#9c7080', margin: '0 0 0' }}>{inv.venue_address}</p>}
-          <MapEmbed address={inv.venue_address} />
+          <MapEmbed address={inv.venue_address} lat={inv.venue_lat} lng={inv.venue_lng} venueName={inv.venue_name} />
         </div>
       )}
       {(inv.groom_father || inv.groom_mother || inv.bride_father || inv.bride_mother) && (
@@ -696,7 +717,7 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
               <MapPin size={13} style={{ flexShrink: 0, marginTop: 2 }} /> {inv.venue_address}
             </p>
           )}
-          <MapEmbed address={inv.venue_address} />
+          <MapEmbed address={inv.venue_address} lat={inv.venue_lat} lng={inv.venue_lng} venueName={inv.venue_name} />
         </div>
       )}
 

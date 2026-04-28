@@ -5,6 +5,7 @@ import Icon from '@/components/Icon';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
+import AddressSearch from '@/components/AddressSearch';
 
 const TEMPLATES = [
   { key: 'editorial', label: 'Ourday',  icon: 'diamond', desc: '잉크·샴페인 에디토리얼' },
@@ -34,8 +35,8 @@ const SECTIONS = [
     key: 'venue', label: '예식장', icon: 'venue', required: false,
     fields: [
       { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
-      { key: 'venue_address', label: '주소',        placeholder: '서울시 강남구 ...' },
-      { key: 'venue_map_url', label: '지도 링크',   placeholder: 'https://map.kakao.com/...' },
+      { key: 'venue_address', label: '주소',        type: 'address' },
+      { key: 'venue_map_url', label: '지도 링크 (선택)', placeholder: '카카오 지도 링크 직접 지정 시' },
     ],
   },
   {
@@ -195,6 +196,10 @@ export default function InvitationTab({ coupleId }) {
     groom_father: '', groom_mother: '', bride_father: '', bride_mother: '',
     wedding_date: '', wedding_time: '',
     venue_name: '', venue_address: '', venue_map_url: '',
+    // 카카오/다음 표준화된 주소 정보
+    venue_road_address: null, venue_jibun_address: null,
+    venue_sido: null, venue_sigungu: null, venue_bname: null, venue_zonecode: null,
+    venue_lat: null, venue_lng: null,
     account_groom: '', account_bride: '',
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
     notice: '',
@@ -240,6 +245,14 @@ export default function InvitationTab({ coupleId }) {
           venue_name:      existing.venue_name    || '',
           venue_address:   existing.venue_address || '',
           venue_map_url:   existing.venue_map_url || '',
+          venue_road_address:  existing.venue_road_address  ?? null,
+          venue_jibun_address: existing.venue_jibun_address ?? null,
+          venue_sido:          existing.venue_sido          ?? null,
+          venue_sigungu:       existing.venue_sigungu       ?? null,
+          venue_bname:         existing.venue_bname         ?? null,
+          venue_zonecode:      existing.venue_zonecode      ?? null,
+          venue_lat:           existing.venue_lat           ?? null,
+          venue_lng:           existing.venue_lng           ?? null,
           account_groom:   existing.account_groom || '',
           account_bride:   existing.account_bride || '',
           message:         existing.message       || '',
@@ -692,7 +705,49 @@ export default function InvitationTab({ coupleId }) {
                       </div>
                     )}
                   </div>
-                  {type === 'textarea' ? (
+                  {type === 'address' ? (
+                    <AddressSearch
+                      value={form.venue_road_address || form.venue_jibun_address ? {
+                        road_address: form.venue_road_address,
+                        jibun_address: form.venue_jibun_address,
+                        sido: form.venue_sido,
+                        sigungu: form.venue_sigungu,
+                        bname: form.venue_bname,
+                        building_name: form.venue_name || null,
+                        zonecode: form.venue_zonecode,
+                        lat: form.venue_lat,
+                        lng: form.venue_lng,
+                      } : null}
+                      onChange={(addr) => {
+                        // 표준화 객체 → form 일괄 반영
+                        setForm(f => ({
+                          ...f,
+                          venue_address:       addr.road_address || addr.jibun_address || '',
+                          venue_road_address:  addr.road_address,
+                          venue_jibun_address: addr.jibun_address,
+                          venue_sido:          addr.sido,
+                          venue_sigungu:       addr.sigungu,
+                          venue_bname:         addr.bname,
+                          venue_zonecode:      addr.zonecode,
+                          venue_lat:           addr.lat,
+                          venue_lng:           addr.lng,
+                          // 빌딩명이 있고 venue_name이 비었을 때만 자동 채움
+                          venue_name: f.venue_name || addr.building_name || '',
+                        }));
+                        setIsDirty(true);
+                      }}
+                      onClear={() => {
+                        setForm(f => ({
+                          ...f,
+                          venue_address: '', venue_road_address: null, venue_jibun_address: null,
+                          venue_sido: null, venue_sigungu: null, venue_bname: null,
+                          venue_zonecode: null, venue_lat: null, venue_lng: null,
+                        }));
+                        setIsDirty(true);
+                      }}
+                      placeholder="예식장 주소 검색하기"
+                    />
+                  ) : type === 'textarea' ? (
                     <textarea
                       value={form[key]}
                       onChange={e => {

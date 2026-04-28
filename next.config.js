@@ -12,18 +12,18 @@ const SUPABASE_WS  = 'wss://eapmagibtipjbagitqmf.supabase.co';
 // - 'unsafe-eval' 제거: Next.js 프로덕션 빌드에서 불필요
 const CSP = [
   `default-src 'self'`,
-  // 스크립트: 자신 + 카카오 SDK
-  `script-src 'self' 'unsafe-inline' https://t1.kakaocdn.net`,
+  // 스크립트: 자신 + 카카오 SDK + 카카오 지도 SDK + 다음 우편번호
+  `script-src 'self' 'unsafe-inline' https://t1.kakaocdn.net https://dapi.kakao.com https://t1.daumcdn.net`,
   // 스타일: 자신 + Google Fonts + JSDelivr (Pretendard)
   `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net`,
   // 폰트: Google Fonts + JSDelivr
   `font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net`,
-  // API 통신: Supabase (REST + Realtime WebSocket)
-  `connect-src 'self' ${SUPABASE_URL} ${SUPABASE_WS} https://t1.kakaocdn.net https://*.ingest.us.sentry.io https://*.ingest.sentry.io`,
-  // 이미지: 자신 + Supabase Storage + data URI + blob + 외부 OG 이미지 (link preview 썸네일)
+  // API 통신: Supabase + 카카오 지도/우편번호 + Sentry
+  `connect-src 'self' ${SUPABASE_URL} ${SUPABASE_WS} https://t1.kakaocdn.net https://dapi.kakao.com https://*.daumcdn.net https://*.ingest.us.sentry.io https://*.ingest.sentry.io`,
+  // 이미지: 자신 + Supabase Storage + data URI + blob + 카카오 지도 타일 + 외부 OG 이미지
   `img-src 'self' ${SUPABASE_URL} data: blob: https:`,
-  // 프레임: 카카오 지도 iframe 허용
-  `frame-src https://map.kakao.com`,
+  // 프레임: 카카오 지도 + 다음 우편번호 (iframe 모드)
+  `frame-src https://map.kakao.com https://postcode.map.daum.net`,
   // 폼: 자신만
   `form-action 'self'`,
   // base-uri: 자신만
