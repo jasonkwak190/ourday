@@ -52,8 +52,9 @@ function InvitationCover({ inv, onOpen }) {
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, margin: '0 0 28px' }}>
         <p style={{
           fontFamily: SERIF_EN, fontStyle: 'italic',
-          fontSize: 11, color: 'rgba(201,169,110,0.7)',
-          letterSpacing: '0.32em', textTransform: 'uppercase',
+          fontSize: 15, color: '#C9A96E',
+          letterSpacing: '0.28em', textTransform: 'uppercase',
+          fontWeight: 500,
           margin: 0, textAlign: 'center',
         }}>
           · Mobile Wedding Invitation ·
