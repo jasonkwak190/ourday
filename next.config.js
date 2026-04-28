@@ -23,7 +23,8 @@ const CSP = [
   // 이미지: 자신 + Supabase Storage + data URI + blob + 카카오 지도 타일 + 외부 OG 이미지
   `img-src 'self' ${SUPABASE_URL} data: blob: https:`,
   // 프레임: 카카오 지도 + 다음 우편번호 (iframe 모드)
-  `frame-src https://map.kakao.com https://postcode.map.daum.net`,
+  // 다음 우편번호 SDK는 postcode.map.kakao.com을 내부 iframe으로 로드
+  `frame-src https://map.kakao.com https://postcode.map.daum.net https://postcode.map.kakao.com http://postcode.map.kakao.com`,
   // 폼: 자신만
   `form-action 'self'`,
   // base-uri: 자신만
