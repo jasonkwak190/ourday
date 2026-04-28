@@ -451,6 +451,23 @@ export default function TimelinePage() {
     setAdding(false); setSaving(false);
   }
 
+  /* ─ 빠른 항목 추가 (한 줄 인라인) — 시기·담당·메모 모두 default ─ */
+  async function quickAddItem(title) {
+    if (!title.trim() || !coupleId) return;
+    const payload = {
+      couple_id: coupleId,
+      title: title.trim(),
+      assigned_to: 'both',
+      is_done: false,
+    };
+    const { data, error } = await supabase.from('checklist_items').insert(payload).select().single();
+    if (error) {
+      console.error('[quickAdd] failed:', error.message);
+      return;
+    }
+    if (data) setItems(prev => prev.find(it => it.id === data.id) ? prev : [...prev, data]);
+  }
+
   async function loadTemplate() {
     if (!coupleId || loadingTemplate) return;
     setLoadingTemplate(true);
@@ -1191,7 +1208,7 @@ export default function TimelinePage() {
 
           {/* "내 할 일만" 필터 — 사용자에게 role 있을 때만 노출 */}
           {userRole && (
-            <div className="flex items-center mb-4">
+            <div className="flex items-center mb-3">
               <button
                 onClick={() => setMyOnly(v => !v)}
                 style={{
@@ -1205,6 +1222,11 @@ export default function TimelinePage() {
                 {myOnly ? '✓ ' : ''}내 할 일만 ({userRole === 'groom' ? '신랑' : '신부'})
               </button>
             </div>
+          )}
+
+          {/* 빠른 항목 추가 — 한 줄 인라인 */}
+          {items.length > 0 && (
+            <QuickAddRow onAdd={quickAddItem} onOpenFull={() => setAdding(true)} />
           )}
 
           {/* 항목 0개 → 어떤 탭이든 템플릿 로드 우선 제안 (첫 진입 막힘 방지) */}
@@ -1442,9 +1464,7 @@ export default function TimelinePage() {
                 </button>
               </div>
             </div>
-          ) : (
-            <button className="btn-outline w-full" onClick={() => setAdding(true)}>+ 항목 추가</button>
-          )}
+          ) : null /* 인라인 QuickAddRow 가 항상 노출됨 — 중복 버튼 제거 */}
         </>
       )}
 
@@ -1687,6 +1707,76 @@ function MemoEditor({ item, onSave, onClose }) {
         <button className="btn-outline flex-1 text-sm py-2" onClick={onClose}>닫기</button>
         <button className="btn-rose flex-1 text-sm py-2" onClick={() => onSave(text)}>저장</button>
       </div>
+    </div>
+  );
+}
+
+/**
+ * 빠른 항목 추가 — 한 줄 인라인 입력으로 시기·담당 default, Enter로 즉시 저장.
+ * 기존 풀 폼은 '자세히 추가' 버튼으로 보존.
+ */
+function QuickAddRow({ onAdd, onOpenFull }) {
+  const [title, setTitle] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  async function submit() {
+    const t = title.trim();
+    if (!t || submitting) return;
+    setSubmitting(true);
+    await onAdd(t);
+    setTitle('');
+    setSubmitting(false);
+  }
+
+  return (
+    <div className="flex items-center gap-2 mb-3" style={{
+      padding: '6px 6px 6px 14px',
+      borderRadius: 999,
+      border: '1px solid var(--rule)',
+      backgroundColor: 'var(--paper)',
+    }}>
+      <span style={{ flexShrink: 0, color: 'var(--ink-4)', fontSize: 16, lineHeight: 1, fontWeight: 600 }}>+</span>
+      <input
+        type="text"
+        value={title}
+        onChange={e => setTitle(e.target.value)}
+        onKeyDown={e => e.key === 'Enter' && submit()}
+        placeholder="할 일 빠르게 추가 (Enter로 저장)"
+        style={{
+          flex: 1, minWidth: 0,
+          border: 'none', outline: 'none',
+          backgroundColor: 'transparent',
+          fontSize: 14, color: 'var(--ink)',
+          fontFamily: 'var(--font-sans)',
+        }}
+      />
+      <button
+        onClick={onOpenFull}
+        title="시기·담당·메모까지 자세히 추가"
+        style={{
+          flexShrink: 0,
+          background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: 11, color: 'var(--ink-3)', padding: '6px 8px',
+          textDecoration: 'underline',
+        }}
+      >
+        자세히
+      </button>
+      <button
+        onClick={submit}
+        disabled={!title.trim() || submitting}
+        style={{
+          flexShrink: 0,
+          padding: '7px 16px', borderRadius: 999,
+          backgroundColor: title.trim() ? 'var(--ink)' : 'var(--rule)',
+          color: title.trim() ? 'var(--ivory)' : 'var(--ink-4)',
+          border: 'none', cursor: title.trim() ? 'pointer' : 'not-allowed',
+          fontSize: 13, fontWeight: 600,
+          transition: 'all 0.15s',
+        }}
+      >
+        {submitting ? '...' : '추가'}
+      </button>
     </div>
   );
 }
