@@ -1,3 +1,8 @@
+// 청첩장은 사용자가 cover/제목 등을 자주 바꾸므로 메타데이터 캐싱 비활성화.
+// 이걸 안 하면 DB가 갱신돼도 og:image가 첫 빌드 시점 값에 고정됨.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 import { createClient } from '@supabase/supabase-js';
 
 function anonClient() {

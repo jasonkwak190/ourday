@@ -84,7 +84,8 @@ function inferEnabledSections(existing) {
   return SECTIONS
     .filter(s => s.required || (existing && (
       s.fields.some(f => existing[f.key]) ||
-      (s.key === 'photos' && Array.isArray(existing.photos) && existing.photos.length > 0)
+      (s.key === 'photos' && Array.isArray(existing.photos) && existing.photos.length > 0) ||
+      (s.key === 'cover'  && !!existing.cover_image_url)
     )))
     .map(s => s.key);
 }
