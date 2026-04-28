@@ -207,7 +207,12 @@ export default function InvitationTab({ coupleId }) {
 
   const [origin, setOrigin] = useState('');
   useEffect(() => { setOrigin(window.location.origin); }, []);
-  const shareUrl = inv ? `${origin}/i/${inv.slug}` : '';
+  // 카카오 OG 캐시 무효화: updated_at 기반 cache buster.
+  // 카카오는 URL 단위로 OG 정보를 캐싱하므로, 청첩장 수정 후 ?v=<timestamp> 가 바뀌면
+  // 새 URL로 인식해 OG 메타(썸네일·제목·설명)를 다시 크롤링한다.
+  const shareUrl = inv
+    ? `${origin}/i/${inv.slug}${inv.updated_at ? `?v=${new Date(inv.updated_at).getTime()}` : ''}`
+    : '';
 
   useEffect(() => {
     if (!coupleId) return;
