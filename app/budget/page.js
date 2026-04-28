@@ -7,6 +7,7 @@ import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import { Wallet, Store, AlertTriangle, Edit3, Trash2, Download, Paperclip, X, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import VenueSearch from '@/components/VenueSearch';
 
 /* ─── 업체 종류 ────────────────────────────────────────────────── */
 const VENDOR_TYPES = [
@@ -149,8 +150,19 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
         ))}
       </div>
 
-      <input className="input-field" placeholder="업체명 *" value={form.name}
-        onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+      {/* 업체명 — Kakao 검색 (호텔/예식장/스튜디오 등) + 직접 입력 fallback (음식·여행 등) */}
+      <VenueSearch
+        triggerLabel="업체 검색 또는 직접 입력 *"
+        modalTitle="업체 검색"
+        value={form.name ? { venue_name: form.name } : null}
+        onChange={(v) => setForm(f => ({
+          ...f,
+          name: v.venue_name || '',
+          // 담당자 연락처 비어있을 때만 자동 채움 (사용자 입력 우선)
+          contact_phone: f.contact_phone || v.phone || '',
+        }))}
+        onClear={() => setForm(f => ({ ...f, name: '' }))}
+      />
 
       <div className="flex gap-2">
         <input className="input-field flex-1" placeholder="담당자" value={form.contact_name}

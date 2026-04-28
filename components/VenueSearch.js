@@ -13,7 +13,13 @@ import { searchPlaces, geocodeAddress, loadDaumPostcode, loadKakaoMaps } from '@
  *
  * SDK 로드 실패 시 명확한 안내 + 주소 검색만으로 진행 가능
  */
-export default function VenueSearch({ value, onChange, onClear }) {
+export default function VenueSearch({
+  value,
+  onChange,
+  onClear,
+  triggerLabel = '예식장 이름 또는 주소 검색',
+  modalTitle = '예식장 검색',
+}) {
   const [open, setOpen]         = useState(false);
   const [query, setQuery]       = useState('');
   const [results, setResults]   = useState([]);
@@ -218,7 +224,7 @@ export default function VenueSearch({ value, onChange, onClear }) {
         }}
       >
         <Search size={16} color="var(--ink-3)" style={{ flexShrink: 0 }} />
-        <span style={{ flex: 1 }}>예식장 이름 또는 주소 검색</span>
+        <span style={{ flex: 1 }}>{triggerLabel}</span>
       </button>
 
       {/* 모달 — 풀스크린 시트 */}
@@ -248,7 +254,7 @@ export default function VenueSearch({ value, onChange, onClear }) {
               padding: '14px 18px', borderBottom: '1px solid var(--rule)',
             }}>
               <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>
-                {postcodeMode ? '주소 검색' : '예식장 검색'}
+                {postcodeMode ? '주소 검색' : modalTitle}
               </p>
               <button onClick={close} aria-label="닫기"
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: 'var(--ink-3)' }}>
