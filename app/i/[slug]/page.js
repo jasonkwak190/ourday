@@ -48,6 +48,27 @@ function InvitationCover({ inv, onOpen }) {
         borderRadius: 4, pointerEvents: 'none',
       }} />
 
+      {/* 매체 명시 — 첫인상에 '모바일 청첩장'임을 분명하게 (한글·영문 병기) */}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, margin: '0 0 28px' }}>
+        <p style={{
+          fontFamily: SERIF_EN, fontStyle: 'italic',
+          fontSize: 11, color: 'rgba(201,169,110,0.7)',
+          letterSpacing: '0.32em', textTransform: 'uppercase',
+          margin: 0, textAlign: 'center',
+        }}>
+          · Mobile Wedding Invitation ·
+        </p>
+        <p style={{
+          fontFamily: "'Noto Serif KR', serif",
+          fontSize: 13, fontWeight: 500,
+          color: 'rgba(250,248,245,0.88)',
+          letterSpacing: '0.18em',
+          margin: 0, textAlign: 'center',
+        }}>
+          모바일 청첩장
+        </p>
+      </div>
+
       {/* O·D 모노그램 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }}>
         <span style={{ fontFamily: SERIF_EN, fontSize: 80, fontWeight: 500, color: '#FAF8F5', lineHeight: 1, letterSpacing: '-0.03em' }}>O</span>
