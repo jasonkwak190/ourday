@@ -178,10 +178,18 @@ export default function DecisionsPage() {
 
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
-      {/* 저장 토스트 */}
+      {/* 저장 토스트 — BottomNav 위에 항상 표시 */}
       {toast && (
-        <div className="fixed left-1/2 z-50 px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg"
-          style={{ bottom: 96, transform: 'translateX(-50%)', backgroundColor: 'var(--ink)', color: 'white', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+        <div className="fixed left-1/2 px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg"
+          style={{
+            bottom: 'calc(92px + env(safe-area-inset-bottom))',
+            zIndex: 60,
+            transform: 'translateX(-50%)',
+            backgroundColor: 'var(--ink)',
+            color: 'white',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+          }}>
           {toast}
         </div>
       )}

@@ -408,8 +408,15 @@ export default function GuestsPage() {
                             />
                             <span className="text-xs" style={{ color: 'var(--stone)' }}>만</span>
                             <button onClick={() => saveGiftAmount(guest.id)}
-                              className="text-xs font-medium"
-                              style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                              className="text-xs font-semibold"
+                              style={{
+                                minHeight: 36, minWidth: 44, padding: '0 12px',
+                                borderRadius: 999,
+                                backgroundColor: 'var(--rose-light)',
+                                color: 'var(--rose)',
+                                border: 'none', cursor: 'pointer',
+                              }}
+                              aria-label="축의금 저장">
                               저장
                             </button>
                           </div>

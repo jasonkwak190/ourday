@@ -6,7 +6,7 @@ import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
-import { Wallet, Store, AlertTriangle, Edit3, Download, Paperclip, X, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Wallet, Store, AlertTriangle, Edit3, Trash2, Download, Paperclip, X, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
 
 /* ─── 업체 종류 ────────────────────────────────────────────────── */
 const VENDOR_TYPES = [
@@ -98,13 +98,25 @@ function DonutChart({ vendors }) {
           <text x={CX} y={CY + 28} textAnchor="middle" fontSize={11} fill="#6E6459" fontFamily={FONT}>만원</text>
         </svg>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 12px' }}>
+      <div
+        style={{
+          display: 'grid',
+          // 360px 이상에서 2열, 그 미만에선 1열 — 작은 화면 텍스트 overflow 방지
+          gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+          gap: '10px 12px',
+        }}
+      >
         {segments.map((seg, i) => (
           <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }}>
             <div style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: seg.color, flexShrink: 0 }} />
             <div style={{ minWidth: 0, flex: 1 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 12, color: 'var(--ink-2)', fontWeight: 500, whiteSpace: 'nowrap' }}>{seg.label}</span>
+                <span style={{
+                  fontSize: 12, color: 'var(--ink-2)', fontWeight: 500,
+                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+                }}>
+                  {seg.label}
+                </span>
                 <span style={{ fontSize: 12, color: 'var(--ink-3)', flexShrink: 0 }}>{Math.round(seg.ratio * 100)}%</span>
               </div>
               <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink)', margin: 0 }}>{seg.total.toLocaleString()}만원</p>
@@ -971,18 +983,18 @@ export default function BudgetPage() {
 
                 {menuId === vendor.id && (
                   <div className="absolute right-0 z-10 rounded-xl shadow-lg overflow-hidden"
-                    style={{ top: 40, backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: 110 }}
+                    style={{ top: 40, backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: 130 }}
                     onClick={e => e.stopPropagation()}>
-                    <button className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium"
-                      style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    <button className="w-full flex items-center gap-2.5 px-4 text-sm font-medium"
+                      style={{ minHeight: 48, color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
                       onClick={() => startEdit(vendor)}>
-                      <Edit3 size={14} /> 수정
+                      <Edit3 size={16} strokeWidth={2.2} /> 수정
                     </button>
                     <div style={{ height: 1, backgroundColor: 'var(--beige)' }} />
-                    <button className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium"
-                      style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
+                    <button className="w-full flex items-center gap-2.5 px-4 text-sm font-medium"
+                      style={{ minHeight: 48, color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}
                       onClick={() => { setDeleteConfirmId(vendor.id); setMenuId(null); }}>
-                      <Store size={14} /> 삭제
+                      <Trash2 size={16} strokeWidth={2.2} /> 삭제
                     </button>
                   </div>
                 )}

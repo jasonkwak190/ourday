@@ -520,16 +520,37 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
                     </div>
                   </div>
                 ) : (
-                  /* 파싱 실패 — 일반 링크 */
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
-                    padding: '8px 10px', borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(0,0,0,0.08)' }}>
-                    <Link2 size={13} color={bubbleColor.text} style={{ flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all', flex: 1 }}>
-                      {note.link_url.length > 40 ? note.link_url.slice(0, 40) + '…' : note.link_url}
-                    </span>
-                    <ExternalLink size={12} color={bubbleColor.text} style={{ flexShrink: 0 }} />
-                  </div>
+                  /* 파싱 실패 — 일반 링크 (클릭하면 새 탭에서 열림) */
+                  <a
+                    href={note.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 4,
+                      padding: '10px 12px', borderRadius: 10,
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Link2 size={14} color={bubbleColor.text} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontSize: 11, color: bubbleColor.text, opacity: 0.6,
+                        margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.04em',
+                      }}>
+                        링크 (탭하면 열려요)
+                      </p>
+                      <span style={{
+                        fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all',
+                        textDecoration: 'underline', textDecorationStyle: 'dotted',
+                      }}>
+                        {note.link_url.length > 50 ? note.link_url.slice(0, 50) + '…' : note.link_url}
+                      </span>
+                    </div>
+                    <ExternalLink size={13} color={bubbleColor.text} style={{ flexShrink: 0 }} />
+                  </a>
                 )}
               </div>
             )}
