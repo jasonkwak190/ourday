@@ -21,6 +21,8 @@ export default function GalleryTab() {
   const [copied,     setCopied]     = useState(false);
   const [deleting,   setDeleting]   = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  // 5초 undo 토스트 — 결혼식 사진 실수 삭제 방지
+  const [pendingDelete, setPendingDelete] = useState(null); // { photo, timer }
 
   // 모달 상태: photo + 애니메이션 분리
   const [modalPhoto,   setModalPhoto]   = useState(null);
@@ -129,16 +131,56 @@ export default function GalleryTab() {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function deletePhoto(photo) {
-    if (!confirm('이 사진을 삭제할까요?')) return;
+  // 실제 백엔드 삭제 — undo 시간 지난 후 실행
+  async function commitDelete(photo) {
     setDeleting(photo.id);
     await fetch(`/api/gallery?photo_id=${photo.id}`, { method: 'DELETE' });
-    const updated = (photos).filter(p => p.id !== photo.id);
-    setPhotos(updated);
-    if (_galleryCache) _galleryCache = { ..._galleryCache, photos: updated }; // 캐시 동기화
     setDeleting(null);
-    if (modalPhoto?.id === photo.id) closeModal();
   }
+
+  // 사진 삭제 (5초 undo) — 결혼식 사진은 복구 불가능한 데이터
+  function deletePhoto(photo) {
+    // 이미 다른 사진 undo 대기 중이면 즉시 확정
+    if (pendingDelete) {
+      clearTimeout(pendingDelete.timer);
+      commitDelete(pendingDelete.photo);
+    }
+    // UI에서 즉시 숨김 (낙관적)
+    const updated = photos.filter(p => p.id !== photo.id);
+    setPhotos(updated);
+    if (_galleryCache) _galleryCache = { ..._galleryCache, photos: updated };
+    if (modalPhoto?.id === photo.id) closeModal();
+
+    // 5초 후 실제 삭제. 그 안에 undo 클릭하면 복원
+    const timer = setTimeout(() => {
+      commitDelete(photo);
+      setPendingDelete(null);
+    }, 5000);
+    setPendingDelete({ photo, timer });
+  }
+
+  // 삭제 되돌리기
+  function undoDelete() {
+    if (!pendingDelete) return;
+    clearTimeout(pendingDelete.timer);
+    const restored = [...photos, pendingDelete.photo].sort(
+      (a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at)
+    );
+    setPhotos(restored);
+    if (_galleryCache) _galleryCache = { ..._galleryCache, photos: restored };
+    setPendingDelete(null);
+  }
+
+  // 컴포넌트 unmount 시 pending delete 즉시 commit (창 닫혀도 백엔드 정리)
+  useEffect(() => {
+    return () => {
+      if (pendingDelete) {
+        clearTimeout(pendingDelete.timer);
+        commitDelete(pendingDelete.photo);
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // ── 계산 ─────────────────────────────────────────────────────
   const guestUrl   = event ? `${origin}/guest/${event.event_code}` : '';
@@ -387,6 +429,48 @@ export default function GalleryTab() {
           animation: shimmer 1.2s ease-in-out infinite;
         }
       `}</style>
+
+      {/* 5초 undo 토스트 */}
+      {pendingDelete && (
+        <div
+          role="status"
+          style={{
+            position: 'fixed',
+            bottom: 'calc(96px + env(safe-area-inset-bottom))',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 60,
+            backgroundColor: 'var(--ink)',
+            color: 'var(--ivory)',
+            padding: '12px 16px 12px 20px',
+            borderRadius: 999,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+            fontSize: 14,
+            fontWeight: 500,
+            boxShadow: '0 8px 28px rgba(0,0,0,0.25)',
+            maxWidth: 'calc(100% - 32px)',
+          }}
+        >
+          <span>사진 1장이 삭제됩니다</span>
+          <button
+            onClick={undoDelete}
+            style={{
+              background: 'transparent',
+              color: 'var(--champagne)',
+              border: 'none',
+              cursor: 'pointer',
+              fontSize: 14,
+              fontWeight: 700,
+              padding: '4px 8px',
+              borderRadius: 6,
+            }}
+          >
+            되돌리기
+          </button>
+        </div>
+      )}
     </>
   );
 }

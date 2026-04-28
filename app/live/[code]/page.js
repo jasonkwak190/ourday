@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, use } from 'react';
-import { Heart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import { Heart, ChevronLeft, ChevronRight, Play, Pause, Maximize2, Minimize2 } from 'lucide-react';
 import Icon from '@/components/Icon';
 import PageLoader from '@/components/PageLoader';
 
@@ -19,6 +19,13 @@ export default function LiveSlideshowPage({ params }) {
   const [showUI, setShowUI]     = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [nextRefresh, setNextRefresh] = useState(30);  // 다음 갱신까지 초
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
 
   // 사진 로드 (30초마다 자동 갱신)
   const loadPhotos = useCallback(async () => {
@@ -60,6 +67,37 @@ export default function LiveSlideshowPage({ params }) {
     const t = setTimeout(() => setShowUI(false), 3000);
     return () => clearTimeout(t);
   }, [showUI]);
+
+  // Wake Lock — 식장 모니터/태블릿이 자동으로 꺼지지 않게
+  useEffect(() => {
+    let lock = null;
+    const acquire = async () => {
+      try {
+        if ('wakeLock' in navigator) {
+          lock = await navigator.wakeLock.request('screen');
+        }
+      } catch { /* 권한 거부·미지원 무시 */ }
+    };
+    acquire();
+    // 탭 다시 활성화될 때 재획득
+    const onVisibility = () => { if (document.visibilityState === 'visible') acquire(); };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      if (lock) lock.release().catch(() => {});
+    };
+  }, []);
+
+  // 전체화면 토글 — 식장 모니터에서 알림바·뒤로가기 버튼 가리기
+  async function toggleFullscreen() {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch { /* 브라우저 미지원 등 무시 */ }
+  }
 
   function prev() { setCurrent(c => (c - 1 + photos.length) % photos.length); }
   function next() { setCurrent(c => (c + 1) % photos.length); }
@@ -195,6 +233,17 @@ export default function LiveSlideshowPage({ params }) {
         {/* 다음 */}
         <button onClick={e => { e.stopPropagation(); next(); }} style={ctrlBtn}>
           <ChevronRight size={24} color="white" />
+        </button>
+
+        {/* 전체화면 — 식장 모니터에서 알림바·뒤로가기 가리기 */}
+        <button
+          onClick={e => { e.stopPropagation(); toggleFullscreen(); }}
+          style={ctrlBtn}
+          aria-label={isFullscreen ? '전체화면 해제' : '전체화면'}
+        >
+          {isFullscreen
+            ? <Minimize2 size={22} color="white" />
+            : <Maximize2 size={22} color="white" />}
         </button>
       </div>
 
