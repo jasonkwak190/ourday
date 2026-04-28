@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
-import { Wallet, Store, AlertTriangle, Edit3 } from 'lucide-react';
+import { Wallet, Store, AlertTriangle, Edit3, Download, Paperclip, X, FileText, Image as ImageIcon, Loader2 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 
 /* ─── 업체 종류 ────────────────────────────────────────────────── */
 const VENDOR_TYPES = [
@@ -196,6 +197,105 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
   );
 }
 
+/* ─── 첨부파일 칩 + 업로드 버튼 ─────────────────────────────────── */
+function VendorAttachments({ vendor, onUpload, onOpen, onRemove }) {
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+  const items = vendor.attachments || [];
+
+  async function handleFiles(files) {
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    for (const f of files) await onUpload(vendor, f);
+    setUploading(false);
+    if (fileRef.current) fileRef.current.value = '';
+  }
+
+  return (
+    <div className="mt-3" style={{ borderTop: '1px dashed var(--rule)', paddingTop: 10 }}>
+      <div className="flex items-center justify-between mb-1.5">
+        <p className="text-xs flex items-center gap-1" style={{ color: 'var(--stone)' }}>
+          <Paperclip size={11} strokeWidth={2.2} />
+          첨부 ({items.length})
+        </p>
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          className="text-xs flex items-center gap-1"
+          style={{
+            background: 'none',
+            border: '1px solid var(--rule-strong)',
+            borderRadius: 999,
+            padding: '3px 10px',
+            cursor: uploading ? 'wait' : 'pointer',
+            color: 'var(--ink-2)',
+            fontWeight: 600,
+          }}
+        >
+          {uploading ? <Loader2 size={11} className="animate-spin" /> : <Paperclip size={11} />}
+          {uploading ? '업로드 중' : '파일 추가'}
+        </button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*,application/pdf"
+          multiple
+          onChange={e => handleFiles(e.target.files)}
+          style={{ display: 'none' }}
+        />
+      </div>
+      {items.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {items.map((att) => (
+            <div
+              key={att.path}
+              className="inline-flex items-center gap-1.5"
+              style={{
+                backgroundColor: 'var(--paper)',
+                border: '1px solid var(--rule)',
+                borderRadius: 8,
+                padding: '4px 4px 4px 8px',
+                maxWidth: '100%',
+              }}
+            >
+              <button
+                onClick={() => onOpen(att)}
+                className="flex items-center gap-1.5 min-w-0"
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'var(--ink-2)' }}
+                title={att.name}
+              >
+                {(att.type || '').startsWith('image/')
+                  ? <ImageIcon size={11} strokeWidth={2.2} style={{ flexShrink: 0 }} />
+                  : <FileText size={11} strokeWidth={2.2} style={{ flexShrink: 0 }} />}
+                <span
+                  className="text-xs"
+                  style={{
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    maxWidth: 140, display: 'inline-block',
+                  }}
+                >
+                  {att.name}
+                </span>
+              </button>
+              <button
+                onClick={() => onRemove(att)}
+                aria-label={`${att.name} 삭제`}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  padding: 2, display: 'flex', alignItems: 'center',
+                  color: 'var(--ink-4)',
+                }}
+              >
+                <X size={11} strokeWidth={2.4} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ─── 메인 ────────────────────────────────────────────────────── */
 export default function BudgetPage() {
   const today  = new Date();
@@ -233,7 +333,7 @@ export default function BudgetPage() {
     const load = async () => {
       const [coupleRes, vendorRes] = await Promise.all([
         supabase.from('couples').select('total_budget').eq('id', coupleId).single(),
-        supabase.from('vendors').select('id, type, name, contact_name, contact_phone, deposit, balance, balance_due, contract_status, memo, created_at').eq('couple_id', coupleId).order('created_at'),
+        supabase.from('vendors').select('id, type, name, contact_name, contact_phone, deposit, balance, balance_due, contract_status, memo, attachments, created_at').eq('couple_id', coupleId).order('created_at'),
       ]);
       setTotalBudget(coupleRes.data?.total_budget || 0);
       setVendors(vendorRes.data || []);
@@ -253,6 +353,92 @@ export default function BudgetPage() {
       }).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [coupleId]);
+
+  /* ─ Excel 다운로드 (xlsx, 한글 헤더, 컬럼 너비 자동) ─ */
+  function downloadExcel() {
+    if (vendors.length === 0) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const headers = ['종류', '업체명', '담당자', '연락처', '계약금(만원)', '잔금(만원)', '합계(만원)', '잔금일', '계약상태', '메모'];
+    const rows = vendors.map(v => {
+      const sum = (v.deposit || 0) + (v.balance || 0);
+      return [
+        getTypeInfo(v.type).label,
+        v.name,
+        v.contact_name || '',
+        v.contact_phone || '',
+        v.deposit ?? '',
+        v.balance ?? '',
+        sum || '',
+        v.balance_due || '',
+        getStatusInfo(v.contract_status).label,
+        v.memo || '',
+      ];
+    });
+    const totalDeposit = vendors.reduce((s, v) => s + (v.deposit || 0), 0);
+    const totalBalance = vendors.reduce((s, v) => s + (v.balance || 0), 0);
+    const totalSum     = totalDeposit + totalBalance;
+    rows.push(['', '합계', '', '', totalDeposit, totalBalance, totalSum, '', '', '']);
+    if (totalBudget > 0) {
+      rows.push(['', '총 예산', '', '', '', '', totalBudget, '', '', '']);
+      rows.push(['', '예산 대비', '', '', '', '', totalSum - totalBudget, '', '', totalSum > totalBudget ? '초과' : '여유']);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+    // 컬럼 너비
+    ws['!cols'] = [
+      { wch: 10 }, { wch: 20 }, { wch: 12 }, { wch: 16 },
+      { wch: 14 }, { wch: 14 }, { wch: 14 }, { wch: 14 },
+      { wch: 12 }, { wch: 24 },
+    ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '예산·업체');
+    XLSX.writeFile(wb, `ourday_budget_${today}.xlsx`);
+  }
+
+  /* ─ CSV 다운로드 (Excel 호환, 한글 BOM 포함) ─ */
+  function downloadCSV() {
+    if (vendors.length === 0) return;
+    const escape = (s) => {
+      const v = s == null ? '' : String(s);
+      return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v;
+    };
+    const headers = ['종류', '업체명', '담당자', '연락처', '계약금(만원)', '잔금(만원)', '합계(만원)', '잔금일', '계약상태', '메모'];
+    const rows = vendors.map(v => {
+      const sum = (v.deposit || 0) + (v.balance || 0);
+      return [
+        getTypeInfo(v.type).label,
+        v.name,
+        v.contact_name || '',
+        v.contact_phone || '',
+        v.deposit ?? '',
+        v.balance ?? '',
+        sum || '',
+        v.balance_due || '',
+        getStatusInfo(v.contract_status).label,
+        v.memo || '',
+      ].map(escape).join(',');
+    });
+    // 합계 라인
+    const totalDeposit  = vendors.reduce((s, v) => s + (v.deposit || 0), 0);
+    const totalBalance  = vendors.reduce((s, v) => s + (v.balance || 0), 0);
+    const totalSum      = totalDeposit + totalBalance;
+    rows.push(['', '합계', '', '', totalDeposit, totalBalance, totalSum, '', '', ''].map(escape).join(','));
+    if (totalBudget > 0) {
+      rows.push(['', '총 예산', '', '', '', '', totalBudget, '', '', ''].map(escape).join(','));
+      rows.push(['', '예산 대비', '', '', '', '', totalSum - totalBudget, '', '', totalSum > totalBudget ? '초과' : '여유'].map(escape).join(','));
+    }
+    const csv = '﻿' + [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const today = new Date().toISOString().slice(0, 10);
+    a.download = `ourday_budget_${today}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
 
   /* ─ 총예산 저장 ─ */
   async function saveTotalBudget() {
@@ -312,10 +498,83 @@ export default function BudgetPage() {
   }
 
   async function deleteVendor(id) {
+    const target = vendors.find(v => v.id === id);
     setVendors(prev => prev.filter(v => v.id !== id));
+    // Storage 파일 정리 (실패해도 vendor는 삭제 — 고아 파일은 추후 cron 정리)
+    const paths = (target?.attachments || []).map(a => a.path).filter(Boolean);
+    if (paths.length > 0) {
+      try { await supabase.storage.from('vendor-attachments').remove(paths); }
+      catch { /* 무시 */ }
+    }
     await supabase.from('vendors').delete().eq('id', id);
     setMenuId(null);
     setDeleteConfirmId(null);
+  }
+
+  /* ─ 첨부파일 추가 ─ */
+  async function uploadAttachment(vendor, file) {
+    if (!file || !coupleId || !vendor?.id) return null;
+    if (file.size > 10 * 1024 * 1024) {
+      alert('파일은 10MB 이하만 첨부할 수 있어요.');
+      return null;
+    }
+    // 안전한 경로: {couple_id}/{vendor_id}/{timestamp}_{safe_name}
+    const safeName = file.name.replace(/[^\w가-힣ㄱ-ㅎㅏ-ㅣ.\-]/g, '_').slice(0, 80);
+    const path = `${coupleId}/${vendor.id}/${Date.now()}_${safeName}`;
+    const { error: upErr } = await supabase.storage
+      .from('vendor-attachments')
+      .upload(path, file, { contentType: file.type, upsert: false });
+    if (upErr) {
+      alert('업로드에 실패했어요: ' + upErr.message);
+      return null;
+    }
+    const meta = {
+      path,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      uploaded_at: new Date().toISOString(),
+    };
+    const newList = [...(vendor.attachments || []), meta];
+    const { error: updErr } = await supabase
+      .from('vendors')
+      .update({ attachments: newList })
+      .eq('id', vendor.id);
+    if (updErr) {
+      // DB 업데이트 실패 시 storage 롤백
+      await supabase.storage.from('vendor-attachments').remove([path]);
+      alert('저장에 실패했어요. 다시 시도해주세요.');
+      return null;
+    }
+    setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, attachments: newList } : v));
+    return meta;
+  }
+
+  /* ─ 첨부파일 열기 (signed URL) ─ */
+  async function openAttachment(att) {
+    const { data, error: e } = await supabase.storage
+      .from('vendor-attachments')
+      .createSignedUrl(att.path, 60 * 5); // 5분
+    if (e || !data?.signedUrl) {
+      alert('파일을 열 수 없어요.');
+      return;
+    }
+    window.open(data.signedUrl, '_blank', 'noopener,noreferrer');
+  }
+
+  /* ─ 첨부파일 삭제 ─ */
+  async function removeAttachment(vendor, att) {
+    const newList = (vendor.attachments || []).filter(a => a.path !== att.path);
+    setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, attachments: newList } : v));
+    const [storageRes, dbRes] = await Promise.all([
+      supabase.storage.from('vendor-attachments').remove([att.path]),
+      supabase.from('vendors').update({ attachments: newList }).eq('id', vendor.id),
+    ]);
+    if (storageRes.error || dbRes.error) {
+      // 실패 시 롤백
+      setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, attachments: vendor.attachments } : v));
+      alert('삭제에 실패했어요.');
+    }
   }
 
   /* ─ 계산 ─ */
@@ -359,9 +618,54 @@ export default function BudgetPage() {
 
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
-      <div className="mb-4">
-        <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>예산·업체</h1>
-        <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>budget &amp; vendors</p>
+      <div className="mb-4 flex justify-between items-end">
+        <div>
+          <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>예산·업체</h1>
+          <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>budget &amp; vendors</p>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={downloadExcel}
+            disabled={vendors.length === 0}
+            aria-label="예산 내역 Excel 다운로드"
+            className="flex items-center gap-1.5"
+            style={{
+              background: vendors.length === 0 ? 'transparent' : 'var(--ink)',
+              border: '1px solid var(--ink)',
+              borderRadius: 999,
+              padding: '6px 12px',
+              cursor: vendors.length === 0 ? 'not-allowed' : 'pointer',
+              color: vendors.length === 0 ? 'var(--ink-4)' : 'var(--ivory)',
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.02em',
+              opacity: vendors.length === 0 ? 0.5 : 1,
+            }}
+          >
+            <Download size={12} strokeWidth={2.2} />
+            Excel
+          </button>
+          <button
+            onClick={downloadCSV}
+            disabled={vendors.length === 0}
+            aria-label="예산 내역 CSV 다운로드"
+            className="flex items-center gap-1.5"
+            style={{
+              background: 'none',
+              border: '1px solid var(--rule-strong)',
+              borderRadius: 999,
+              padding: '6px 10px',
+              cursor: vendors.length === 0 ? 'not-allowed' : 'pointer',
+              color: vendors.length === 0 ? 'var(--ink-4)' : 'var(--ink-3)',
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: '0.02em',
+              opacity: vendors.length === 0 ? 0.5 : 1,
+            }}
+          >
+            CSV
+          </button>
+        </div>
       </div>
 
       {/* ── 예산 초과 경고 ── */}
@@ -640,6 +944,13 @@ export default function BudgetPage() {
                     ···
                   </button>
                 </div>
+
+                <VendorAttachments
+                  vendor={vendor}
+                  onUpload={uploadAttachment}
+                  onOpen={openAttachment}
+                  onRemove={att => removeAttachment(vendor, att)}
+                />
 
                 {menuId === vendor.id && (
                   <div className="absolute right-0 z-10 rounded-xl shadow-lg overflow-hidden"

@@ -5,7 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
-import { AlertCircle, ChevronRight, CalendarDays, Wallet, MessageSquare, BookOpen } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ChevronRight, CalendarDays, Wallet, MessageSquare, BookOpen } from 'lucide-react';
 
 function calcDday(dateStr) {
   if (!dateStr) return null;
@@ -63,7 +63,7 @@ export default function DashboardPage() {
         supabase.from('checklist_items').select('id, title, is_done, due_months_before, due_date, assigned_to').eq('couple_id', coupleId),
         supabase.from('decisions').select('id, title, status').eq('couple_id', coupleId),
         supabase.from('budget_items').select('estimated_amount, actual_amount').eq('couple_id', coupleId),
-        supabase.from('vendors').select('id, name, type, balance, balance_due, contract_status').eq('couple_id', coupleId),
+        supabase.from('vendors').select('id, name, type, deposit, balance, balance_due, contract_status').eq('couple_id', coupleId),
         supabase.from('invitations').select('id').eq('couple_id', coupleId).maybeSingle(),
         supabase.from('couple_notes').select('content, updated_at').eq('couple_id', coupleId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
       ]);
@@ -132,6 +132,11 @@ export default function DashboardPage() {
   const totalSpent   = budgetItems.reduce((s, b) => s + (b.actual_amount || 0), 0);
   const budgetPct    = totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0;
   const budgetRemain = totalBudget - totalSpent;
+  // 업체 예상 총액 (계약금 + 잔금) — budget 페이지와 동일 계산
+  const vendorExpected = vendors.reduce((s, v) => s + (v.deposit || 0) + (v.balance || 0), 0);
+  const totalExpected  = totalEst + vendorExpected;
+  const isBudgetOver   = totalBudget > 0 && totalExpected > totalBudget;
+  const overAmount     = isBudgetOver ? totalExpected - totalBudget : 0;
 
   // 의사결정
   const undecided    = decisions.filter(d => d.status !== 'decided');
@@ -264,6 +269,25 @@ export default function DashboardPage() {
               {pendingBalances.filter(v => v.dday <= 3).map(v =>
                 `${v.name} ${v.dday < 0 ? `(${Math.abs(v.dday)}일 연체)` : v.dday === 0 ? '(오늘!)' : `(D-${v.dday})`}`
               ).join(' · ')}
+            </p>
+          </div>
+          <ChevronRight size={16} color="var(--toss-red)" />
+        </button>
+      )}
+
+      {/* ── 예산 초과 경고 ── */}
+      {isBudgetOver && (
+        <button
+          onClick={() => router.push('/budget')}
+          className="w-full flex items-center gap-3 mb-4 px-4 py-3 rounded-2xl text-left"
+          style={{ backgroundColor: '#FFF0F0', border: '1.5px solid var(--toss-red)', cursor: 'pointer' }}
+        >
+          <AlertTriangle size={18} color="var(--toss-red)" style={{ flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <p className="text-sm font-semibold" style={{ color: 'var(--toss-red)' }}>예산 초과</p>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--toss-red)', opacity: 0.8 }}>
+              예상 총액이 설정 예산보다{' '}
+              <span className="font-bold tabular-nums">{overAmount.toLocaleString()}만원</span> 초과됐어요
             </p>
           </div>
           <ChevronRight size={16} color="var(--toss-red)" />
