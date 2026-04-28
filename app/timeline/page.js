@@ -926,7 +926,7 @@ export default function TimelinePage() {
                 <p style={{ fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>
                   · until our day ·
                 </p>
-                <p style={{ fontFamily: 'var(--font-serif-en)', fontSize: 36, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.05, margin: '4px 0 0', letterSpacing: '-0.02em' }}>
+                <p className="tabular-nums" style={{ fontSize: 38, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.05, margin: '4px 0 0', letterSpacing: '-0.04em' }}>
                   {dDay >= 0 ? `D-${dDay}` : dDay === 0 ? 'D-DAY' : `D+${Math.abs(dDay)}`}
                 </p>
               </div>
@@ -935,7 +935,7 @@ export default function TimelinePage() {
                   <span className="tabular-nums" style={{ fontWeight: 600, color: 'var(--ink-2)' }}>{stats.done}</span>
                   <span style={{ color: 'var(--ink-4)' }}> / {stats.total}</span> 완료
                 </p>
-                <p style={{ fontFamily: 'var(--font-serif-en)', fontSize: 24, fontWeight: 700, color: 'var(--champagne-2)', lineHeight: 1, margin: '4px 0 0' }} className="tabular-nums">
+                <p className="tabular-nums" style={{ fontSize: 26, fontWeight: 800, color: 'var(--champagne-2)', lineHeight: 1, margin: '4px 0 0', letterSpacing: '-0.02em' }}>
                   {stats.pct}%
                 </p>
               </div>
@@ -1533,21 +1533,69 @@ export default function TimelinePage() {
             ))}
           </div>
 
-          {/* 선택된 날짜 */}
-          {calSelected && (
-            <div className="card mb-4">
-              <p style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 14, color: 'var(--ink)', marginBottom: 12 }}>
-                {calMonth + 1}월 {calSelected}일 일정
-              </p>
-              {calSelectedEvents.length === 0 ? (
-                <p className="text-sm" style={{ color: 'var(--stone)' }}>일정이 없어요</p>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  {calSelectedEvents.map((e, i) => <CalEventItem key={i} event={e} />)}
+          {/* 선택된 날짜 — 요일/오늘/D-day 컨텍스트 + 일정 없으면 가장 가까운 다음 일정 안내 */}
+          {calSelected && calSelectedDate && (() => {
+            const today0 = new Date(); today0.setHours(0,0,0,0);
+            const sel0   = new Date(calSelectedDate); sel0.setHours(0,0,0,0);
+            const diff   = Math.round((sel0 - today0) / 86400000);
+            const wkLabel = ['일','월','화','수','목','금','토'][sel0.getDay()];
+            const ctxLabel = diff === 0 ? '오늘' : diff < 0 ? `${Math.abs(diff)}일 전` : `${diff}일 후`;
+            // 결혼식까지 D-N (선택된 날짜 기준)
+            let dDayLabel = null;
+            if (weddingDate) {
+              const w = new Date(weddingDate); w.setHours(0,0,0,0);
+              const dn = Math.round((w - sel0) / 86400000);
+              if (dn > 0) dDayLabel = `결혼식 D-${dn}`;
+              else if (dn === 0) dDayLabel = '결혼식 당일';
+              else dDayLabel = `결혼식 +${Math.abs(dn)}일`;
+            }
+            // 일정 없을 때 — 다음 일정 찾기
+            const nextEvent = calSelectedEvents.length === 0
+              ? [...calEvents]
+                  .filter(e => {
+                    const d = new Date(e.date); d.setHours(0,0,0,0);
+                    return d > sel0;
+                  })
+                  .sort((a, b) => a.date - b.date)[0]
+              : null;
+            return (
+              <div className="card mb-4">
+                <div className="flex items-baseline gap-2 mb-3 flex-wrap">
+                  <p style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 600, fontSize: 16, color: 'var(--ink)', margin: 0 }}>
+                    {calMonth + 1}월 {calSelected}일 ({wkLabel})
+                  </p>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    padding: '2px 8px', borderRadius: 999,
+                    backgroundColor: diff === 0 ? 'var(--champagne-wash)' : 'var(--paper)',
+                    color: diff === 0 ? 'var(--champagne-2)' : 'var(--ink-3)',
+                  }}>
+                    {ctxLabel}
+                  </span>
+                  {dDayLabel && (
+                    <span style={{ fontSize: 11, color: 'var(--ink-3)' }}>
+                      · {dDayLabel}
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+                {calSelectedEvents.length === 0 ? (
+                  nextEvent ? (
+                    <div>
+                      <p className="text-sm mb-2" style={{ color: 'var(--ink-3)' }}>이날은 일정이 없어요</p>
+                      <p className="text-xs mb-2" style={{ color: 'var(--ink-4)', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>다음 일정</p>
+                      <CalEventItem event={nextEvent} showDate />
+                    </div>
+                  ) : (
+                    <p className="text-sm" style={{ color: 'var(--stone)' }}>일정이 없어요</p>
+                  )
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {calSelectedEvents.map((e, i) => <CalEventItem key={i} event={e} />)}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* 이번달 전체 */}
           <div className="card mb-4">
