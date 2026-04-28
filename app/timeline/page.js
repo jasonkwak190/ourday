@@ -456,6 +456,17 @@ export default function TimelinePage() {
     const isMenuOpen = menuId === item.id;
     const memoExpanded = expandedMemo === item.id;
     const dueLabel   = getItemDueLabel(item, weddingDate);
+    // 마감 긴급도 ('overdue': 지난 미완료, 'soon': 이번 주 마감) — 미완료만 평가
+    let urgency = null;
+    if (!item.is_done) {
+      const d = getItemDate(item, weddingDate);
+      if (d) {
+        const today0 = new Date(); today0.setHours(0,0,0,0);
+        const weekL  = new Date(today0); weekL.setDate(today0.getDate() + 7);
+        if (d < today0) urgency = 'overdue';
+        else if (d <= weekL) urgency = 'soon';
+      }
+    }
 
     if (isEditing) {
       const editPreview = getPreviewDate(editMode, editMonths, editDueDate, weddingDate);
@@ -523,11 +534,25 @@ export default function TimelinePage() {
             <span className="text-sm" style={{ color: item.is_done ? 'var(--stone)' : 'var(--ink)', textDecoration: item.is_done ? 'line-through' : 'none' }}>
               {item.title}
             </span>
-            {/* 날짜 표시 */}
-            {dueLabel && (
-              <p className="text-xs mt-0.5" style={{ color: item.due_date ? 'var(--toss-blue)' : 'var(--stone)' }}>
-                {dueLabel}
-              </p>
+            {/* 날짜 표시 + 마감 긴급도 배지 */}
+            {(dueLabel || urgency) && (
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                {urgency === 'overdue' && (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, backgroundColor: 'var(--toss-red-light, #FFE9E9)', color: 'var(--toss-red, #E74C3C)' }}>
+                    ⚠ 지난 마감
+                  </span>
+                )}
+                {urgency === 'soon' && (
+                  <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999, backgroundColor: 'var(--champagne-wash)', color: 'var(--champagne-2)' }}>
+                    이번 주
+                  </span>
+                )}
+                {dueLabel && (
+                  <span className="text-xs" style={{ color: item.due_date ? 'var(--toss-blue)' : 'var(--stone)' }}>
+                    {dueLabel}
+                  </span>
+                )}
+              </div>
             )}
             {item.memo && !memoExpanded && (
               <p className="text-xs mt-0.5 truncate" style={{ color: 'var(--stone)' }}>{item.memo}</p>
