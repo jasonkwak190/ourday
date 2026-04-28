@@ -587,7 +587,7 @@ export default function TimelinePage() {
           <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 22, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
             체크리스트
           </h1>
-          <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--ink-3)', letterSpacing: '0.04em', margin: '2px 0 0' }}>
+          <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 13, fontWeight: 500, color: 'var(--champagne-2)', letterSpacing: '0.04em', margin: '4px 0 0' }}>
             · 24주 준비 타임라인 ·
           </p>
         </div>
@@ -606,8 +606,9 @@ export default function TimelinePage() {
       {/* ══ 리스트 뷰 ══ */}
       {viewMode === 'list' && (
         <>
-          {/* 웨딩홀 투어 */}
-          <div className="card mb-4" style={{ border: `1.5px solid ${showVenueTour ? 'var(--rose)' : 'var(--stone-light)'}` }}>
+          {/* 웨딩홀 투어 — 타임라인과 별개의 참고 도구 */}
+          <div className="t-kicker" style={{ marginTop: 4, marginBottom: 8 }}>· 참고 도구 ·</div>
+          <div className="card mb-6" style={{ border: `1.5px solid ${showVenueTour ? 'var(--rose)' : 'var(--stone-light)'}` }}>
             <button className="w-full flex items-center justify-between"
               style={{ background: 'none', border: 'none', cursor: 'pointer' }}
               onClick={() => setShowVenueTour(!showVenueTour)}>
