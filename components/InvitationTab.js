@@ -74,11 +74,8 @@ const SECTIONS = [
     fields: [],
   },
   {
-    key: 'cover', label: '커버 사진', icon: 'camera', required: false,
-    fields: [
-      { key: 'cover_image_url', label: '사진 URL', type: 'url',
-        placeholder: 'https://i.imgur.com/example.jpg' },
-    ],
+    key: 'cover', label: '공유 미리보기 사진', icon: 'camera', required: false,
+    fields: [],
   },
 ];
 
@@ -388,30 +385,58 @@ export default function InvitationTab({ coupleId }) {
     setEnabledSections(prev => prev.filter(k => k !== key));
   }
 
-  // 사진 슬라이드 업로드
+  // 사진 슬라이드 업로드 (다중 파일 지원, 최대 10장까지)
   async function handlePhotoUpload(e) {
-    const file = e.target.files?.[0];
-    if (!file || !coupleId) return;
-    if (form.photos.length >= 10) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0 || !coupleId) return;
+
+    const remaining = 10 - form.photos.length;
+    if (remaining <= 0) return;
+    const filesToUpload = files.slice(0, remaining);
+
     setPhotoError('');
     setUploadingPhoto(true);
 
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('couple_id', coupleId);
+    const uploadOne = async (file) => {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('couple_id', coupleId);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 30_000);
+      try {
+        const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd, signal: ctrl.signal });
+        const json = await res.json();
+        if (!res.ok) return { error: json.error || '업로드 실패' };
+        return { url: json.url };
+      } catch (err) {
+        if (err.name === 'AbortError') return { error: '네트워크가 느려요. 다시 시도해주세요.' };
+        return { error: '업로드 중 오류가 발생했어요.' };
+      } finally {
+        clearTimeout(timer);
+      }
+    };
 
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 30_000);
     try {
-      const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd, signal: ctrl.signal });
-      const json = await res.json();
-      if (!res.ok) setPhotoError(json.error || '업로드 실패');
-      else { setForm(f => ({ ...f, photos: [...f.photos, json.url] })); setIsDirty(true); }
-    } catch (err) {
-      if (err.name === 'AbortError') setPhotoError('네트워크가 느려요. 다시 시도해주세요.');
-      else setPhotoError('업로드 중 오류가 발생했어요.');
+      // 순차 업로드 (서버 부담 줄이고 순서 보장)
+      const newUrls = [];
+      let firstError = '';
+      for (const file of filesToUpload) {
+        const r = await uploadOne(file);
+        if (r.url) newUrls.push(r.url);
+        else if (!firstError) firstError = r.error;
+      }
+      if (newUrls.length > 0) {
+        setForm(f => ({ ...f, photos: [...f.photos, ...newUrls] }));
+        setIsDirty(true);
+      }
+      if (firstError) {
+        const skipped = files.length - filesToUpload.length;
+        const overflowMsg = skipped > 0 ? ` (10장 초과로 ${skipped}장 제외)` : '';
+        setPhotoError(firstError + overflowMsg);
+      } else if (files.length > filesToUpload.length) {
+        setPhotoError(`최대 10장까지 — 초과한 ${files.length - filesToUpload.length}장은 업로드 안 됐어요.`);
+      }
     } finally {
-      clearTimeout(timer);
       setUploadingPhoto(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
     }
@@ -487,8 +512,11 @@ export default function InvitationTab({ coupleId }) {
         </div>
       </div>
 
-      {/* ── 활성 섹션 폼 ── */}
-      {SECTIONS.filter(s => enabledSections.includes(s.key)).map(section => (
+      {/* ── 활성 섹션 폼 (enabledSections 배열 순서대로 렌더 — 새로 추가한 섹션은 맨 아래) ── */}
+      {enabledSections
+        .map(key => SECTIONS.find(s => s.key === key))
+        .filter(Boolean)
+        .map(section => (
         <div key={section.key} className="card mb-3">
           {/* 섹션 헤더 */}
           <div className="flex items-center justify-between mb-3">
@@ -519,6 +547,7 @@ export default function InvitationTab({ coupleId }) {
                 ref={photoInputRef}
                 type="file"
                 accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+                multiple
                 style={{ display: 'none' }}
                 onChange={handlePhotoUpload}
               />
@@ -662,9 +691,12 @@ export default function InvitationTab({ coupleId }) {
                     <>
                       <Camera size={28} color="var(--toss-text-tertiary)" />
                       <p style={{ fontSize: 13, color: 'var(--toss-text-secondary)', margin: 0, fontWeight: 600 }}>
-                        갤러리에서 사진 선택
+                        탭하면 갤러리가 열려요
                       </p>
-                      <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', margin: 0 }}>
+                      <p style={{ fontSize: 11, color: 'var(--toss-text-tertiary)', margin: 0, lineHeight: 1.5 }}>
+                        카톡으로 청첩장 링크 보낼 때<br/>미리보기로 뜨는 한 장의 대표 사진이에요
+                      </p>
+                      <p style={{ fontSize: 10, color: 'var(--toss-text-tertiary)', margin: 0, opacity: 0.7 }}>
                         jpg · png · webp · 최대 10MB
                       </p>
                     </>
