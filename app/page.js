@@ -161,7 +161,7 @@ export default function LandingPage() {
         <OAuthButtons />
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '2px 0' }}>
           <span style={{ flex: 1, height: 1, background: 'var(--rule-strong)' }} />
-          <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-4)', letterSpacing: '0.08em' }}>· or ·</span>
+          <span style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 11, color: 'var(--ink-3)', letterSpacing: '0.08em' }}>· or ·</span>
           <span style={{ flex: 1, height: 1, background: 'var(--rule-strong)' }} />
         </div>
         <Link
@@ -239,7 +239,7 @@ export default function LandingPage() {
           <div style={{ marginTop: 12 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: 'var(--toss-text-tertiary)' }}>사용 1,240만원</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--toss-green)' }}>잔여 2,760만원</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#5C6B4E' }}>잔여 2,760만원</span>
             </div>
             <div style={{ height: 8, borderRadius: 99, backgroundColor: 'var(--toss-bg)', overflow: 'hidden' }}>
               <div style={{ width: '31%', height: '100%', borderRadius: 99, backgroundColor: 'var(--toss-blue)' }} />
@@ -258,8 +258,8 @@ export default function LandingPage() {
               flex: 1, padding: '10px 12px', borderRadius: 12,
               backgroundColor: 'var(--toss-blue-light)', textAlign: 'center',
             }}>
-              <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--toss-blue)', margin: 0 }}>42</p>
-              <p style={{ fontSize: 11, color: 'var(--toss-blue)', margin: '2px 0 0', opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--champagne-2)', margin: 0 }}>42</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--champagne-2)', margin: '2px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
                 <Icon name="check" size={10} color="currentColor" /> 참석
               </p>
             </div>
@@ -276,8 +276,8 @@ export default function LandingPage() {
               flex: 1, padding: '10px 12px', borderRadius: 12,
               backgroundColor: 'var(--champagne-wash)', textAlign: 'center',
             }}>
-              <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--champagne)', margin: 0 }}>2</p>
-              <p style={{ fontSize: 11, color: 'var(--champagne-2)', margin: '2px 0 0', opacity: 0.8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
+              <p style={{ fontSize: 22, fontWeight: 800, color: 'var(--champagne-2)', margin: 0 }}>2</p>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--champagne-2)', margin: '2px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3 }}>
                 <Icon name="invite" size={10} color="currentColor" /> 방명록
               </p>
             </div>
@@ -310,16 +310,16 @@ export default function LandingPage() {
           <span style={{ width: 3, height: 3, borderRadius: '50%', backgroundColor: 'var(--champagne)', display: 'inline-block' }} />
           <span style={{ fontFamily: 'var(--font-serif-en)', fontWeight: 500, fontSize: 16, color: 'var(--ink)', letterSpacing: '-0.02em' }}>D</span>
         </div>
-        <div style={{ fontSize: 11, color: 'var(--ink-4)', lineHeight: 2 }}>
-          <a href="/terms" style={{ color: 'var(--ink-4)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
+        <div style={{ fontSize: 11, color: 'var(--ink-3)', lineHeight: 2 }}>
+          <a href="/terms" style={{ color: 'var(--ink-3)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
             이용약관
           </a>
           <span style={{ margin: '0 8px', color: 'var(--rule-strong)' }}>·</span>
-          <a href="/privacy" style={{ color: 'var(--ink-4)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
+          <a href="/privacy" style={{ color: 'var(--ink-3)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
             개인정보처리방침
           </a>
           <span style={{ margin: '0 8px', color: 'var(--rule-strong)' }}>·</span>
-          <a href="mailto:jasonkwak201@gmail.com" style={{ color: 'var(--ink-4)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
+          <a href="mailto:jasonkwak201@gmail.com" style={{ color: 'var(--ink-3)', textDecoration: 'none', borderBottom: '1px solid var(--rule)' }}>
             문의하기
           </a>
           <br />

@@ -236,12 +236,12 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [x] 라이브 슬라이드쇼 (`/live/[code]`)
 - [ ] **카카오톡 공유 버튼** — 임시 JS 키로 구현됨, 실 키 등록 필요 (수동)
 - [ ] 준비 현황 PDF 내보내기
-- [ ] 예산 내역 엑셀 다운로드
+- [x] 예산 내역 엑셀(.xlsx) + CSV 다운로드 (2026-04-28)
 
 ### 💡 기능 확장
 
-- [ ] 영수증·계약서 사진 첨부 (업체/예산 항목별 Supabase Storage)
-- [ ] 예산 초과 실시간 경고 배너
+- [x] 영수증·계약서 사진 첨부 — vendors.attachments + Storage RLS (2026-04-28)
+- [x] 예산 초과 실시간 경고 배너 — 대시보드 + budget 페이지 (2026-04-28)
 - [ ] 푸시 알림 (D-day·잔금 D-7·D-1 리마인더) — Web Push API
 - [ ] 오프라인 지원 (Service Worker 캐시)
 - [ ] 좌석 배치도
@@ -260,7 +260,8 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [x] **Sentry DSN 등록** — `NEXT_PUBLIC_SENTRY_DSN` Vercel 환경변수 추가 완료
 - [x] 입력값 서버 검증 강화 — `lib/validate.js` isUUID/sanitizeString/sanitizeInt, guestbook+rsvp 적용
 - [x] 번들 사이즈 분석 — 총 1,372KB(gzip 416KB), Supabase Realtime이 최대 청크, lucide tree-shaking 정상
-- [ ] **Lighthouse 측정** — LCP/CLS/INP 실측 (프로덕션 URL 기준, 수동)
+- [x] **Lighthouse 측정** — Performance 82 / A11y 100 / BP 100 / SEO 100 (PageSpeed Insights 2026-04-28)
+  - TBT 50ms, LCP 4.7s, CLS 0.022 — Sentry tracing OFF로 TBT 폭락 개선
 - [x] 접근성(a11y) 점검 — BottomNav aria-label/aria-current/aria-expanded, notes 버튼 aria-label 추가
 - [ ] `rsvp_responses.message` 컬럼 DB에서 DROP (Supabase 대시보드 수동, MANUAL_TASKS MT-006)
 

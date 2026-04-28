@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, use } from 'react';
-import { Upload, Check, X, ImagePlus, Loader2 } from 'lucide-react';
+import { Upload, Check, X, ImagePlus, Loader2, Camera } from 'lucide-react';
 import Icon from '@/components/Icon';
 
 export default function GuestUploadPage({ params }) {
@@ -34,16 +34,30 @@ export default function GuestUploadPage({ params }) {
     });
   }
 
-  async function uploadOne(item) {
-    const fd = new FormData();
-    fd.append('file', item.file);
-    fd.append('event_code', code);
-    if (name.trim()) fd.append('uploader_name', name.trim());
+  // 식장 WiFi 약할 때 무한 대기 방지
+  const UPLOAD_TIMEOUT_MS = 30_000;
+  // 동시 N장 병렬 — 너무 많으면 모바일 브라우저·식장 WiFi 과부하
+  const UPLOAD_CONCURRENCY = 3;
 
-    const res  = await fetch(`/api/guest/upload`, { method: 'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || '업로드 실패');
-    return data;
+  async function uploadOne(item) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), UPLOAD_TIMEOUT_MS);
+    try {
+      const fd = new FormData();
+      fd.append('file', item.file);
+      fd.append('event_code', code);
+      if (name.trim()) fd.append('uploader_name', name.trim());
+
+      const res  = await fetch(`/api/guest/upload`, { method: 'POST', body: fd, signal: ctrl.signal });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || '업로드 실패');
+      return data;
+    } catch (e) {
+      if (e.name === 'AbortError') throw new Error('네트워크가 느려요. 다시 시도해주세요.');
+      throw e;
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   async function handleSubmit() {
@@ -52,15 +66,23 @@ export default function GuestUploadPage({ params }) {
 
     setSubmitting(true);
 
-    for (const item of pending) {
-      setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'uploading' } : f));
-      try {
-        await uploadOne(item);
-        setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
-      } catch (err) {
-        setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error', error: err.message } : f));
-      }
-    }
+    // 워커 N개로 큐를 병렬 소비 → 동시에 N장씩 업로드
+    const queue = [...pending];
+    await Promise.all(
+      Array.from({ length: UPLOAD_CONCURRENCY }).map(async () => {
+        while (queue.length > 0) {
+          const item = queue.shift();
+          if (!item) break;
+          setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'uploading' } : f));
+          try {
+            await uploadOne(item);
+            setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'done' } : f));
+          } catch (err) {
+            setFiles(prev => prev.map(f => f.id === item.id ? { ...f, status: 'error', error: err.message } : f));
+          }
+        }
+      })
+    );
 
     setSubmitting(false);
     setFiles(prev => {

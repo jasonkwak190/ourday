@@ -39,17 +39,21 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <head>
+        {/* DNS / TCP 사전 연결 — 폰트 다운로드 LCP 단축 */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
         {/* Pretendard — 본문 폰트 */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
-        {/* Cormorant Garamond — 영문 디스플레이 / Noto Serif KR — 한글 디스플레이 */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Cormorant Garamond — 영문 디스플레이 / Noto Serif KR — 한글 디스플레이
+            (사용 weight만 로드: 400/500 + italic 400/500 — 7→4, 한글 5→3) */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=Noto+Serif+KR:wght@400;500;600;700;900&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Serif+KR:wght@400;500;700&display=swap"
         />
       </head>
       <body>

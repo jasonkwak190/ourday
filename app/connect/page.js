@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { copyToClipboard } from '@/lib/clipboard';
 import OnboardingProgress from '@/components/OnboardingProgress';
 import { Share2 } from 'lucide-react';
@@ -199,6 +200,14 @@ export default function ConnectPage() {
       return;
     }
 
+    // ───────────────────────────────────────────────
+    // 내 기존 orphan couple 정리 (별개 couple 잔재 방지)
+    // 시나리오: 페이지 진입 시 자동 생성된 couple_X에 나 혼자였는데,
+    // 파트너 코드로 join하면 couple_X가 영원히 빈 채로 남음.
+    // 다른 사용자가 없는 경우에만 안전하게 삭제.
+    // ───────────────────────────────────────────────
+    const myOldCoupleId = myUser?.couple_id;
+
     const { error: updateError } = await supabase
       .from('users')
       .update({ couple_id: couple.id })
@@ -210,6 +219,18 @@ export default function ConnectPage() {
       return;
     }
 
+    // 기존 couple이 있고, 다른 사용자가 없으면 삭제 (CASCADE로 체크리스트 등 정리)
+    if (myOldCoupleId && myOldCoupleId !== couple.id) {
+      const { count: oldCount } = await supabase
+        .from('users')
+        .select('id', { count: 'exact', head: true })
+        .eq('couple_id', myOldCoupleId);
+
+      if (oldCount === 0) {
+        await supabase.from('couples').delete().eq('id', myOldCoupleId);
+      }
+    }
+
     setJoining(false);
     setJustConnected(true);
     setPartnerConnected(true);
@@ -219,16 +240,7 @@ export default function ConnectPage() {
   }
 
   // ─── 로딩 ───
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <div className="text-center" style={{ color: 'var(--toss-text-secondary)' }}>
-          <div className="mb-2 animate-pulse flex justify-center"><Icon name="couple" size={36} color="var(--champagne)" /></div>
-          <p className="text-sm">준비 중...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   // ─── 방금 연동 성공 ───
   if (justConnected) {
@@ -421,16 +433,21 @@ export default function ConnectPage() {
         </p>
       )}
 
-      {/* 나중에 연동할게요 */}
-      <div className="mt-8 pt-4" style={{ borderTop: '1px solid var(--toss-border)' }}>
-        <p className="text-xs text-center mb-3" style={{ color: 'var(--toss-text-tertiary)' }}>
-          상대방 코드가 없어도 괜찮아요. 나중에 설정에서 연동할 수 있어요.
-        </p>
+      {/* 혼자 먼저 시작 */}
+      <div className="mt-8 pt-5" style={{ borderTop: '1px solid var(--toss-border)' }}>
+        <div className="text-center mb-3">
+          <p className="text-sm font-semibold mb-1" style={{ color: 'var(--toss-text-primary)' }}>
+            혼자 먼저 시작해도 괜찮아요
+          </p>
+          <p className="text-xs" style={{ color: 'var(--toss-text-tertiary)' }}>
+            파트너가 가입하면 위 코드를 공유해서 언제든 연동할 수 있어요
+          </p>
+        </div>
         <button
-          className="btn-ghost w-full"
+          className="btn-outline w-full"
           onClick={() => router.push('/setup')}
         >
-          나중에 연동할게요
+          혼자 먼저 시작하기
         </button>
       </div>
     </div>

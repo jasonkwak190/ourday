@@ -1,10 +1,11 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
-import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2 } from 'lucide-react';
+import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2, MessageSquare } from 'lucide-react';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import InvitationTab from '@/components/InvitationTab';
@@ -167,17 +168,16 @@ export default function GuestsPage() {
       phone: rsvp.phone || null,
       memo: 'RSVP 응답',
     }).select().single();
-    if (!e && data) setGuests(prev => [...prev, data]);
+    if (e) {
+      alert(`'${rsvp.name}' 명단 추가에 실패했어요. 다시 시도해주세요.`);
+      setAddingRsvpId(null);
+      return;
+    }
+    if (data) setGuests(prev => [...prev, data]);
     setAddingRsvpId(null);
   }
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--stone)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   // ── 집계 ──
   const groomGuests  = guests.filter(g => g.side === 'groom');
@@ -408,8 +408,15 @@ export default function GuestsPage() {
                             />
                             <span className="text-xs" style={{ color: 'var(--stone)' }}>만</span>
                             <button onClick={() => saveGiftAmount(guest.id)}
-                              className="text-xs font-medium"
-                              style={{ color: 'var(--rose)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                              className="text-xs font-semibold"
+                              style={{
+                                minHeight: 36, minWidth: 44, padding: '0 12px',
+                                borderRadius: 999,
+                                backgroundColor: 'var(--rose-light)',
+                                color: 'var(--rose)',
+                                border: 'none', cursor: 'pointer',
+                              }}
+                              aria-label="축의금 저장">
                               저장
                             </button>
                           </div>
@@ -675,9 +682,12 @@ export default function GuestsPage() {
             </div>
           ) : guestbook.length === 0 ? (
             <div className="card">
-              <p className="text-sm text-center py-2" style={{ color: 'var(--stone)' }}>
-                아직 방명록 메시지가 없어요
-              </p>
+              <EmptyState
+                icon={MessageSquare}
+                title="아직 방명록 메시지가 없어요"
+                description="청첩장 링크를 받은 하객이 남기는 축하 메시지가 여기에 모여요"
+                compact
+              />
             </div>
           ) : (
             <div className="flex flex-col gap-2">

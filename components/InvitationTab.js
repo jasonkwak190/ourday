@@ -5,6 +5,8 @@ import Icon from '@/components/Icon';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
+import AddressSearch from '@/components/AddressSearch';
+import VenueSearch from '@/components/VenueSearch';
 
 const TEMPLATES = [
   { key: 'editorial', label: 'Ourday',  icon: 'diamond', desc: '잉크·샴페인 에디토리얼' },
@@ -33,9 +35,8 @@ const SECTIONS = [
   {
     key: 'venue', label: '예식장', icon: 'venue', required: false,
     fields: [
-      { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
-      { key: 'venue_address', label: '주소',        placeholder: '서울시 강남구 ...' },
-      { key: 'venue_map_url', label: '지도 링크',   placeholder: 'https://map.kakao.com/...' },
+      { key: 'venue_search',  label: '예식장 (이름 또는 주소)', type: 'venue' },
+      { key: 'venue_map_url', label: '지도 링크 (선택)', placeholder: '카카오 지도 링크 직접 지정 시' },
     ],
   },
   {
@@ -175,6 +176,8 @@ export default function InvitationTab({ coupleId }) {
   const [loading,          setLoading]          = useState(true);
   const [saving,           setSaving]           = useState(false);
   const [saved,            setSaved]            = useState(false);
+  const [saveError,        setSaveError]        = useState('');
+  const [isDirty,          setIsDirty]          = useState(false);
   const [copied,           setCopied]           = useState(false);
   const [showPreview,      setShowPreview]      = useState(false);
   const [inv,              setInv]              = useState(null);
@@ -193,6 +196,10 @@ export default function InvitationTab({ coupleId }) {
     groom_father: '', groom_mother: '', bride_father: '', bride_mother: '',
     wedding_date: '', wedding_time: '',
     venue_name: '', venue_address: '', venue_map_url: '',
+    // 카카오/다음 표준화된 주소 정보
+    venue_road_address: null, venue_jibun_address: null,
+    venue_sido: null, venue_sigungu: null, venue_bname: null, venue_zonecode: null,
+    venue_lat: null, venue_lng: null,
     account_groom: '', account_bride: '',
     message: '두 사람이 사랑으로 하나 되는 날,\n함께해 주시면 감사하겠습니다.',
     notice: '',
@@ -238,6 +245,14 @@ export default function InvitationTab({ coupleId }) {
           venue_name:      existing.venue_name    || '',
           venue_address:   existing.venue_address || '',
           venue_map_url:   existing.venue_map_url || '',
+          venue_road_address:  existing.venue_road_address  ?? null,
+          venue_jibun_address: existing.venue_jibun_address ?? null,
+          venue_sido:          existing.venue_sido          ?? null,
+          venue_sigungu:       existing.venue_sigungu       ?? null,
+          venue_bname:         existing.venue_bname         ?? null,
+          venue_zonecode:      existing.venue_zonecode      ?? null,
+          venue_lat:           existing.venue_lat           ?? null,
+          venue_lng:           existing.venue_lng           ?? null,
           account_groom:   existing.account_groom || '',
           account_bride:   existing.account_bride || '',
           message:         existing.message       || '',
@@ -265,6 +280,7 @@ export default function InvitationTab({ coupleId }) {
   async function save() {
     if (!coupleId) return;
     setSaving(true);
+    setSaveError('');
 
     const slug = coupleId.replace(/-/g, '').slice(0, 12);
     const payload = {
@@ -276,21 +292,30 @@ export default function InvitationTab({ coupleId }) {
     };
 
     let savedData = null;
+    let saveErr = null;
     if (inv) {
       const { data, error } = await supabase
         .from('invitations').update(payload).eq('id', inv.id).select().single();
-      if (error) console.error('[invitation] update error:', error.message);
+      if (error) { console.error('[invitation] update error:', error.message); saveErr = error; }
       else savedData = data;
     } else {
       const { data, error } = await supabase
         .from('invitations').insert(payload).select().single();
-      if (error) console.error('[invitation] insert error:', error.message);
+      if (error) { console.error('[invitation] insert error:', error.message); saveErr = error; }
       else savedData = data;
     }
 
-    if (savedData) setInv(savedData);
     setSaving(false);
+
+    // 저장 실패 — 사용자에게 명확히 알림 (가짜 성공 표시 방지)
+    if (saveErr || !savedData) {
+      setSaveError('저장에 실패했어요. 네트워크를 확인하고 다시 시도해주세요.');
+      return;
+    }
+
+    setInv(savedData);
     setSaved(true);
+    setIsDirty(false);
     setShowPreview(false);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -311,23 +336,38 @@ export default function InvitationTab({ coupleId }) {
     fd.append('file', file);
     fd.append('couple_id', coupleId);
 
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
     try {
-      const res  = await fetch('/api/invitation/cover', { method: 'POST', body: fd });
+      const res  = await fetch('/api/invitation/cover', { method: 'POST', body: fd, signal: ctrl.signal });
       const json = await res.json();
       if (!res.ok) { setCoverError(json.error || '업로드 실패'); }
       else { update('cover_image_url', json.url); }
-    } catch {
-      setCoverError('업로드 중 오류가 발생했어요.');
+    } catch (err) {
+      if (err.name === 'AbortError') setCoverError('네트워크가 느려요. 다시 시도해주세요.');
+      else setCoverError('업로드 중 오류가 발생했어요.');
     } finally {
+      clearTimeout(timer);
       setUploadingCover(false);
-      // 같은 파일 재선택 허용
       if (coverInputRef.current) coverInputRef.current.value = '';
     }
   }
 
   function update(key, value) {
     setForm(f => ({ ...f, [key]: value }));
+    setIsDirty(true);
   }
+
+  // 저장 안 한 변경사항 있을 때 페이지 이탈 경고
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = ''; // Chrome
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   // 섹션 추가
   function addSection(key) {
@@ -360,14 +400,18 @@ export default function InvitationTab({ coupleId }) {
     fd.append('file', file);
     fd.append('couple_id', coupleId);
 
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
     try {
-      const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd });
+      const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd, signal: ctrl.signal });
       const json = await res.json();
       if (!res.ok) setPhotoError(json.error || '업로드 실패');
-      else setForm(f => ({ ...f, photos: [...f.photos, json.url] }));
-    } catch {
-      setPhotoError('업로드 중 오류가 발생했어요.');
+      else { setForm(f => ({ ...f, photos: [...f.photos, json.url] })); setIsDirty(true); }
+    } catch (err) {
+      if (err.name === 'AbortError') setPhotoError('네트워크가 느려요. 다시 시도해주세요.');
+      else setPhotoError('업로드 중 오류가 발생했어요.');
     } finally {
+      clearTimeout(timer);
       setUploadingPhoto(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
     }
@@ -375,6 +419,7 @@ export default function InvitationTab({ coupleId }) {
 
   function removePhoto(index) {
     setForm(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== index) }));
+    setIsDirty(true);
   }
 
   // 비활성 선택 섹션 목록
@@ -660,7 +705,84 @@ export default function InvitationTab({ coupleId }) {
                       </div>
                     )}
                   </div>
-                  {type === 'textarea' ? (
+                  {type === 'venue' ? (
+                    <VenueSearch
+                      value={form.venue_name ? {
+                        venue_name: form.venue_name,
+                        road_address: form.venue_road_address,
+                        jibun_address: form.venue_jibun_address,
+                        phone: form.venue_phone,
+                      } : null}
+                      onChange={(v) => {
+                        setForm(f => ({
+                          ...f,
+                          venue_name:          v.venue_name || '',
+                          venue_address:       v.road_address || v.jibun_address || '',
+                          venue_road_address:  v.road_address,
+                          venue_jibun_address: v.jibun_address,
+                          venue_sido:          v.sido,
+                          venue_sigungu:       v.sigungu,
+                          venue_bname:         v.bname,
+                          venue_zonecode:      v.zonecode,
+                          venue_lat:           v.lat,
+                          venue_lng:           v.lng,
+                        }));
+                        setIsDirty(true);
+                      }}
+                      onClear={() => {
+                        setForm(f => ({
+                          ...f,
+                          venue_name: '', venue_address: '',
+                          venue_road_address: null, venue_jibun_address: null,
+                          venue_sido: null, venue_sigungu: null, venue_bname: null,
+                          venue_zonecode: null, venue_lat: null, venue_lng: null,
+                        }));
+                        setIsDirty(true);
+                      }}
+                    />
+                  ) : type === 'address' ? (
+                    <AddressSearch
+                      value={form.venue_road_address || form.venue_jibun_address ? {
+                        road_address: form.venue_road_address,
+                        jibun_address: form.venue_jibun_address,
+                        sido: form.venue_sido,
+                        sigungu: form.venue_sigungu,
+                        bname: form.venue_bname,
+                        building_name: form.venue_name || null,
+                        zonecode: form.venue_zonecode,
+                        lat: form.venue_lat,
+                        lng: form.venue_lng,
+                      } : null}
+                      onChange={(addr) => {
+                        // 표준화 객체 → form 일괄 반영
+                        setForm(f => ({
+                          ...f,
+                          venue_address:       addr.road_address || addr.jibun_address || '',
+                          venue_road_address:  addr.road_address,
+                          venue_jibun_address: addr.jibun_address,
+                          venue_sido:          addr.sido,
+                          venue_sigungu:       addr.sigungu,
+                          venue_bname:         addr.bname,
+                          venue_zonecode:      addr.zonecode,
+                          venue_lat:           addr.lat,
+                          venue_lng:           addr.lng,
+                          // 빌딩명이 있고 venue_name이 비었을 때만 자동 채움
+                          venue_name: f.venue_name || addr.building_name || '',
+                        }));
+                        setIsDirty(true);
+                      }}
+                      onClear={() => {
+                        setForm(f => ({
+                          ...f,
+                          venue_address: '', venue_road_address: null, venue_jibun_address: null,
+                          venue_sido: null, venue_sigungu: null, venue_bname: null,
+                          venue_zonecode: null, venue_lat: null, venue_lng: null,
+                        }));
+                        setIsDirty(true);
+                      }}
+                      placeholder="예식장 주소 검색하기"
+                    />
+                  ) : type === 'textarea' ? (
                     <textarea
                       value={form[key]}
                       onChange={e => {
@@ -722,6 +844,17 @@ export default function InvitationTab({ coupleId }) {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* 저장 에러 — 결혼식 직전 변경 손실 방지 */}
+      {saveError && (
+        <div className="mb-3 px-4 py-3 rounded-2xl flex items-start gap-2"
+          style={{ backgroundColor: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.25)' }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+          <p className="text-sm font-semibold" style={{ color: 'var(--toss-red)', margin: 0 }}>
+            {saveError}
+          </p>
         </div>
       )}
 

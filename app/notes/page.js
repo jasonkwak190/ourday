@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Send, Link2, Edit2, Trash2, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
 import { useCouple } from '@/lib/useCouple';
+import PageLoader from '@/components/PageLoader';
 import { openExternalUrl } from '@/lib/openUrl';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
@@ -139,11 +140,26 @@ export default function NotesPage() {
 
   useEffect(() => {
     if (!coupleId) return;
+
+    // 사용자가 맨 아래 근처(200px 이내)에 있는지
+    const isNearBottom = () => {
+      if (!bottomRef.current) return true;
+      const rect = bottomRef.current.getBoundingClientRect();
+      return rect.top - window.innerHeight < 200;
+    };
+
     const channel = supabase.channel(`notes-${coupleId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_notes', filter: `couple_id=eq.${coupleId}` },
         (payload) => {
-          if (payload.eventType === 'INSERT')
+          if (payload.eventType === 'INSERT') {
+            const isNew = !notes.find(n => n.id === payload.new.id);
             setNotes(prev => prev.find(n => n.id === payload.new.id) ? prev : [...prev, payload.new]);
+            // 상대방 메시지 + 사용자가 맨 아래 근처일 때만 자동 스크롤
+            // (스크롤 위로 올려 과거 메시지 읽는 중이면 방해 안 함)
+            if (isNew && payload.new.user_id !== myUserId && isNearBottom()) {
+              setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
+            }
+          }
           if (payload.eventType === 'UPDATE')
             setNotes(prev => prev.map(n => n.id === payload.new.id ? payload.new : n));
           if (payload.eventType === 'DELETE')
@@ -151,7 +167,8 @@ export default function NotesPage() {
         })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [coupleId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [coupleId, myUserId]);
 
   async function handleSend() {
     const text = content.trim();
@@ -188,13 +205,7 @@ export default function NotesPage() {
 
   const isGroom = myRole === 'groom';
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   /* 날짜 구분선 삽입 */
   const listWithDividers = [];
@@ -270,8 +281,10 @@ export default function NotesPage() {
         {filtered.length === 0 ? (
           <EmptyState
             icon={StickyNote}
-            title={search ? '검색 결과가 없어요' : '아직 공유된 정보가 없어요'}
-            description={search ? '다른 키워드로 검색해보세요' : '블로그 링크나 메모를 아래에서 공유해보세요'}
+            title={search ? '검색 결과가 없어요' : '함께 모아둘 정보가 없어요'}
+            description={search
+              ? '다른 키워드로 검색해보세요'
+              : '드레스 후기 링크, 업체 연락처, 친구 추천 메모 — 한쪽이 올리면 상대방도 실시간으로 확인할 수 있어요'}
             compact
           />
         ) : (
@@ -507,16 +520,37 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
                     </div>
                   </div>
                 ) : (
-                  /* 파싱 실패 — 일반 링크 */
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4,
-                    padding: '8px 10px', borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.6)',
-                    border: '1px solid rgba(0,0,0,0.08)' }}>
-                    <Link2 size={13} color={bubbleColor.text} style={{ flexShrink: 0 }} />
-                    <span style={{ fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all', flex: 1 }}>
-                      {note.link_url.length > 40 ? note.link_url.slice(0, 40) + '…' : note.link_url}
-                    </span>
-                    <ExternalLink size={12} color={bubbleColor.text} style={{ flexShrink: 0 }} />
-                  </div>
+                  /* 파싱 실패 — 일반 링크 (클릭하면 새 탭에서 열림) */
+                  <a
+                    href={note.link_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 8, marginTop: 4,
+                      padding: '10px 12px', borderRadius: 10,
+                      backgroundColor: 'rgba(255,255,255,0.7)',
+                      border: '1px solid rgba(0,0,0,0.08)',
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Link2 size={14} color={bubbleColor.text} style={{ flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontSize: 11, color: bubbleColor.text, opacity: 0.6,
+                        margin: '0 0 2px', textTransform: 'uppercase', letterSpacing: '0.04em',
+                      }}>
+                        링크 (탭하면 열려요)
+                      </p>
+                      <span style={{
+                        fontSize: 12, color: bubbleColor.text, wordBreak: 'break-all',
+                        textDecoration: 'underline', textDecorationStyle: 'dotted',
+                      }}>
+                        {note.link_url.length > 50 ? note.link_url.slice(0, 50) + '…' : note.link_url}
+                      </span>
+                    </div>
+                    <ExternalLink size={13} color={bubbleColor.text} style={{ flexShrink: 0 }} />
+                  </a>
                 )}
               </div>
             )}

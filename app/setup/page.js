@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import OnboardingProgress from '@/components/OnboardingProgress';
 
 const WEDDING_TYPES = [
@@ -229,13 +230,7 @@ export default function SetupPage() {
     router.push('/dashboard');
   }
 
-  if (pageLoading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (pageLoading) return <PageLoader />;
 
   return (
     <div className="page-wrapper flex flex-col">
@@ -243,12 +238,12 @@ export default function SetupPage() {
 
       <div className="text-center mb-8">
         <h1 className="text-2xl font-bold" style={{ color: 'var(--toss-text-primary)' }}>
-          {isEdit ? '결혼 정보 수정' : '마지막 단계예요!'}
+          {isEdit ? '결혼 정보 수정' : '결혼 정보를 알려주세요'}
         </h1>
         <p className="mt-2 text-sm" style={{ color: 'var(--toss-text-secondary)' }}>
           {isEdit
             ? '언제든 수정할 수 있어요'
-            : '나중에 설정해도 괜찮아요. 언제든 수정할 수 있어요'}
+            : '날짜만 입력하면 D-day · 맞춤 체크리스트 56개가 자동 생성돼요'}
         </p>
       </div>
 
@@ -335,17 +330,16 @@ export default function SetupPage() {
 
         {/* 스킵 버튼 (수정 모드가 아닐 때만) */}
         {!isEdit && (
-          <>
-            <p className="text-xs text-center" style={{ color: 'var(--toss-text-tertiary)' }}>
-              지금 입력하지 않아도 나중에 설정에서 바꿀 수 있어요.
-            </p>
-            <button
-              className="btn-ghost w-full"
-              onClick={() => router.push('/dashboard')}
-            >
-              나중에 설정할게요
-            </button>
-          </>
+          <button
+            onClick={() => router.push('/dashboard')}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 12, color: 'var(--toss-text-tertiary)',
+              textDecoration: 'underline', marginTop: 4,
+            }}
+          >
+            나중에 입력할게요
+          </button>
         )}
       </div>
     </div>

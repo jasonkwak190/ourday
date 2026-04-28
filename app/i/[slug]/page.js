@@ -179,7 +179,9 @@ export default function InvitationViewPage({ params }) {
   const [error,      setError]      = useState('');
 
   // ── 방명록 목록 ──────────────────────────────────────────────────
-  const [entries, setEntries] = useState([]);
+  const [entries, setEntries]         = useState([]);
+  const [entriesHasMore, setEntriesHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -191,16 +193,30 @@ export default function InvitationViewPage({ params }) {
       if (data) {
         await supabase.rpc('increment_view_count', { invitation_slug: slug });
 
-        // 방명록 목록 로드
+        // 방명록 목록 로드 (첫 30개)
         const res = await fetch(`/api/guestbook?invitation_id=${data.id}`);
         if (res.ok) {
           const json = await res.json();
           setEntries(json.data || []);
+          setEntriesHasMore(!!json.hasMore);
         }
       }
     };
     load();
   }, [slug]);
+
+  async function loadMoreEntries() {
+    if (!inv?.id || entries.length === 0 || loadingMore) return;
+    setLoadingMore(true);
+    const oldest = entries[entries.length - 1];
+    const res = await fetch(`/api/guestbook?invitation_id=${inv.id}&before=${encodeURIComponent(oldest.created_at)}`);
+    if (res.ok) {
+      const json = await res.json();
+      setEntries(prev => [...prev, ...(json.data || [])]);
+      setEntriesHasMore(!!json.hasMore);
+    }
+    setLoadingMore(false);
+  }
 
   async function copyUrl() {
     await navigator.clipboard.writeText(window.location.href);
@@ -210,53 +226,74 @@ export default function InvitationViewPage({ params }) {
 
   async function handleSubmit() {
     setError('');
-    if (!name.trim())      { setError('성함을 입력해주세요.'); return; }
-    if (!side)             { setError('신랑측/신부측을 선택해주세요.'); return; }
-    if (attending === null) { setError('참석 여부를 선택해주세요.'); return; }
+    if (!name.trim())                 { setError('성함을 입력해주세요.'); return; }
+    if (name.trim().length < 2)       { setError('성함을 두 글자 이상 입력해주세요.'); return; }
+    if (!side)                        { setError('신랑측/신부측을 선택해주세요.'); return; }
+    if (attending === null)           { setError('참석 여부를 선택해주세요.'); return; }
 
     setSubmitting(true);
 
-    // 1. RSVP 제출 (필수)
-    const rsvpRes = await fetch('/api/rsvp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        couple_id:  inv.couple_id,
-        name:       name.trim(),
-        side,
-        attending,
-        meal_count: attending ? mealCount : 0,
-        phone:      phone.trim() || null,
-      }),
-    });
-
-    // 2. 방명록 제출 (메시지 있을 때만)
-    let newEntry = null;
-    if (message.trim() && inv.id) {
-      const gbRes = await fetch('/api/guestbook', {
+    // 1. RSVP 제출 (필수) — 실패하면 즉시 중단, 방명록 안 보냄
+    let rsvpRes;
+    try {
+      rsvpRes = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          invitation_id: inv.id,
-          name:          name.trim(),
-          message:       message.trim(),
+          couple_id:  inv.couple_id,
+          name:       name.trim(),
+          side,
+          attending,
+          meal_count: attending ? mealCount : 0,
+          phone:      phone.trim() || null,
         }),
       });
-      if (gbRes.ok) {
-        const gbJson = await gbRes.json();
-        newEntry = gbJson.data;
-      }
+    } catch {
+      setSubmitting(false);
+      setError('네트워크 오류가 발생했어요. 다시 시도해주세요.');
+      return;
     }
 
-    setSubmitting(false);
-
     if (!rsvpRes.ok) {
+      setSubmitting(false);
       setError('전송에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
     }
 
+    // 2. 방명록 제출 (메시지 있을 때만, RSVP 성공 후)
+    // 실패해도 RSVP는 이미 저장됐으므로 done 처리하되 안내 메시지 추가
+    let newEntry = null;
+    let guestbookFailed = false;
+    if (message.trim() && inv.id) {
+      try {
+        const gbRes = await fetch('/api/guestbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            invitation_id: inv.id,
+            name:          name.trim(),
+            message:       message.trim(),
+          }),
+        });
+        if (gbRes.ok) {
+          const gbJson = await gbRes.json();
+          newEntry = gbJson.data;
+        } else {
+          guestbookFailed = true;
+        }
+      } catch {
+        guestbookFailed = true;
+      }
+    }
+
+    setSubmitting(false);
     if (newEntry) setEntries(prev => [newEntry, ...prev]);
     setDone(true);
+
+    // 방명록만 실패한 경우 done 화면 진입 후 안내 (RSVP는 성공)
+    if (guestbookFailed) {
+      setTimeout(() => alert('참석 답변은 전달됐는데 메시지 전송이 실패했어요.\n잠시 후 다시 시도해주세요.'), 300);
+    }
   }
 
   // ── 로딩 / 없음 ──────────────────────────────────────────────────
@@ -349,6 +386,17 @@ export default function InvitationViewPage({ params }) {
                   : `${name}님의 답변을 잘 받았어요.\n다음에 좋은 자리에서 뵙겠습니다.`
                 }
               </p>
+              <button
+                onClick={() => { setDone(false); setError(''); }}
+                style={{
+                  marginTop: 20,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 12, color: 'var(--ink-3, #6E6459)',
+                  textDecoration: 'underline',
+                }}
+              >
+                응답을 수정할게요
+              </button>
             </div>
 
           ) : (
@@ -597,6 +645,23 @@ export default function InvitationViewPage({ params }) {
                   </div>
                 ))}
               </div>
+              {entriesHasMore && (
+                <button
+                  onClick={loadMoreEntries}
+                  disabled={loadingMore}
+                  style={{
+                    width: '100%', marginTop: 12, padding: '12px 16px',
+                    background: 'transparent',
+                    border: '1px solid var(--rule, #e8e2d9)',
+                    borderRadius: 999,
+                    fontFamily: FONT, fontSize: 13, fontWeight: 600,
+                    color: 'var(--ink-3, #6E6459)',
+                    cursor: loadingMore ? 'wait' : 'pointer',
+                  }}
+                >
+                  {loadingMore ? '불러오는 중…' : '이전 메시지 더 보기'}
+                </button>
+              )}
             </div>
           )}
         </div>

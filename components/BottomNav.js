@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import Icon from '@/components/Icon';
 
 const NAV_ITEMS = [
-  { key: 'home',      label: 'home',   icon: 'home',      href: '/dashboard' },
-  { key: 'timeline',  label: 'tasks',  icon: 'checklist', href: '/timeline' },
-  { key: 'budget',    label: 'budget', icon: 'wallet',    href: '/budget' },
-  { key: 'decisions', label: 'decide', icon: 'chat',      href: '/decisions' },
+  { key: 'home',      label: '홈',         icon: 'home',      href: '/dashboard' },
+  { key: 'timeline',  label: '체크리스트', icon: 'checklist', href: '/timeline' },
+  { key: 'budget',    label: '예산',       icon: 'wallet',    href: '/budget' },
+  { key: 'decisions', label: '의사결정',   icon: 'chat',      href: '/decisions' },
 ];
 
 const MORE_ITEMS = [
