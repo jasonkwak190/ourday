@@ -175,6 +175,8 @@ export default function InvitationTab({ coupleId }) {
   const [loading,          setLoading]          = useState(true);
   const [saving,           setSaving]           = useState(false);
   const [saved,            setSaved]            = useState(false);
+  const [saveError,        setSaveError]        = useState('');
+  const [isDirty,          setIsDirty]          = useState(false);
   const [copied,           setCopied]           = useState(false);
   const [showPreview,      setShowPreview]      = useState(false);
   const [inv,              setInv]              = useState(null);
@@ -265,6 +267,7 @@ export default function InvitationTab({ coupleId }) {
   async function save() {
     if (!coupleId) return;
     setSaving(true);
+    setSaveError('');
 
     const slug = coupleId.replace(/-/g, '').slice(0, 12);
     const payload = {
@@ -276,21 +279,30 @@ export default function InvitationTab({ coupleId }) {
     };
 
     let savedData = null;
+    let saveErr = null;
     if (inv) {
       const { data, error } = await supabase
         .from('invitations').update(payload).eq('id', inv.id).select().single();
-      if (error) console.error('[invitation] update error:', error.message);
+      if (error) { console.error('[invitation] update error:', error.message); saveErr = error; }
       else savedData = data;
     } else {
       const { data, error } = await supabase
         .from('invitations').insert(payload).select().single();
-      if (error) console.error('[invitation] insert error:', error.message);
+      if (error) { console.error('[invitation] insert error:', error.message); saveErr = error; }
       else savedData = data;
     }
 
-    if (savedData) setInv(savedData);
     setSaving(false);
+
+    // 저장 실패 — 사용자에게 명확히 알림 (가짜 성공 표시 방지)
+    if (saveErr || !savedData) {
+      setSaveError('저장에 실패했어요. 네트워크를 확인하고 다시 시도해주세요.');
+      return;
+    }
+
+    setInv(savedData);
     setSaved(true);
+    setIsDirty(false);
     setShowPreview(false);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -311,23 +323,38 @@ export default function InvitationTab({ coupleId }) {
     fd.append('file', file);
     fd.append('couple_id', coupleId);
 
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
     try {
-      const res  = await fetch('/api/invitation/cover', { method: 'POST', body: fd });
+      const res  = await fetch('/api/invitation/cover', { method: 'POST', body: fd, signal: ctrl.signal });
       const json = await res.json();
       if (!res.ok) { setCoverError(json.error || '업로드 실패'); }
       else { update('cover_image_url', json.url); }
-    } catch {
-      setCoverError('업로드 중 오류가 발생했어요.');
+    } catch (err) {
+      if (err.name === 'AbortError') setCoverError('네트워크가 느려요. 다시 시도해주세요.');
+      else setCoverError('업로드 중 오류가 발생했어요.');
     } finally {
+      clearTimeout(timer);
       setUploadingCover(false);
-      // 같은 파일 재선택 허용
       if (coverInputRef.current) coverInputRef.current.value = '';
     }
   }
 
   function update(key, value) {
     setForm(f => ({ ...f, [key]: value }));
+    setIsDirty(true);
   }
+
+  // 저장 안 한 변경사항 있을 때 페이지 이탈 경고
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = ''; // Chrome
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   // 섹션 추가
   function addSection(key) {
@@ -360,14 +387,18 @@ export default function InvitationTab({ coupleId }) {
     fd.append('file', file);
     fd.append('couple_id', coupleId);
 
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 30_000);
     try {
-      const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd });
+      const res  = await fetch('/api/invitation/photo', { method: 'POST', body: fd, signal: ctrl.signal });
       const json = await res.json();
       if (!res.ok) setPhotoError(json.error || '업로드 실패');
-      else setForm(f => ({ ...f, photos: [...f.photos, json.url] }));
-    } catch {
-      setPhotoError('업로드 중 오류가 발생했어요.');
+      else { setForm(f => ({ ...f, photos: [...f.photos, json.url] })); setIsDirty(true); }
+    } catch (err) {
+      if (err.name === 'AbortError') setPhotoError('네트워크가 느려요. 다시 시도해주세요.');
+      else setPhotoError('업로드 중 오류가 발생했어요.');
     } finally {
+      clearTimeout(timer);
       setUploadingPhoto(false);
       if (photoInputRef.current) photoInputRef.current.value = '';
     }
@@ -375,6 +406,7 @@ export default function InvitationTab({ coupleId }) {
 
   function removePhoto(index) {
     setForm(prev => ({ ...prev, photos: prev.photos.filter((_, i) => i !== index) }));
+    setIsDirty(true);
   }
 
   // 비활성 선택 섹션 목록
@@ -722,6 +754,17 @@ export default function InvitationTab({ coupleId }) {
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* 저장 에러 — 결혼식 직전 변경 손실 방지 */}
+      {saveError && (
+        <div className="mb-3 px-4 py-3 rounded-2xl flex items-start gap-2"
+          style={{ backgroundColor: 'rgba(255,59,48,0.08)', border: '1px solid rgba(255,59,48,0.25)' }}>
+          <span style={{ fontSize: 16, flexShrink: 0 }}>⚠️</span>
+          <p className="text-sm font-semibold" style={{ color: 'var(--toss-red)', margin: 0 }}>
+            {saveError}
+          </p>
         </div>
       )}
 

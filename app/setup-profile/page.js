@@ -30,7 +30,8 @@ export default function SetupProfilePage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!name.trim()) { setError('이름을 입력해주세요.'); return; }
+    if (!name.trim())                { setError('이름을 입력해주세요.'); return; }
+    if (name.trim().length < 2)      { setError('이름을 두 글자 이상 입력해주세요.'); return; }
     setLoading(true);
     setError('');
 
