@@ -565,6 +565,22 @@ export default function TimelinePage() {
 
   const doneCount = useMemo(() => displayed.filter(i => i.is_done).length, [displayed]);
 
+  /* ─ 다가오는 탭 3그룹 (지난 마감 / 이번 주 / 4주 이내) ─ */
+  const currentGroups = useMemo(() => {
+    if (activeTab !== 'current') return null;
+    const today0 = new Date(); today0.setHours(0,0,0,0);
+    const weekL  = new Date(today0); weekL.setDate(today0.getDate() + 7);
+    const overdue = [], thisWeek = [], later = [];
+    displayed.forEach(item => {
+      const d = getItemDate(item, weddingDate);
+      if (!d) { later.push(item); return; }
+      if (d < today0) overdue.push(item);
+      else if (d <= weekL) thisWeek.push(item);
+      else later.push(item);
+    });
+    return { overdue, thisWeek, later };
+  }, [displayed, activeTab, weddingDate]);
+
   // 날짜 미리보기 (추가 폼)
   function getPreviewDate(mode, months, dueDate, wDate) {
     if (mode === 'date' && dueDate) return fmtDate(dueDate);
@@ -1158,19 +1174,72 @@ export default function TimelinePage() {
                 </>
               )}
             </div>
+          ) : activeTab === 'current' && currentGroups ? (
+            /* 다가오는 탭 — 3그룹 분리 (지난 마감 / 이번 주 / 4주 이내) */
+            <>
+              {displayed.length === 0 ? (
+                <div className="card mb-4 p-0">
+                  <EmptyState icon={CheckSquare} title={myOnly ? '내가 맡은 임박 항목이 없어요' : '다가오는 항목이 없어요'} description={myOnly ? '필터를 끄면 다른 항목도 볼 수 있어요' : '잘 진행되고 있어요!'} compact />
+                </div>
+              ) : (
+                <div className="flex flex-col gap-3 mb-4">
+                  {currentGroups.overdue.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5 px-1">
+                        <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--toss-red, #E74C3C)', letterSpacing: '0.04em' }}>
+                          ⚠ 지난 마감
+                        </p>
+                        <span className="text-xs tabular-nums" style={{ color: 'var(--ink-4)' }}>{currentGroups.overdue.length}개</span>
+                      </div>
+                      <div className="card p-0" style={{ border: '1.5px solid var(--toss-red-light, #FFE9E9)' }}>
+                        <ul className="px-4">
+                          {currentGroups.overdue.map((item, idx) => renderItem(item, idx === currentGroups.overdue.length - 1))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  {currentGroups.thisWeek.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5 px-1">
+                        <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--champagne-2)', letterSpacing: '0.04em' }}>
+                          📌 이번 주
+                        </p>
+                        <span className="text-xs tabular-nums" style={{ color: 'var(--ink-4)' }}>{currentGroups.thisWeek.length}개</span>
+                      </div>
+                      <div className="card p-0" style={{ border: '1.5px solid var(--champagne)' }}>
+                        <ul className="px-4">
+                          {currentGroups.thisWeek.map((item, idx) => renderItem(item, idx === currentGroups.thisWeek.length - 1))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  {currentGroups.later.length > 0 && (
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5 px-1">
+                        <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: '0.04em' }}>
+                          📅 곧 다가올 일
+                        </p>
+                        <span className="text-xs tabular-nums" style={{ color: 'var(--ink-4)' }}>{currentGroups.later.length}개</span>
+                      </div>
+                      <div className="card p-0">
+                        <ul className="px-4">
+                          {currentGroups.later.map((item, idx) => renderItem(item, idx === currentGroups.later.length - 1))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
           ) : (
-            /* 이번달 / 기간 탭 */
+            /* 기간 탭 — 단일 리스트 */
             <>
               {displayed.length > 0 && (
                 <p className="text-xs mb-2" style={{ color: 'var(--stone)' }}>{doneCount}/{displayed.length} 완료</p>
               )}
               <div className="card mb-4 p-0">
                 {displayed.length === 0 ? (
-                  activeTab === 'current' ? (
-                    <EmptyState icon={CheckSquare} title={myOnly ? '내가 맡은 임박 항목이 없어요' : '다가오는 항목이 없어요'} description={myOnly ? '필터를 끄면 다른 항목도 볼 수 있어요' : '잘 진행되고 있어요!'} compact />
-                  ) : (
-                    <EmptyState icon={CheckSquare} title="해당 기간에 항목이 없어요" compact />
-                  )
+                  <EmptyState icon={CheckSquare} title="해당 기간에 항목이 없어요" compact />
                 ) : (
                   <ul className="px-4">{displayed.map((item, idx) => renderItem(item, idx === displayed.length - 1))}</ul>
                 )}
