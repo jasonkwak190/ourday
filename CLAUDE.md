@@ -246,6 +246,28 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 - [ ] 오프라인 지원 (Service Worker 캐시)
 - [ ] 좌석 배치도
 
+### 🗓️ 스케줄러 본질 강화 (2026-04-29)
+
+체크리스트 / 의사결정 페이지를 정보판 → 액션 가능한 보드로 전환. 자세히는 SKILLS.md SKILL-001.
+
+- [x] **인사이트 헤더 카드** — D-day · 진행률 · 임박/지난 배지 (체크리스트 + 의사결정)
+- [x] **카테고리 분류 + 진행률 row** — 7개 (식장/스드메/청첩장·하객/신혼여행/신혼집·예물/예식 디테일/기타)
+- [x] **추천 템플릿 chip** — 의사결정 자주 묻는 10개 항목 클릭 한 번에 추가
+- [x] **빠른 인라인 추가** — Enter로 즉시 저장 (체크리스트 + 의사결정)
+- [x] **"지금 가장 임박한 일" 위저드** — 미완료 + 마감 가까운 3개 추출
+- [x] **다가오는 탭 자동 정렬 + 3그룹 분리** — 지난 마감 / 이번 주 / 곧 다가올 일
+- [x] **항목 가이드 14개** (체크리스트 핵심 항목)
+- [x] **하위 체크리스트 (sub-tasks)** — checklist_items.subtasks jsonb (MT-013 SQL 필요)
+- [x] **D-day 단계 안내 + ✨ 추천 카테고리** — getStageInfo() 8단계 매핑
+- [x] **관련 페이지 cross-link** — 체크리스트 항목 → 예산/의사결정/하객 점프
+- [x] **"내 할 일만" 필터** — userRole 기반 (groom/bride)
+- [x] **마감 임박/지난 배지** — 항목 카드별 시각적 시급도
+
+**SQL 마이그레이션 필요** (MANUAL_TASKS MT-013):
+```sql
+alter table checklist_items add column if not exists subtasks jsonb default '[]'::jsonb;
+```
+
 ### 🛡️ 보안 / 코드 품질 (2026-04-27 추가)
 
 - [x] CSP (Content-Security-Policy) 헤더 추가 — next.config.js

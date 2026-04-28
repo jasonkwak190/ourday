@@ -414,3 +414,105 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
 ├── sentry.server.config.js     # instrumentation.js가 import
 └── sentry.edge.config.js       # instrumentation.js가 import
 ```
+
+---
+
+## ERR-012 · 청첩장 OG 썸네일이 cover_image_url 무시함 (Next.js 파일 컨벤션 함정)
+
+**증상**
+- 사용자가 cover_image_url을 DB에 저장했는데도 카카오톡 공유 시
+  자동 생성된 fallback 이미지(WEDDING INVITATION 디자인)만 표시
+- 페이지 HTML의 `<meta property="og:image">` 가 fallback URL 가리킴
+
+**원인**
+Next.js의 **metadata 파일 컨벤션** (예: `app/i/[slug]/opengraph-image.js`) 은
+`generateMetadata`의 `openGraph.images` 를 **자동으로 override**한다.
+docs: "These metadata files take precedence over the same metadata in the metadata object"
+
+즉, layout.js에서 아래처럼 cover_image_url을 우선시해도:
+```js
+const ogImageUrl = inv?.cover_image_url
+  ? inv.cover_image_url
+  : `${baseUrl}/i/${slug}/opengraph-image`;
+```
+파일 컨벤션이 자동 등록한 og:image가 winning 해서 cover URL이 무시됨.
+
+**해결**
+파일 컨벤션을 일반 API route로 이동해 자동 등록을 끊는다:
+- `app/i/[slug]/opengraph-image.js` 삭제
+- `app/api/og/invitation/[slug]/route.js` 로 이동 (`export async function GET`)
+- generateMetadata에서 fallback URL을 `/api/og/invitation/<slug>` 로 명시
+
+**부수 fix**
+- layout.js에 `export const dynamic = 'force-dynamic'` 추가
+  → metadata가 정적 캐싱되지 않아 DB cover URL 변경 즉시 반영
+- 공유 URL에 `?v=<updated_at_timestamp>` cache buster 추가
+  → 카카오 OG 캐시 자동 무효화 (저장할 때마다 새 URL 인식)
+
+**재발 방지 규칙**
+- Next.js metadata 파일 컨벤션(`opengraph-image.js`, `twitter-image.js`, `icon.js` 등)은
+  generateMetadata 보다 **우선** 적용된다는 점 기억
+- 동적으로 cover image를 결정해야 하는 경우 **파일 컨벤션 사용 금지**, 일반 route로 분리
+- 동적 metadata가 있는 페이지엔 `force-dynamic` 또는 `revalidate: 0` 명시
+
+---
+
+## SKILL-001 · 스케줄러 강화 패턴 (체크리스트 → 의사결정 등)
+
+`app/timeline/page.js`에 적용한 패턴이 다른 task 관리 페이지에도 그대로 이식 가능.
+의사결정 페이지(`app/decisions/page.js`)에서 동일 패턴 재사용 검증됨.
+
+**구성 요소 (재사용 패턴)**
+1. **인사이트 헤더 카드** — D-day · 진행률 · 임박/지난 배지
+2. **카테고리 분류 + 진행률 row** — 7개 카테고리 (식장/스드메/청첩장·하객/신혼여행/신혼집·예물/예식 디테일/기타)
+3. **추천 템플릿** — 자주 사용하는 항목 chip 클릭 한 번에 추가
+4. **빠른 인라인 추가** — Enter/추가 버튼, default값 자동 부여
+5. **임박 위저드** — 미완료 + 마감 가까운 N개 추출
+6. **자동 정렬** — displayed 결과를 마감 가까운 순 정렬
+7. **그룹 분리** — 지난 마감 / 이번 주 / 곧 다가올 일
+8. **항목 가이드 / sub-tasks / 관련 페이지 cross-link**
+
+**핵심 useMemo 함수들**
+```js
+// 통계
+const stats = useMemo(() => {
+  const total = items.length;
+  const done = items.filter(i => i.is_done).length;
+  return { total, done, pct: total > 0 ? Math.round(done/total*100) : 0 };
+}, [items]);
+
+// 카테고리별 통계
+const categoryStats = useMemo(() => {
+  const map = {};
+  CATEGORIES.forEach(c => { map[c] = { total: 0, done: 0 }; });
+  items.forEach(i => {
+    const c = getItemCategory(i);
+    map[c].total++;
+    if (i.is_done) map[c].done++;
+  });
+  return CATEGORIES.map(c => ({ name: c, ...map[c], pct: ... }))
+    .filter(x => x.total > 0);
+}, [items]);
+
+// 추천 템플릿 (이미 추가된 것 제외)
+const availableTemplates = useMemo(() => {
+  const existing = new Set(items.map(i => i.title.toLowerCase()));
+  return TEMPLATE.filter(t => !existing.has(t.title.toLowerCase()));
+}, [items]);
+```
+
+**카테고리 자동 추론 (없으면 기타)**
+```js
+function inferCategory(title) {
+  const t = (title || '').toLowerCase();
+  if (/웨딩홀|식장/.test(t)) return '식장';
+  if (/스튜디오|드레스|메이크업/.test(t)) return '스드메';
+  // ... 키워드 매칭
+  return '기타';
+}
+```
+
+**향후 추가 페이지에 패턴 적용 시 주의**
+- DB column 미존재 시 retry-without-column 로직 (PGRST 에러 메시지 파싱)
+- Realtime + 직접 setItems race condition 방지 dedup (`prev.find(it => it.id === data.id)`)
+- 빈 상태에선 추천 템플릿이 first action 역할
