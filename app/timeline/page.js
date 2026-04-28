@@ -249,9 +249,12 @@ export default function TimelinePage() {
   // 캘린더
   const [calYear,     setCalYear]     = useState(todayDt.getFullYear());
   const [calMonth,    setCalMonth]    = useState(todayDt.getMonth());
-  const [calSelected, setCalSelected] = useState(null);
+  // 첫 진입 시 오늘 자동 선택 → 사용자가 바로 "오늘 뭐 있는지" 확인 가능
+  const [calSelected, setCalSelected] = useState(todayDt.getDate());
 
-  const { coupleId: cId, loading: authLoading } = useCouple('couple_id');
+  const { coupleId: cId, userData, loading: authLoading } = useCouple('couple_id, role');
+  const userRole = userData?.role || null; // 'groom' | 'bride' | null
+  const [myOnly, setMyOnly] = useState(false); // "내 할 일만" 토글
 
   /* ─ 데이터 로드 ─ */
   useEffect(() => {
@@ -380,29 +383,58 @@ export default function TimelinePage() {
     setMenuId(null);
   }
 
-  /* ─ 필터 (useMemo — items/activeTab/weddingDate 바뀔 때만 재계산) ─ */
-  const displayed = useMemo(() => {
-    if (activeTab === 'all') return items;
+  /* ─ D-day & 진행률 통계 (헤더 인사이트 카드용) ─ */
+  const dDay = useMemo(() => {
+    if (!weddingDate) return null;
+    const t = new Date(); t.setHours(0,0,0,0);
+    const w = new Date(weddingDate); w.setHours(0,0,0,0);
+    return Math.round((w - t) / 86400000);
+  }, [weddingDate]);
 
+  const stats = useMemo(() => {
+    const total = items.length;
+    const done  = items.filter(i => i.is_done).length;
+    const pct   = total > 0 ? Math.round(done / total * 100) : 0;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const weekLater = new Date(today); weekLater.setDate(today.getDate() + 7);
+    let overdue = 0, thisWeek = 0;
+    items.forEach(i => {
+      if (i.is_done) return;
+      const d = getItemDate(i, weddingDate);
+      if (!d) return;
+      if (d < today) overdue++;
+      else if (d <= weekLater) thisWeek++;
+    });
+    return { total, done, pct, overdue, thisWeek };
+  }, [items, weddingDate]);
+
+  /* ─ 필터 (useMemo — items/activeTab/weddingDate/myOnly 바뀔 때만 재계산) ─ */
+  const displayed = useMemo(() => {
+    // 1) 담당 필터 ("내 할 일만")
+    let list = items;
+    if (myOnly && userRole) {
+      list = list.filter(i => i.assigned_to === userRole || i.assigned_to === 'both');
+    }
+
+    // 2) 탭 필터
+    if (activeTab === 'all') return list;
+
+    // 'current' = "다가오는" — 미완료 항목 중 마감 4주 이내 OR 지난 마감
     if (activeTab === 'current') {
-      const currY = todayDt.getFullYear(), currM = todayDt.getMonth();
-      return items.filter(item => {
-        if (item.due_date) {
-          const d = new Date(item.due_date);
-          return d.getFullYear() === currY && d.getMonth() === currM;
-        }
-        if (item.due_months_before !== null && item.due_months_before !== undefined) {
-          if (!weddingDate) return false;
-          const period = MONTHS_TO_PERIOD[item.due_months_before];
-          const d = getPeriodDate(weddingDate, period);
-          return d && d.getFullYear() === currY && d.getMonth() === currM;
-        }
-        return false;
+      const today = new Date(); today.setHours(0,0,0,0);
+      const fourWeeksLater = new Date(today); fourWeeksLater.setDate(today.getDate() + 28);
+      return list.filter(item => {
+        if (item.is_done) return false;
+        const d = getItemDate(item, weddingDate);
+        // 마감일 환산 불가능 (미정 또는 결혼날짜 없음): 미완료라면 일단 노출
+        if (!d) return true;
+        return d <= fourWeeksLater;
       });
     }
 
-    return items.filter(i => i.due_months_before === activeTab);
-  }, [items, activeTab, weddingDate]);
+    // 특정 기간만
+    return list.filter(i => i.due_months_before === activeTab);
+  }, [items, activeTab, weddingDate, myOnly, userRole]);
 
   const doneCount = useMemo(() => displayed.filter(i => i.is_done).length, [displayed]);
 
@@ -603,6 +635,66 @@ export default function TimelinePage() {
         </div>
       </div>
 
+      {/* ── 인사이트 헤더 카드 (D-day · 진행률 · 임박/지난) ── */}
+      <div className="card mb-4" style={{ padding: '18px 20px' }}>
+        {weddingDate ? (
+          <>
+            <div className="flex items-end justify-between mb-3">
+              <div>
+                <p style={{ fontSize: 10, color: 'var(--ink-3)', letterSpacing: '0.18em', textTransform: 'uppercase', margin: 0, fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>
+                  · until our day ·
+                </p>
+                <p style={{ fontFamily: 'var(--font-serif-en)', fontSize: 36, fontWeight: 600, color: 'var(--ink)', lineHeight: 1.05, margin: '4px 0 0', letterSpacing: '-0.02em' }}>
+                  {dDay >= 0 ? `D-${dDay}` : dDay === 0 ? 'D-DAY' : `D+${Math.abs(dDay)}`}
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: 11, color: 'var(--ink-3)', margin: 0 }}>
+                  <span className="tabular-nums" style={{ fontWeight: 600, color: 'var(--ink-2)' }}>{stats.done}</span>
+                  <span style={{ color: 'var(--ink-4)' }}> / {stats.total}</span> 완료
+                </p>
+                <p style={{ fontFamily: 'var(--font-serif-en)', fontSize: 24, fontWeight: 700, color: 'var(--champagne-2)', lineHeight: 1, margin: '4px 0 0' }} className="tabular-nums">
+                  {stats.pct}%
+                </p>
+              </div>
+            </div>
+            {/* progress bar */}
+            <div style={{ height: 6, backgroundColor: 'var(--rule)', borderRadius: 999, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${stats.pct}%`, backgroundColor: 'var(--champagne)', transition: 'width 0.4s ease' }} />
+            </div>
+            {/* 배지: 이번 주 마감 / 지난 마감 */}
+            {(stats.thisWeek > 0 || stats.overdue > 0) && (
+              <div className="flex flex-wrap gap-2 mt-3">
+                {stats.overdue > 0 && (
+                  <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--toss-red-light, #FFE9E9)', color: 'var(--toss-red, #E74C3C)' }}>
+                    ⚠ 지난 마감 {stats.overdue}개
+                  </span>
+                )}
+                {stats.thisWeek > 0 && (
+                  <span style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 999, backgroundColor: 'var(--champagne-wash)', color: 'var(--champagne-2)' }}>
+                    이번 주 마감 {stats.thisWeek}개
+                  </span>
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="flex items-center justify-between gap-3">
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--ink)', margin: 0 }}>결혼 날짜를 정해보세요</p>
+              <p style={{ fontSize: 12, color: 'var(--ink-3)', margin: '2px 0 0' }}>D-day · 진행률 · 마감 알림이 작동해요</p>
+            </div>
+            <button
+              onClick={() => router.push('/setup')}
+              className="btn-rose"
+              style={{ flexShrink: 0, padding: '8px 16px', fontSize: 13, height: 'auto' }}
+            >
+              설정
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* ══ 리스트 뷰 ══ */}
       {viewMode === 'list' && (
         <>
@@ -662,10 +754,10 @@ export default function TimelinePage() {
           </div>
 
           {/* 탭 필터 */}
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-2">
             <button onClick={() => setActiveTab('current')}
               style={{ flexShrink: 0, padding: '7px 16px', borderRadius: 20, fontSize: 13, fontWeight: 500, fontFamily: 'var(--font-sans)', cursor: 'pointer', transition: 'all 0.15s', backgroundColor: activeTab === 'current' ? 'var(--ink)' : 'var(--paper)', color: activeTab === 'current' ? 'var(--ivory)' : 'var(--ink-3)', border: `1px solid ${activeTab === 'current' ? 'var(--ink)' : 'var(--rule)'}` }}>
-              이번달
+              다가오는
             </button>
             <select
               value={typeof activeTab === 'number' ? activeTab : ''}
@@ -679,6 +771,24 @@ export default function TimelinePage() {
               전체
             </button>
           </div>
+
+          {/* "내 할 일만" 필터 — 사용자에게 role 있을 때만 노출 */}
+          {userRole && (
+            <div className="flex items-center mb-4">
+              <button
+                onClick={() => setMyOnly(v => !v)}
+                style={{
+                  fontSize: 12, fontWeight: 500, padding: '6px 12px', borderRadius: 999,
+                  backgroundColor: myOnly ? 'var(--champagne-wash)' : 'transparent',
+                  color: myOnly ? 'var(--champagne-2)' : 'var(--ink-3)',
+                  border: `1px solid ${myOnly ? 'var(--champagne)' : 'var(--rule)'}`,
+                  cursor: 'pointer', transition: 'all 0.15s',
+                }}
+              >
+                {myOnly ? '✓ ' : ''}내 할 일만 ({userRole === 'groom' ? '신랑' : '신부'})
+              </button>
+            </div>
+          )}
 
           {/* 항목 0개 → 어떤 탭이든 템플릿 로드 우선 제안 (첫 진입 막힘 방지) */}
           {items.length === 0 ? (
@@ -778,12 +888,8 @@ export default function TimelinePage() {
               )}
               <div className="card mb-4 p-0">
                 {displayed.length === 0 ? (
-                  activeTab === 'current' && !weddingDate ? (
-                    <div className="px-4 py-6 text-center">
-                      <p className="text-sm font-semibold mb-1" style={{ color: 'var(--ink)' }}>결혼 날짜를 설정해주세요</p>
-                      <p className="text-xs mb-3" style={{ color: 'var(--stone)' }}>날짜를 설정하면 이번달 준비 항목이 자동으로 표시돼요</p>
-                      <button className="btn-rose" style={{ height: 40, fontSize: 13 }} onClick={() => router.push('/setup')}>날짜 설정하기</button>
-                    </div>
+                  activeTab === 'current' ? (
+                    <EmptyState icon={CheckSquare} title={myOnly ? '내가 맡은 임박 항목이 없어요' : '다가오는 항목이 없어요'} description={myOnly ? '필터를 끄면 다른 항목도 볼 수 있어요' : '잘 진행되고 있어요!'} compact />
                   ) : (
                     <EmptyState icon={CheckSquare} title="해당 기간에 항목이 없어요" compact />
                   )
@@ -990,13 +1096,7 @@ export default function TimelinePage() {
             )}
           </div>
 
-          {!weddingDate && (
-            <div className="card mb-4 text-center">
-              <p className="text-sm font-semibold mb-2" style={{ color: 'var(--ink)' }}>결혼 날짜를 설정해주세요</p>
-              <p className="text-xs mb-3" style={{ color: 'var(--stone)' }}>날짜 설정 후 체크리스트 일정이 자동으로 표시돼요</p>
-              <button className="btn-rose" style={{ height: 44 }} onClick={() => router.push('/setup')}>날짜 설정하기</button>
-            </div>
-          )}
+          {/* 결혼 날짜 미설정 안내는 페이지 상단 인사이트 카드에서 처리 — 여기 중복 제거 */}
         </>
       )}
 
