@@ -1,13 +1,22 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 const STORAGE_KEY = 'ourday_cookie_consent';
 
+// 비로그인 공개 페이지(하객·게스트용) — 쿠키 배너 노출 안 함
+// 이 경로들은 로그인 세션을 만들지 않으므로 쿠키 동의가 의미 없고,
+// 청첩장 보러 온 하객들에게 거슬리는 UX
+const PUBLIC_GUEST_PATHS = ['/i/', '/rsvp/', '/guest/', '/live/'];
+
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const pathname = usePathname();
+  const isPublicGuestPage = PUBLIC_GUEST_PATHS.some(p => pathname?.startsWith(p));
 
   useEffect(() => {
+    if (isPublicGuestPage) return;
     try {
       if (!localStorage.getItem(STORAGE_KEY)) {
         setVisible(true);
@@ -15,7 +24,7 @@ export default function CookieBanner() {
     } catch {
       // localStorage 접근 불가 시 배너 미표시
     }
-  }, []);
+  }, [isPublicGuestPage]);
 
   function accept() {
     try { localStorage.setItem(STORAGE_KEY, '1'); } catch { /* 무시 */ }

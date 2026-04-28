@@ -83,6 +83,8 @@ function MapEmbed({ address, lat, lng, venueName }) {
 function PhotoCarousel({ photos, accentColor = '#C9A96E' }) {
   const [current, setCurrent] = useState(0);
   const ref = useRef(null);
+  // 마우스 드래그 상태 (데스크톱 swipe 지원)
+  const dragRef = useRef({ active: false, startX: 0, startScroll: 0, moved: false });
 
   if (!photos?.length) return null;
 
@@ -92,12 +94,44 @@ function PhotoCarousel({ photos, accentColor = '#C9A96E' }) {
     setCurrent(idx);
   }
 
+  function go(delta) {
+    if (!ref.current) return;
+    const w = ref.current.offsetWidth;
+    ref.current.scrollBy({ left: delta * w, behavior: 'smooth' });
+  }
+
+  // ── 마우스 드래그-투-스크롤 (데스크톱) ────────────────────────
+  function onMouseDown(e) {
+    if (!ref.current) return;
+    dragRef.current = { active: true, startX: e.clientX, startScroll: ref.current.scrollLeft, moved: false };
+    ref.current.style.scrollSnapType = 'none'; // 드래그 중엔 snap 해제 (부드러운 드래그)
+  }
+  function onMouseMove(e) {
+    if (!dragRef.current.active || !ref.current) return;
+    const dx = e.clientX - dragRef.current.startX;
+    if (Math.abs(dx) > 4) dragRef.current.moved = true;
+    ref.current.scrollLeft = dragRef.current.startScroll - dx;
+  }
+  function endDrag() {
+    if (!dragRef.current.active || !ref.current) return;
+    dragRef.current.active = false;
+    ref.current.style.scrollSnapType = 'x mandatory'; // snap 재활성 → 가까운 슬라이드로 정렬
+    // 가장 가까운 인덱스로 부드럽게 정렬
+    const w = ref.current.offsetWidth;
+    const idx = Math.round(ref.current.scrollLeft / w);
+    ref.current.scrollTo({ left: idx * w, behavior: 'smooth' });
+  }
+
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       {/* 스크롤 컨테이너 */}
       <div
         ref={ref}
         onScroll={onScroll}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
         style={{
           display: 'flex',
           overflowX: 'auto',
@@ -105,6 +139,8 @@ function PhotoCarousel({ photos, accentColor = '#C9A96E' }) {
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
           WebkitOverflowScrolling: 'touch',
+          cursor: photos.length > 1 ? 'grab' : 'default',
+          userSelect: 'none',
         }}
       >
         {photos.map((url, i) => (
@@ -114,11 +150,52 @@ function PhotoCarousel({ photos, accentColor = '#C9A96E' }) {
               alt={`photo ${i + 1}`}
               loading={i === 0 ? 'eager' : 'lazy'}
               decoding="async"
-              style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }}
+              draggable={false}
+              onClick={(e) => { if (dragRef.current.moved) e.preventDefault(); }}
+              style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block', pointerEvents: dragRef.current.active ? 'none' : 'auto' }}
             />
           </div>
         ))}
       </div>
+
+      {/* 좌/우 화살표 버튼 (데스크톱·접근성) */}
+      {photos.length > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="이전 사진"
+            onClick={() => go(-1)}
+            disabled={current === 0}
+            style={{
+              position: 'absolute', top: '50%', left: 12, transform: 'translateY(-50%)',
+              width: 40, height: 40, borderRadius: '50%',
+              border: 'none', cursor: current === 0 ? 'not-allowed' : 'pointer',
+              backgroundColor: current === 0 ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.5)',
+              color: 'white', fontSize: 20, fontWeight: 600,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background-color 0.15s',
+              opacity: current === 0 ? 0.4 : 1,
+            }}
+          >‹</button>
+          <button
+            type="button"
+            aria-label="다음 사진"
+            onClick={() => go(1)}
+            disabled={current === photos.length - 1}
+            style={{
+              position: 'absolute', top: '50%', right: 12, transform: 'translateY(-50%)',
+              width: 40, height: 40, borderRadius: '50%',
+              border: 'none', cursor: current === photos.length - 1 ? 'not-allowed' : 'pointer',
+              backgroundColor: current === photos.length - 1 ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.5)',
+              color: 'white', fontSize: 20, fontWeight: 600,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'background-color 0.15s',
+              opacity: current === photos.length - 1 ? 0.4 : 1,
+            }}
+          >›</button>
+        </>
+      )}
+
       {/* 인디케이터 도트 */}
       {photos.length > 1 && (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 6, padding: '14px 0 4px' }}>
