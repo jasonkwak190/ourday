@@ -119,23 +119,25 @@ export default function BottomNav({ active }) {
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                padding: '10px 4px',
+                padding: '8px 4px',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: 0,
+                gap: 3,
               }}
             >
               <Icon
                 name={icon}
-                size={26}
+                size={22}
                 color={isActive ? 'var(--champagne-2)' : 'var(--ink-3)'}
               />
               <span style={{
-                width: 4, height: 4, borderRadius: '50%',
-                backgroundColor: isActive ? 'var(--champagne)' : 'transparent',
-                marginTop: 3,
-              }} />
+                fontSize: 10.5,
+                fontWeight: isActive ? 600 : 500,
+                color: isActive ? 'var(--champagne-2)' : 'var(--ink-3)',
+                letterSpacing: '-0.01em',
+                lineHeight: 1,
+              }}>{label}</span>
             </button>
           );
         })}
@@ -150,7 +152,7 @@ export default function BottomNav({ active }) {
             background: 'none',
             border: 'none',
             cursor: 'pointer',
-            padding: '6px 4px',
+            padding: '8px 4px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -159,14 +161,16 @@ export default function BottomNav({ active }) {
         >
           <Icon
             name="more"
-            size={26}
+            size={22}
             color={isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-3)'}
           />
           <span style={{
-            width: 4, height: 4, borderRadius: '50%',
-            backgroundColor: isMoreActive || showMore ? 'var(--champagne)' : 'transparent',
-            marginTop: 3,
-          }} />
+            fontSize: 10.5,
+            fontWeight: isMoreActive || showMore ? 600 : 500,
+            color: isMoreActive || showMore ? 'var(--champagne-2)' : 'var(--ink-3)',
+            letterSpacing: '-0.01em',
+            lineHeight: 1,
+          }}>더보기</span>
         </button>
       </nav>
     </>

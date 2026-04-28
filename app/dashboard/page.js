@@ -735,27 +735,6 @@ export default function DashboardPage() {
         </button>
       )}
 
-      {/* 퀵 액션 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 16 }}>
-        {[
-          { icon: 'checklist', label: '체크리스트', href: '/timeline' },
-          { icon: 'invite',    label: '청첩장',     href: '/invitation' },
-          { icon: 'guests',    label: '하객',       href: '/guests' },
-          { icon: 'camera',    label: '스냅',       href: '/gallery' },
-        ].map(({ icon, label, href }) => (
-          <button
-            key={href}
-            onClick={() => router.push(href)}
-            style={{ background: 'var(--paper)', border: '1px solid var(--rule)', borderRadius: 10, padding: '14px 6px 10px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, cursor: 'pointer' }}
-          >
-            <div style={{ width: 36, height: 36, border: '1px solid var(--champagne)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Icon name={icon} size={18} color="var(--champagne-2)" />
-            </div>
-            <span style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 11.5, color: 'var(--ink)' }}>{label}</span>
-          </button>
-        ))}
-      </div>
-
       <BottomNav active="home" />
     </div>
   );
