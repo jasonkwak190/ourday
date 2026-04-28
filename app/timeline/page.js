@@ -232,6 +232,25 @@ function getItemCategory(item) {
   return CATEGORY_BY_TITLE[item.title] || '기타';
 }
 
+/* ─── D-day 기반 단계 안내 ───────────────────────────────────────
+ * 결혼식까지 남은 일수 → "지금 시기엔 보통 X·Y에 집중해요" 권장.
+ * 추천 카테고리는 진행률 row에서 ✨로 하이라이트.
+ * 데이터 출처: 평균적인 결혼 준비 일정 (한국 기준).                                 */
+function getStageInfo(dDay) {
+  if (dDay == null) return null;
+  if (dDay >  365) return { msg: '여유로운 시기. 양가 협의 + 웨딩홀 후보 알아보기', cats: ['식장'] };
+  if (dDay >  270) return { msg: '식장 계약 + 예산 큰 그림 정리할 시기',           cats: ['식장'] };
+  if (dDay >  180) return { msg: '스드메 계약 + 신혼여행 목적지 결정할 시기',     cats: ['스드메', '신혼여행'] };
+  if (dDay >  120) return { msg: '청첩장 디자인 + 신혼집 알아볼 시기',            cats: ['청첩장·하객', '신혼집·예물'] };
+  if (dDay >   90) return { msg: '청첩장 발송 준비 + 신혼집 계약할 시기',         cats: ['청첩장·하객', '신혼집·예물'] };
+  if (dDay >   60) return { msg: '예물·함 + 예식 디테일 정리할 시기',             cats: ['신혼집·예물', '예식 디테일'] };
+  if (dDay >   30) return { msg: '드레스 가봉 + 식순 정리할 시기',                cats: ['스드메', '예식 디테일'] };
+  if (dDay >    7) return { msg: '잔금 입금 + 최종 인원 확인 + 리허설',           cats: ['식장', '예식 디테일'] };
+  if (dDay >    0) return { msg: '본식 직전. 신부 케어 + 짐 챙기기',              cats: ['스드메', '신혼여행'] };
+  if (dDay === 0)  return { msg: '오늘이 결혼식! 행복한 하루 되세요 ❤',            cats: [] };
+  return                  { msg: '결혼 축하해요 ❤ 잔여 항목 정리',                 cats: ['기타'] };
+}
+
 /* ─── 항목 가이드 (핵심 10개) ─────────────────────────────────── */
 const ITEM_GUIDES = {
   '결혼 날짜 및 웨딩홀 확정': '가장 먼저. 양가 형편 협의 + 웨딩홀 가능 일자 교차 확인. 일자가 정해져야 모든 일정이 시작돼요.',
@@ -251,6 +270,25 @@ const ITEM_GUIDES = {
 };
 function getItemGuide(item) {
   return ITEM_GUIDES[item.title] || null;
+}
+
+/* ─── 항목 → 관련 페이지 점프 ──────────────────────────────────
+ * 카테고리에 따라 관련된 다른 기능 페이지로 바로 이동.
+ * 펼침 영역에 버튼으로 제공 → 작업 흐름 단축.                                 */
+const RELATED_PAGES_BY_CATEGORY = {
+  '식장':       [{ label: '예산 (업체)',   href: '/budget',    desc: '잔금/계약금 관리' }],
+  '스드메':     [{ label: '예산 (업체)',   href: '/budget',    desc: '스드메 비용 관리' },
+                 { label: '의사결정',      href: '/decisions', desc: '신랑·신부 의견' }],
+  '청첩장·하객': [{ label: '하객 명단',    href: '/guests',    desc: '명단·축의금·청첩장' }],
+  '신혼여행':   [{ label: '의사결정',      href: '/decisions', desc: '목적지·일정 합의' }],
+  '신혼집·예물': [{ label: '예산 (업체)',  href: '/budget',    desc: '혼수·예물 관리' },
+                 { label: '의사결정',      href: '/decisions', desc: '예물·혼수 합의' }],
+  '예식 디테일': [{ label: '의사결정',      href: '/decisions', desc: '디테일 결정' }],
+  '기타':       [],
+};
+function getRelatedPages(item) {
+  const cat = getItemCategory(item);
+  return RELATED_PAGES_BY_CATEGORY[cat] || [];
 }
 
 const DEFAULT_CHECKLIST = [
@@ -751,6 +789,32 @@ export default function TimelinePage() {
                 </p>
               </div>
             )}
+            {/* 관련 페이지 점프 (카테고리 기반) */}
+            {getRelatedPages(item).length > 0 && (
+              <div className="flex flex-wrap gap-2" style={{ marginTop: 8 }}>
+                {getRelatedPages(item).map(({ label, href, desc }) => (
+                  <button
+                    key={href + label}
+                    onClick={() => router.push(href)}
+                    title={desc}
+                    style={{
+                      display: 'inline-flex', alignItems: 'center', gap: 6,
+                      padding: '6px 12px', borderRadius: 999,
+                      backgroundColor: 'var(--paper)',
+                      border: '1px solid var(--rule)',
+                      cursor: 'pointer',
+                      fontSize: 12, fontWeight: 500, color: 'var(--ink-2)',
+                      transition: 'all 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--champagne-wash)'}
+                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--paper)'}
+                  >
+                    {label} →
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* 하위 체크리스트 — 큰 항목을 작은 액션으로 쪼개기 */}
             <SubtaskList
               subtasks={item.subtasks || []}
@@ -896,6 +960,23 @@ export default function TimelinePage() {
               </div>
             )}
 
+            {/* ✨ D-day 기반 단계 안내 */}
+            {getStageInfo(dDay) && (
+              <div style={{
+                marginTop: 14, padding: '8px 12px',
+                borderRadius: 10,
+                backgroundColor: 'var(--paper)',
+                borderLeft: '3px solid var(--champagne-2)',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--champagne-2)', letterSpacing: '0.06em', textTransform: 'uppercase', margin: 0 }}>
+                  ✨ 지금 단계
+                </p>
+                <p style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.5, margin: '3px 0 0' }}>
+                  {getStageInfo(dDay).msg}
+                </p>
+              </div>
+            )}
+
             {/* 🎯 지금 가장 임박한 일 — 마감 가까운 미완료 3개 */}
             {todaysFocus.length > 0 && (
               <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px dashed var(--rule)' }}>
@@ -990,32 +1071,43 @@ export default function TimelinePage() {
                 {stats.done}/{stats.total}
               </p>
             </button>
-            {categoryStats.map(cat => {
-              const isActive = categoryFilter === cat.name;
-              const palette  = CATEGORY_PALETTE[cat.name] || CATEGORY_PALETTE['기타'];
-              return (
-                <button
-                  key={cat.name}
-                  onClick={() => setCategoryFilter(isActive ? null : cat.name)}
-                  style={{
-                    flexShrink: 0, minWidth: 110, padding: '12px 14px',
-                    borderRadius: 14, border: 'none', cursor: 'pointer', textAlign: 'left',
-                    backgroundColor: isActive ? palette.fg : palette.bg,
-                    color: isActive ? '#fff' : palette.fg,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <p style={{ fontSize: 11, fontWeight: 600, margin: 0, whiteSpace: 'nowrap' }}>{cat.name}</p>
-                  <p className="tabular-nums" style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 0' }}>
-                    {cat.done}/{cat.total}
-                    <span style={{ fontSize: 11, opacity: 0.85, marginLeft: 6 }}>{cat.pct}%</span>
-                  </p>
-                  <div style={{ height: 3, backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.08)', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
-                    <div style={{ height: '100%', width: `${cat.pct}%`, backgroundColor: isActive ? '#fff' : palette.fg, transition: 'width 0.3s' }} />
-                  </div>
-                </button>
-              );
-            })}
+            {(() => {
+              const stage = getStageInfo(dDay);
+              const recommended = new Set(stage?.cats || []);
+              return categoryStats.map(cat => {
+                const isActive = categoryFilter === cat.name;
+                const isRecommended = recommended.has(cat.name);
+                const palette  = CATEGORY_PALETTE[cat.name] || CATEGORY_PALETTE['기타'];
+                return (
+                  <button
+                    key={cat.name}
+                    onClick={() => setCategoryFilter(isActive ? null : cat.name)}
+                    style={{
+                      flexShrink: 0, minWidth: 110, padding: '12px 14px',
+                      borderRadius: 14,
+                      border: isRecommended && !isActive ? '1.5px solid var(--champagne-2)' : 'none',
+                      cursor: 'pointer', textAlign: 'left',
+                      backgroundColor: isActive ? palette.fg : palette.bg,
+                      color: isActive ? '#fff' : palette.fg,
+                      transition: 'all 0.15s',
+                      position: 'relative',
+                    }}
+                    title={isRecommended ? '지금 시기에 추천' : undefined}
+                  >
+                    <p style={{ fontSize: 11, fontWeight: 600, margin: 0, whiteSpace: 'nowrap' }}>
+                      {isRecommended && <span style={{ marginRight: 4 }}>✨</span>}{cat.name}
+                    </p>
+                    <p className="tabular-nums" style={{ fontSize: 14, fontWeight: 700, margin: '4px 0 0' }}>
+                      {cat.done}/{cat.total}
+                      <span style={{ fontSize: 11, opacity: 0.85, marginLeft: 6 }}>{cat.pct}%</span>
+                    </p>
+                    <div style={{ height: 3, backgroundColor: isActive ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.08)', borderRadius: 99, overflow: 'hidden', marginTop: 6 }}>
+                      <div style={{ height: '100%', width: `${cat.pct}%`, backgroundColor: isActive ? '#fff' : palette.fg, transition: 'width 0.3s' }} />
+                    </div>
+                  </button>
+                );
+              });
+            })()}
           </div>
         </div>
       )}
