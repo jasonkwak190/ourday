@@ -656,7 +656,7 @@ export default function GuestsPage() {
 
       {/* ── 방명록 섹션 (RSVP 탭 하단) ── */}
       {tab === 'rsvp' && (
-        <div className="mb-4">
+        <div className="mt-6 mb-4">
           <div className="flex items-center gap-2 mb-3">
             <BookOpen size={16} color="var(--rose)" />
             <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>

@@ -444,12 +444,17 @@ export default function InvitationTab({ coupleId }) {
         />
       )}
 
-      {/* 열람 횟수 */}
+      {/* 청첩장 공유 링크 조회수 — 하객이 청첩장 페이지에 들어온 누적 횟수 */}
       {inv && (
         <div className="flex justify-end mb-3">
-          <span className="text-xs px-2 py-1 rounded-full tabular-nums"
-            style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text-tertiary)' }}>
-            <span className="flex items-center gap-1"><Eye size={12} /> {inv.view_count}회 열람</span>
+          <span
+            className="text-xs px-2 py-1 rounded-full tabular-nums"
+            style={{ backgroundColor: 'var(--toss-bg)', color: 'var(--toss-text-tertiary)' }}
+            title="하객이 청첩장 공유 링크를 열어본 누적 횟수예요"
+          >
+            <span className="flex items-center gap-1">
+              <Eye size={12} /> 하객이 {inv.view_count}번 열어봤어요
+            </span>
           </span>
         </div>
       )}

@@ -466,7 +466,7 @@ export default function DecisionsPage() {
                     style={{ backgroundColor: 'var(--beige)', color: 'var(--stone)' }}
                     onClick={() => { setEditingFinal(d.id); setFinalText(''); }}
                   >
-                    <span className="flex items-center gap-1.5">
+                    <span className="flex items-center justify-center gap-1.5">
                       <Icon name="check" size={13} color="currentColor" />
                       최종 결정 입력하기
                     </span>
