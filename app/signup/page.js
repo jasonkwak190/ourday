@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import OAuthButtons from '@/components/OAuthButtons';
+import OnboardingProgress from '@/components/OnboardingProgress';
 import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import Icon from '@/components/Icon';
 
@@ -102,6 +103,8 @@ export default function SignupPage() {
         </p>
       </div>
 
+      <OnboardingProgress current={1} />
+
       {/* 개인정보 동의 */}
       <label
         style={{
@@ -144,13 +147,29 @@ export default function SignupPage() {
         )}
       </label>
 
-      {/* OAuth 버튼 */}
-      <div style={{ opacity: agreed ? 1 : 0.45, pointerEvents: agreed ? 'auto' : 'none', transition: 'opacity 0.2s', marginTop: 16 }}>
+      {/* OAuth 버튼 — 항상 클릭 가능, 동의 안 했으면 안내 메시지로 유도 */}
+      <div
+        style={{ opacity: agreed ? 1 : 0.85, transition: 'opacity 0.2s', marginTop: 16 }}
+        onClickCapture={(e) => {
+          if (!agreed) {
+            e.preventDefault();
+            e.stopPropagation();
+            setError('이용약관 및 개인정보처리방침에 먼저 동의해주세요.');
+            // 약관 박스로 부드럽게 스크롤
+            document.querySelector('input[type="checkbox"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }}
+      >
         <OAuthButtons />
       </div>
-      {!agreed && (
-        <p style={{ fontSize: 12, color: 'var(--ink-3)', textAlign: 'center', marginTop: 4 }}>
-          위 약관에 동의 후 진행할 수 있어요
+      {!agreed && !error && (
+        <p style={{ fontSize: 12, color: 'var(--ink-3)', textAlign: 'center', marginTop: 6 }}>
+          위 약관 동의 후 진행해주세요
+        </p>
+      )}
+      {error && !showEmail && (
+        <p style={{ fontSize: 13, color: 'var(--toss-red)', textAlign: 'center', marginTop: 8, fontWeight: 500 }}>
+          {error}
         </p>
       )}
 
