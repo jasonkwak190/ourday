@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { copyToClipboard } from '@/lib/clipboard';
 import OnboardingProgress from '@/components/OnboardingProgress';
 import { Share2 } from 'lucide-react';
@@ -239,16 +240,7 @@ export default function ConnectPage() {
   }
 
   // ─── 로딩 ───
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <div className="text-center" style={{ color: 'var(--toss-text-secondary)' }}>
-          <div className="mb-2 animate-pulse flex justify-center"><Icon name="couple" size={36} color="var(--champagne)" /></div>
-          <p className="text-sm">준비 중...</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   // ─── 방금 연동 성공 ───
   if (justConnected) {

@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
@@ -171,13 +172,7 @@ export default function GuestsPage() {
     setAddingRsvpId(null);
   }
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--stone)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   // ── 집계 ──
   const groomGuests  = guests.filter(g => g.side === 'groom');

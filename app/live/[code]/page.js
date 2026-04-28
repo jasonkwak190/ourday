@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, use } from 'react';
 import { Heart, ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import Icon from '@/components/Icon';
+import PageLoader from '@/components/PageLoader';
 
 const SLIDE_INTERVAL = 4000; // 4초
 
@@ -61,7 +62,7 @@ export default function LiveSlideshowPage({ params }) {
   if (loading) {
     return (
       <div style={fullscreenStyle('#0a0a0a')}>
-        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>불러오는 중...</p>
+        <PageLoader dark />
       </div>
     );
   }

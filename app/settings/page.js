@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
 import { Share2 } from 'lucide-react';
@@ -95,13 +96,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="page-wrapper">

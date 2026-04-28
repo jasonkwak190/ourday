@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
@@ -100,16 +101,7 @@ export default function DashboardPage() {
   }
 
   // ─── 로딩 ───
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <div className="text-center" style={{ color: 'var(--ink-3)' }}>
-          <Icon name="rings" size={36} color="var(--champagne)" style={{ margin: '0 auto 8px' }} />
-          <p className="text-sm" style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>불러오는 중…</p>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   if (error) {
     return (

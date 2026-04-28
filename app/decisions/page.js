@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
@@ -173,13 +174,7 @@ export default function DecisionsPage() {
     return true;
   });
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--stone)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>

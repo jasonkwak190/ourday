@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import OnboardingProgress from '@/components/OnboardingProgress';
 
 const WEDDING_TYPES = [
@@ -229,13 +230,7 @@ export default function SetupPage() {
     router.push('/dashboard');
   }
 
-  if (pageLoading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--toss-text-secondary)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (pageLoading) return <PageLoader />;
 
   return (
     <div className="page-wrapper flex flex-col">

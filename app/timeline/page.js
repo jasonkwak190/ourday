@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
@@ -566,13 +567,7 @@ export default function TimelinePage() {
   const calSelectedDate     = calSelected ? new Date(calYear, calMonth, calSelected) : null;
   const calSelectedEvents   = calSelectedDate ? calEvents.filter(e => isSameDay(e.date, calSelectedDate)) : [];
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--stone)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   const venueTotal        = VENUE_CHECKLIST.reduce((s, c) => s + c.items.length, 0);
   const venueCheckedCount = Object.values(venueChecked).filter(Boolean).length;

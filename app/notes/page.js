@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Send, Link2, Edit2, Trash2, ExternalLink, ChevronDown, StickyNote } from 'lucide-react';
 import { useCouple } from '@/lib/useCouple';
+import PageLoader from '@/components/PageLoader';
 import { openExternalUrl } from '@/lib/openUrl';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
@@ -188,13 +189,7 @@ export default function NotesPage() {
 
   const isGroom = myRole === 'groom';
 
-  if (loading) {
-    return (
-      <div className="page-wrapper flex items-center justify-center">
-        <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>불러오는 중...</p>
-      </div>
-    );
-  }
+  if (loading) return <PageLoader />;
 
   /* 날짜 구분선 삽입 */
   const listWithDividers = [];
