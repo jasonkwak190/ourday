@@ -43,10 +43,11 @@ export async function generateMetadata({ params }) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://ourday-rust.vercel.app';
   const pageUrl = `${baseUrl}/i/${slug}`;
 
-  // 커스텀 커버 사진이 있으면 우선 사용, 없으면 자동 생성 OG 이미지
+  // 커스텀 커버 사진이 있으면 우선 사용, 없으면 동적 생성 fallback (별도 API route)
+  // — 파일 컨벤션(opengraph-image.js)은 generateMetadata를 override하므로 일반 라우트로 분리됨
   const ogImageUrl = inv?.cover_image_url
     ? inv.cover_image_url
-    : `${baseUrl}/i/${slug}/opengraph-image`;
+    : `${baseUrl}/api/og/invitation/${slug}`;
 
   return {
     title,
