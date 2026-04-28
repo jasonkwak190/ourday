@@ -55,9 +55,9 @@
   --accent-hover:     var(--champagne-2);
   --accent-wash:      var(--champagne-wash);
 
-  /* Fonts — next/font/google가 빌드 시 self-host로 주입한 CSS 변수 사용 */
-  --font-serif-en:    var(--font-cormorant), Georgia, serif;
-  --font-serif-ko:    var(--font-noto-serif-kr), "Nanum Myeongjo", serif;
+  /* Fonts */
+  --font-serif-en:    "Cormorant Garamond", Georgia, serif;
+  --font-serif-ko:    "Noto Serif KR", "Nanum Myeongjo", serif;
   --font-sans:        "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
 
   /* Letter spacing */

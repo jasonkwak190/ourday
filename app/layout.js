@@ -1,23 +1,6 @@
 import './globals.css';
-import { Cormorant_Garamond, Noto_Serif_KR } from 'next/font/google';
 import BackButtonHandler from '@/components/BackButtonHandler';
 import CookieBanner from '@/components/CookieBanner';
-
-// 빌드 시 self-host — Google Fonts 외부 요청 제거, 자동 preload + display:swap
-const fontEn = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  style: ['normal', 'italic'],
-  variable: '--font-cormorant',
-  display: 'swap',
-});
-
-const fontKo = Noto_Serif_KR({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
-  variable: '--font-noto-serif-kr',
-  display: 'swap',
-});
 
 export const metadata = {
   title: 'Ourday · 우리의 날',
@@ -54,13 +37,23 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ko" className={`${fontEn.variable} ${fontKo.variable}`}>
+    <html lang="ko">
       <head>
-        {/* Pretendard — 본문 폰트 (self-host 미지원 → CDN 유지) */}
+        {/* DNS / TCP 사전 연결 — 폰트 다운로드 LCP 단축 */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
+        {/* Pretendard — 본문 폰트 */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+        {/* Cormorant Garamond — 영문 디스플레이 / Noto Serif KR — 한글 디스플레이
+            (사용 weight만 로드: 400/500 + italic 400/500 — 7→4, 한글 5→3) */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Serif+KR:wght@400;500;700&display=swap"
         />
       </head>
       <body>
