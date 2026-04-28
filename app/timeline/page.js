@@ -466,6 +466,16 @@ export default function TimelinePage() {
     setMenuId(null);
   }
 
+  /* ─ 오늘의 추천 (미완료 + 마감 가까운 3개) ─ */
+  const todaysFocus = useMemo(() => {
+    const candidates = items
+      .filter(i => !i.is_done)
+      .map(i => ({ item: i, d: getItemDate(i, weddingDate) }))
+      .filter(x => x.d) // 마감일 환산 가능한 것만
+      .sort((a, b) => a.d - b.d);
+    return candidates.slice(0, 3);
+  }, [items, weddingDate]);
+
   /* ─ D-day & 진행률 통계 (헤더 인사이트 카드용) ─ */
   const dDay = useMemo(() => {
     if (!weddingDate) return null;
@@ -526,16 +536,27 @@ export default function TimelinePage() {
     if (activeTab === 'all') return list;
 
     // 'current' = "다가오는" — 미완료 항목 중 마감 4주 이내 OR 지난 마감
+    // 자동 정렬: 지난 마감 → 가까운 마감 → 멀리 있는 → 미정
     if (activeTab === 'current') {
       const today = new Date(); today.setHours(0,0,0,0);
       const fourWeeksLater = new Date(today); fourWeeksLater.setDate(today.getDate() + 28);
-      return list.filter(item => {
-        if (item.is_done) return false;
-        const d = getItemDate(item, weddingDate);
-        // 마감일 환산 불가능 (미정 또는 결혼날짜 없음): 미완료라면 일단 노출
-        if (!d) return true;
-        return d <= fourWeeksLater;
-      });
+      return list
+        .filter(item => {
+          if (item.is_done) return false;
+          const d = getItemDate(item, weddingDate);
+          if (!d) return true;
+          return d <= fourWeeksLater;
+        })
+        .sort((a, b) => {
+          const da = getItemDate(a, weddingDate);
+          const db = getItemDate(b, weddingDate);
+          // 미정은 뒤로
+          if (!da && !db) return 0;
+          if (!da) return 1;
+          if (!db) return -1;
+          // 가까운 마감(과거 포함) 순
+          return da - db;
+        });
     }
 
     // 특정 기간만
@@ -825,6 +846,53 @@ export default function TimelinePage() {
                     이번 주 마감 {stats.thisWeek}개
                   </span>
                 )}
+              </div>
+            )}
+
+            {/* 🎯 지금 가장 임박한 일 — 마감 가까운 미완료 3개 */}
+            {todaysFocus.length > 0 && (
+              <div style={{ marginTop: 16, paddingTop: 14, borderTop: '1px dashed var(--rule)' }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 10px' }}>
+                  🎯 지금 가장 임박한 일
+                </p>
+                <div className="flex flex-col gap-1.5">
+                  {todaysFocus.map(({ item, d }) => {
+                    const today0 = new Date(); today0.setHours(0,0,0,0);
+                    const diffDays = Math.round((d - today0) / 86400000);
+                    const dLabel = diffDays < 0 ? `D+${Math.abs(diffDays)}` : diffDays === 0 ? 'D-day' : `D-${diffDays}`;
+                    const colorBg = diffDays < 0 ? 'var(--toss-red-light, #FFE9E9)' : diffDays <= 7 ? 'var(--champagne-wash)' : 'var(--paper)';
+                    const colorFg = diffDays < 0 ? 'var(--toss-red, #E74C3C)' : diffDays <= 7 ? 'var(--champagne-2)' : 'var(--ink-3)';
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => { setActiveTab('current'); setCategoryFilter(null); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 10,
+                          padding: '8px 10px',
+                          borderRadius: 10,
+                          border: 'none', cursor: 'pointer', textAlign: 'left',
+                          backgroundColor: 'transparent',
+                          transition: 'background 0.15s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--paper)'}
+                        onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <span className="tabular-nums" style={{
+                          flexShrink: 0,
+                          fontSize: 11, fontWeight: 700,
+                          padding: '3px 8px', borderRadius: 999,
+                          backgroundColor: colorBg, color: colorFg,
+                          minWidth: 50, textAlign: 'center',
+                        }}>
+                          {dLabel}
+                        </span>
+                        <span style={{ fontSize: 13.5, color: 'var(--ink-2)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {item.title}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </>
