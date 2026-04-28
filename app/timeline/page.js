@@ -350,7 +350,7 @@ export default function TimelinePage() {
         supabase.from('couples').select('wedding_date, venue_tour_checked').eq('id', cId).single(),
         // select('*') 제거 → 실제 사용 컬럼만
         supabase.from('checklist_items')
-          .select('id, title, is_done, due_months_before, due_date, assigned_to, memo, couple_id')
+          .select('id, title, is_done, due_months_before, due_date, assigned_to, memo, subtasks, couple_id')
           .eq('couple_id', cId)
           .order('due_months_before', { ascending: false }),
         supabase.from('vendors').select('id,name,type,balance_due,contract_status').eq('couple_id', cId),
@@ -702,10 +702,26 @@ export default function TimelinePage() {
             )}
           </div>
 
+          {/* 하위 단계 진행률 미니 표시 (있을 때만) */}
+          {Array.isArray(item.subtasks) && item.subtasks.length > 0 && (
+            <span
+              className="tabular-nums flex-shrink-0"
+              style={{
+                fontSize: 10, fontWeight: 700,
+                padding: '2px 7px', borderRadius: 999,
+                backgroundColor: 'var(--paper)', color: 'var(--ink-3)',
+                border: '1px solid var(--rule)',
+              }}
+              title={`세부 단계 ${item.subtasks.filter(s => s.done).length}/${item.subtasks.length}`}
+            >
+              ☑ {item.subtasks.filter(s => s.done).length}/{item.subtasks.length}
+            </span>
+          )}
+
           <span className={`tag ${tag.cls} flex-shrink-0`}>{tag.label}</span>
 
           <button onClick={() => setExpandedMemo(memoExpanded ? null : item.id)}
-            style={{ color: item.memo ? 'var(--rose)' : 'var(--stone-light)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', flexShrink: 0 }}>
+            style={{ color: (item.memo || (item.subtasks?.length > 0)) ? 'var(--rose)' : 'var(--stone-light)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', flexShrink: 0 }}>
             <FileText size={15} strokeWidth={2} />
           </button>
 
@@ -735,6 +751,21 @@ export default function TimelinePage() {
                 </p>
               </div>
             )}
+            {/* 하위 체크리스트 — 큰 항목을 작은 액션으로 쪼개기 */}
+            <SubtaskList
+              subtasks={item.subtasks || []}
+              onChange={async (next) => {
+                setItems(prev => prev.map(it => it.id === item.id ? { ...it, subtasks: next } : it));
+                const { error } = await supabase.from('checklist_items').update({ subtasks: next }).eq('id', item.id);
+                if (error) {
+                  console.error('[subtasks] save failed:', error.message);
+                  // 컬럼 미존재(PGRST204) 시 사용자에게 안내
+                  if (error.message?.includes('subtasks')) {
+                    alert('DB에 subtasks 컬럼이 없어요. SUPABASE.md MT-013 참조 (관리자 문의).');
+                  }
+                }
+              }}
+            />
             <MemoEditor item={item} onSave={async text => {
               const memo = text.trim() || null;
               setItems(prev => prev.map(it => it.id === item.id ? { ...it, memo } : it));
@@ -1515,6 +1546,109 @@ function MemoEditor({ item, onSave, onClose }) {
       <div className="flex gap-2">
         <button className="btn-outline flex-1 text-sm py-2" onClick={onClose}>닫기</button>
         <button className="btn-rose flex-1 text-sm py-2" onClick={() => onSave(text)}>저장</button>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * 하위 체크리스트 — 큰 항목을 작은 액션으로 쪼개기.
+ * subtasks: [{ id, title, done }]
+ * onChange는 새 배열을 받아 즉시 DB 저장 + state 업데이트.
+ */
+function SubtaskList({ subtasks, onChange }) {
+  const list = Array.isArray(subtasks) ? subtasks : [];
+  const [newTitle, setNewTitle] = useState('');
+  const inputRef = useRef(null);
+
+  function addSubtask() {
+    const t = newTitle.trim();
+    if (!t) return;
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    onChange([...list, { id, title: t, done: false }]);
+    setNewTitle('');
+    setTimeout(() => inputRef.current?.focus(), 0);
+  }
+  function toggle(id) {
+    onChange(list.map(s => s.id === id ? { ...s, done: !s.done } : s));
+  }
+  function remove(id) {
+    onChange(list.filter(s => s.id !== id));
+  }
+
+  return (
+    <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 10, backgroundColor: 'var(--paper)', border: '1px solid var(--rule)' }}>
+      <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--ink-3)', letterSpacing: '0.06em', textTransform: 'uppercase', margin: '0 0 8px' }}>
+        ☑ 세부 단계
+      </p>
+
+      {list.length > 0 && (
+        <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {list.map(s => (
+            <li key={s.id} className="flex items-center gap-2"
+                style={{ padding: '4px 2px' }}>
+              <button
+                onClick={() => toggle(s.id)}
+                aria-label={s.done ? '완료 해제' : '완료'}
+                style={{
+                  flexShrink: 0, width: 16, height: 16, borderRadius: 4,
+                  border: `1.8px solid ${s.done ? 'var(--champagne)' : 'var(--rule-strong)'}`,
+                  backgroundColor: s.done ? 'var(--champagne)' : 'transparent',
+                  cursor: 'pointer', padding: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {s.done && <Icon name="check" size={9} color="white" />}
+              </button>
+              <span style={{
+                flex: 1, fontSize: 13,
+                color: s.done ? 'var(--ink-4)' : 'var(--ink-2)',
+                textDecoration: s.done ? 'line-through' : 'none',
+              }}>
+                {s.title}
+              </span>
+              <button
+                onClick={() => remove(s.id)}
+                aria-label="삭제"
+                style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-4)', padding: 2, fontSize: 14, lineHeight: 1 }}
+              >
+                ×
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={newTitle}
+          onChange={e => setNewTitle(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addSubtask()}
+          placeholder="세부 단계 추가 (예: 견적 비교)"
+          style={{
+            flex: 1, fontSize: 13, padding: '6px 10px',
+            border: '1px solid var(--rule)', borderRadius: 8,
+            backgroundColor: 'var(--paper-pure)', outline: 'none',
+            color: 'var(--ink)',
+          }}
+        />
+        <button
+          onClick={addSubtask}
+          disabled={!newTitle.trim()}
+          style={{
+            flexShrink: 0, padding: '6px 12px', borderRadius: 8,
+            backgroundColor: newTitle.trim() ? 'var(--ink)' : 'var(--rule)',
+            color: newTitle.trim() ? 'var(--ivory)' : 'var(--ink-4)',
+            border: 'none', cursor: newTitle.trim() ? 'pointer' : 'not-allowed',
+            fontSize: 12, fontWeight: 600,
+          }}
+        >
+          추가
+        </button>
       </div>
     </div>
   );

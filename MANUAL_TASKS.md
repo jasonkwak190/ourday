@@ -280,6 +280,20 @@ alter table invitations
 
 ---
 
+### MT-013 · 체크리스트 — subtasks 컬럼 추가 (DB 마이그레이션)
+**목적**: 큰 항목을 작은 단계로 쪼개기 (sub-tasks). 스케쥴링 편의 기능.
+**실행 위치**: Supabase Dashboard → SQL Editor
+
+```sql
+alter table checklist_items
+  add column if not exists subtasks jsonb default '[]'::jsonb;
+```
+
+**데이터 구조**: `[{ id: string, title: string, done: boolean }]`
+**마이그레이션 후**: 체크리스트 항목 펼침 시 SubtaskList 즉시 동작.
+
+---
+
 ## 완료된 수동 작업 ✅
 
 | 항목 | 완료일 | 비고 |
