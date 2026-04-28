@@ -17,9 +17,12 @@ export default function LiveSlideshowPage({ params }) {
   const [current, setCurrent]   = useState(0);
   const [playing, setPlaying]   = useState(true);
   const [showUI, setShowUI]     = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [nextRefresh, setNextRefresh] = useState(30);  // 다음 갱신까지 초
 
   // 사진 로드 (30초마다 자동 갱신)
   const loadPhotos = useCallback(async () => {
+    setRefreshing(true);
     try {
       const res  = await fetch(`/api/live?code=${code}`);
       const data = await res.json();
@@ -30,13 +33,16 @@ export default function LiveSlideshowPage({ params }) {
       setError('불러오기 실패');
     } finally {
       setLoading(false);
+      setRefreshing(false);
+      setNextRefresh(30);
     }
   }, [code]);
 
   useEffect(() => {
     loadPhotos();
     const interval = setInterval(loadPhotos, 30_000);
-    return () => clearInterval(interval);
+    const counter = setInterval(() => setNextRefresh(s => s > 1 ? s - 1 : 30), 1000);
+    return () => { clearInterval(interval); clearInterval(counter); };
   }, [loadPhotos]);
 
   // 자동 슬라이드
@@ -90,9 +96,29 @@ export default function LiveSlideshowPage({ params }) {
           아직 사진이 없어요.<br />
           QR 코드로 사진을 업로드해주세요!
         </p>
-        <div style={{ marginTop: 24, padding: '10px 20px', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)' }}>
-          <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 11 }}>30초마다 자동으로 새 사진을 불러와요</p>
+        <div style={{ marginTop: 24, padding: '10px 20px', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', gap: 10 }}>
+          {refreshing ? (
+            <>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                backgroundColor: 'var(--champagne)',
+                animation: 'live-pulse 0.9s ease-in-out infinite',
+              }} />
+              <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11, margin: 0 }}>새 사진 확인 중…</p>
+            </>
+          ) : (
+            <>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                backgroundColor: 'rgba(255,255,255,0.4)',
+              }} />
+              <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, margin: 0 }}>
+                {nextRefresh}초 후 자동 갱신
+              </p>
+            </>
+          )}
         </div>
+        <style>{`@keyframes live-pulse { 0%,100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(1.4); } }`}</style>
       </div>
     );
   }

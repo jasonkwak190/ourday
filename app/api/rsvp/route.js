@@ -91,7 +91,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'attending required' }, { status: 400 });
     }
 
-    const nameResult = sanitizeString(name, { maxLen: 50, fieldName: '이름' });
+    const nameResult = sanitizeString(name, { minLen: 2, maxLen: 50, fieldName: '이름' });
     if (!nameResult.ok) return NextResponse.json({ error: nameResult.error }, { status: 400 });
 
     // 입력값 정제 (validate 유틸 + 기존 패턴 통합)

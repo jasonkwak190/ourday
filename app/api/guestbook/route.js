@@ -70,7 +70,7 @@ export async function POST(request) {
       return NextResponse.json({ error: 'invitation_id required (UUID)' }, { status: 400 });
     }
 
-    const nameResult = sanitizeString(name, { maxLen: 50, fieldName: '이름' });
+    const nameResult = sanitizeString(name, { minLen: 2, maxLen: 50, fieldName: '이름' });
     if (!nameResult.ok) return NextResponse.json({ error: nameResult.error }, { status: 400 });
 
     const msgResult = sanitizeString(message, { maxLen: 200, fieldName: '메시지' });

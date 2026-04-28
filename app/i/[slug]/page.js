@@ -210,53 +210,74 @@ export default function InvitationViewPage({ params }) {
 
   async function handleSubmit() {
     setError('');
-    if (!name.trim())      { setError('성함을 입력해주세요.'); return; }
-    if (!side)             { setError('신랑측/신부측을 선택해주세요.'); return; }
-    if (attending === null) { setError('참석 여부를 선택해주세요.'); return; }
+    if (!name.trim())                 { setError('성함을 입력해주세요.'); return; }
+    if (name.trim().length < 2)       { setError('성함을 두 글자 이상 입력해주세요.'); return; }
+    if (!side)                        { setError('신랑측/신부측을 선택해주세요.'); return; }
+    if (attending === null)           { setError('참석 여부를 선택해주세요.'); return; }
 
     setSubmitting(true);
 
-    // 1. RSVP 제출 (필수)
-    const rsvpRes = await fetch('/api/rsvp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        couple_id:  inv.couple_id,
-        name:       name.trim(),
-        side,
-        attending,
-        meal_count: attending ? mealCount : 0,
-        phone:      phone.trim() || null,
-      }),
-    });
-
-    // 2. 방명록 제출 (메시지 있을 때만)
-    let newEntry = null;
-    if (message.trim() && inv.id) {
-      const gbRes = await fetch('/api/guestbook', {
+    // 1. RSVP 제출 (필수) — 실패하면 즉시 중단, 방명록 안 보냄
+    let rsvpRes;
+    try {
+      rsvpRes = await fetch('/api/rsvp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          invitation_id: inv.id,
-          name:          name.trim(),
-          message:       message.trim(),
+          couple_id:  inv.couple_id,
+          name:       name.trim(),
+          side,
+          attending,
+          meal_count: attending ? mealCount : 0,
+          phone:      phone.trim() || null,
         }),
       });
-      if (gbRes.ok) {
-        const gbJson = await gbRes.json();
-        newEntry = gbJson.data;
-      }
+    } catch {
+      setSubmitting(false);
+      setError('네트워크 오류가 발생했어요. 다시 시도해주세요.');
+      return;
     }
 
-    setSubmitting(false);
-
     if (!rsvpRes.ok) {
+      setSubmitting(false);
       setError('전송에 실패했어요. 잠시 후 다시 시도해주세요.');
       return;
     }
 
+    // 2. 방명록 제출 (메시지 있을 때만, RSVP 성공 후)
+    // 실패해도 RSVP는 이미 저장됐으므로 done 처리하되 안내 메시지 추가
+    let newEntry = null;
+    let guestbookFailed = false;
+    if (message.trim() && inv.id) {
+      try {
+        const gbRes = await fetch('/api/guestbook', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            invitation_id: inv.id,
+            name:          name.trim(),
+            message:       message.trim(),
+          }),
+        });
+        if (gbRes.ok) {
+          const gbJson = await gbRes.json();
+          newEntry = gbJson.data;
+        } else {
+          guestbookFailed = true;
+        }
+      } catch {
+        guestbookFailed = true;
+      }
+    }
+
+    setSubmitting(false);
     if (newEntry) setEntries(prev => [newEntry, ...prev]);
     setDone(true);
+
+    // 방명록만 실패한 경우 done 화면 진입 후 안내 (RSVP는 성공)
+    if (guestbookFailed) {
+      setTimeout(() => alert('참석 답변은 전달됐는데 메시지 전송이 실패했어요.\n잠시 후 다시 시도해주세요.'), 300);
+    }
   }
 
   // ── 로딩 / 없음 ──────────────────────────────────────────────────
