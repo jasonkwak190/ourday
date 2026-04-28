@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import AddressSearch from '@/components/AddressSearch';
+import VenueSearch from '@/components/VenueSearch';
 
 const TEMPLATES = [
   { key: 'editorial', label: 'Ourday',  icon: 'diamond', desc: '잉크·샴페인 에디토리얼' },
@@ -34,8 +35,7 @@ const SECTIONS = [
   {
     key: 'venue', label: '예식장', icon: 'venue', required: false,
     fields: [
-      { key: 'venue_name',    label: '예식장 이름', placeholder: '○○ 웨딩홀' },
-      { key: 'venue_address', label: '주소',        type: 'address' },
+      { key: 'venue_search',  label: '예식장 (이름 또는 주소)', type: 'venue' },
       { key: 'venue_map_url', label: '지도 링크 (선택)', placeholder: '카카오 지도 링크 직접 지정 시' },
     ],
   },
@@ -705,7 +705,42 @@ export default function InvitationTab({ coupleId }) {
                       </div>
                     )}
                   </div>
-                  {type === 'address' ? (
+                  {type === 'venue' ? (
+                    <VenueSearch
+                      value={form.venue_name ? {
+                        venue_name: form.venue_name,
+                        road_address: form.venue_road_address,
+                        jibun_address: form.venue_jibun_address,
+                        phone: form.venue_phone,
+                      } : null}
+                      onChange={(v) => {
+                        setForm(f => ({
+                          ...f,
+                          venue_name:          v.venue_name || '',
+                          venue_address:       v.road_address || v.jibun_address || '',
+                          venue_road_address:  v.road_address,
+                          venue_jibun_address: v.jibun_address,
+                          venue_sido:          v.sido,
+                          venue_sigungu:       v.sigungu,
+                          venue_bname:         v.bname,
+                          venue_zonecode:      v.zonecode,
+                          venue_lat:           v.lat,
+                          venue_lng:           v.lng,
+                        }));
+                        setIsDirty(true);
+                      }}
+                      onClear={() => {
+                        setForm(f => ({
+                          ...f,
+                          venue_name: '', venue_address: '',
+                          venue_road_address: null, venue_jibun_address: null,
+                          venue_sido: null, venue_sigungu: null, venue_bname: null,
+                          venue_zonecode: null, venue_lat: null, venue_lng: null,
+                        }));
+                        setIsDirty(true);
+                      }}
+                    />
+                  ) : type === 'address' ? (
                     <AddressSearch
                       value={form.venue_road_address || form.venue_jibun_address ? {
                         road_address: form.venue_road_address,
