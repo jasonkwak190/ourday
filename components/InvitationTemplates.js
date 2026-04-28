@@ -97,6 +97,8 @@ function PhotoCarousel({ photos, accentColor = '#C9A96E' }) {
             <img
               src={url}
               alt={`photo ${i + 1}`}
+              loading={i === 0 ? 'eager' : 'lazy'}
+              decoding="async"
               style={{ width: '100%', aspectRatio: '3/4', objectFit: 'cover', display: 'block' }}
             />
           </div>
@@ -583,6 +585,8 @@ export function EditorialTemplate({ inv, copied, copyUrl, showAccount, setShowAc
           <img
             src={inv.cover_image_url}
             alt="wedding"
+            decoding="async"
+            fetchPriority="high"
             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top' }}
           />
           {/* 이미지 위 그라디언트 오버레이 */}

@@ -370,6 +370,17 @@ export default function InvitationViewPage({ params }) {
                   : `${name}님의 답변을 잘 받았어요.\n다음에 좋은 자리에서 뵙겠습니다.`
                 }
               </p>
+              <button
+                onClick={() => { setDone(false); setError(''); }}
+                style={{
+                  marginTop: 20,
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 12, color: 'var(--ink-3, #6E6459)',
+                  textDecoration: 'underline',
+                }}
+              >
+                응답을 수정할게요
+              </button>
             </div>
 
           ) : (
