@@ -270,8 +270,10 @@ export default function NotesPage() {
         {filtered.length === 0 ? (
           <EmptyState
             icon={StickyNote}
-            title={search ? '검색 결과가 없어요' : '아직 공유된 정보가 없어요'}
-            description={search ? '다른 키워드로 검색해보세요' : '블로그 링크나 메모를 아래에서 공유해보세요'}
+            title={search ? '검색 결과가 없어요' : '함께 모아둘 정보가 없어요'}
+            description={search
+              ? '다른 키워드로 검색해보세요'
+              : '드레스 후기 링크, 업체 연락처, 친구 추천 메모 — 한쪽이 올리면 상대방도 실시간으로 확인할 수 있어요'}
             compact
           />
         ) : (

@@ -500,19 +500,20 @@ export default function DashboardPage() {
               fontFamily: 'var(--font-serif-ko)',
               fontSize: 13,
               color: 'var(--ivory)',
-              opacity: 0.5,
-              margin: '0 0 8px',
+              opacity: 0.55,
+              margin: '0 0 6px',
+              lineHeight: 1.6,
             }}>
-              아직 함께 쓴 메모가 없어요
+              두 사람이 함께 보는 메모장이에요
             </p>
             <p style={{
               fontFamily: 'var(--font-serif-en)',
               fontStyle: 'italic',
               fontSize: 11,
               color: 'var(--champagne)',
-              opacity: 0.6,
+              opacity: 0.7,
             }}>
-              tap to start writing together →
+              start writing together →
             </p>
           </div>
         )}

@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { useCouple } from '@/lib/useCouple';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
-import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2 } from 'lucide-react';
+import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2, MessageSquare } from 'lucide-react';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import InvitationTab from '@/components/InvitationTab';
@@ -675,9 +675,12 @@ export default function GuestsPage() {
             </div>
           ) : guestbook.length === 0 ? (
             <div className="card">
-              <p className="text-sm text-center py-2" style={{ color: 'var(--stone)' }}>
-                아직 방명록 메시지가 없어요
-              </p>
+              <EmptyState
+                icon={MessageSquare}
+                title="아직 방명록 메시지가 없어요"
+                description="청첩장 링크를 받은 하객이 남기는 축하 메시지가 여기에 모여요"
+                compact
+              />
             </div>
           ) : (
             <div className="flex flex-col gap-2">
