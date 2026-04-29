@@ -1,8 +1,36 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { Plus, Check } from 'lucide-react';
 import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
+import { supabase } from '@/lib/supabase';
+import { useCouple } from '@/lib/useCouple';
+
+/* 가이드 줄 → 체크리스트 title 정규화 (insert 시·중복 검사 시 동일 규칙) */
+function normalizeChecklistTitle(itemText) {
+  return itemText
+    .replace(/^[\p{Emoji_Presentation}\p{Extended_Pictographic}\s]+/u, '')
+    .replace(/^D-\d+(?:~\d+)?(?:개월|주):?\s*/, '')
+    .trim()
+    .slice(0, 120) || itemText.slice(0, 80);
+}
+
+/* "🗓 D-12~10개월: ..." 패턴 → due_months_before(=12) 추출 */
+function extractDueMonths(text) {
+  const m = text.match(/D-(\d+)(?:~(\d+))?개월/);
+  if (!m) return null;
+  const a = parseInt(m[1], 10);
+  const b = m[2] ? parseInt(m[2], 10) : a;
+  return Math.max(a, b);
+}
+
+/* "D-1주" → 0.25개월 */
+function extractDueWeeks(text) {
+  const m = text.match(/D-(\d+)주/);
+  if (!m) return null;
+  return parseInt(m[1], 10) * 0.25;
+}
 
 const CATEGORIES = [
   {
@@ -239,7 +267,7 @@ const POPULAR_GUIDES = [
   },
 ];
 
-function ContentSection({ content }) {
+function ContentSection({ content, onAddToChecklist, addedItems, addingItem }) {
   return (
     <div className="mt-3 flex flex-col gap-3">
       {content.map((section) => (
@@ -247,13 +275,39 @@ function ContentSection({ content }) {
           <p className="text-xs font-semibold mb-1.5" style={{ color: 'var(--ink)' }}>
             {section.heading}
           </p>
-          <ul className="flex flex-col gap-1">
-            {section.items.map((item) => (
-              <li key={item} className="text-xs flex gap-1.5" style={{ color: 'var(--ink-soft)' }}>
-                <span style={{ flexShrink: 0 }}>•</span>
-                <span>{item}</span>
-              </li>
-            ))}
+          <ul className="flex flex-col gap-2">
+            {section.items.map((item) => {
+              const isAdded = addedItems.has(item);
+              const isAdding = addingItem === item;
+              const isQuote = /^["“]/.test(item.trim());
+              return (
+                <li key={item} className="text-xs flex gap-1.5 items-start" style={{ color: 'var(--ink-soft)' }}>
+                  <span style={{ flexShrink: 0, marginTop: 1 }}>•</span>
+                  <span style={{ flex: 1 }}>{item}</span>
+                  {!isQuote && onAddToChecklist && (
+                    <button
+                      onClick={() => onAddToChecklist(item)}
+                      disabled={isAdded || isAdding}
+                      aria-label={isAdded ? '체크리스트에 추가됨' : '체크리스트에 추가'}
+                      style={{
+                        flexShrink: 0,
+                        display: 'inline-flex', alignItems: 'center', gap: 3,
+                        padding: '2px 7px', borderRadius: 999,
+                        border: `1px solid ${isAdded ? 'var(--green, #6B8E5A)' : 'var(--rule-strong)'}`,
+                        backgroundColor: isAdded ? 'var(--green-light, #E5EFDF)' : 'var(--paper)',
+                        color: isAdded ? 'var(--green, #6B8E5A)' : 'var(--ink-3)',
+                        fontSize: 10, fontWeight: 600,
+                        cursor: isAdded || isAdding ? 'default' : 'pointer',
+                        opacity: isAdding ? 0.5 : 1,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {isAdded ? <><Check size={10} strokeWidth={2.5} />추가됨</> : <><Plus size={10} strokeWidth={2.5} />할 일</>}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       ))}
@@ -262,11 +316,77 @@ function ContentSection({ content }) {
 }
 
 export default function GuidePage() {
+  const { coupleId } = useCouple('couple_id');
   const [openCat, setOpenCat] = useState(null);
   const [openGuide, setOpenGuide] = useState(null);
+  const [existingTitles, setExistingTitles] = useState(() => new Set());
+  const [sessionAdded, setSessionAdded] = useState(() => new Set());
+  const [addingItem, setAddingItem] = useState(null);
+  const [toast, setToast] = useState('');
+
+  /* 기존 체크리스트 타이틀 미리 로드 — 중복 추가 방지 + UI 상태 복원 */
+  useEffect(() => {
+    if (!coupleId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('checklist_items')
+        .select('title')
+        .eq('couple_id', coupleId);
+      if (cancelled) return;
+      setExistingTitles(new Set((data || []).map((r) => r.title)));
+    })();
+    return () => { cancelled = true; };
+  }, [coupleId]);
+
+  /* 추가됨 표시 = 이번 세션에 추가했거나, 정규화된 타이틀이 이미 존재 */
+  const isItemAdded = (item) => sessionAdded.has(item) || existingTitles.has(normalizeChecklistTitle(item));
+  const addedItemsView = useMemo(() => ({ has: isItemAdded }), [sessionAdded, existingTitles]);
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 2200);
+  }
+
+  async function addToChecklist(itemText) {
+    if (!coupleId || isItemAdded(itemText) || addingItem) return;
+    setAddingItem(itemText);
+    const title = normalizeChecklistTitle(itemText);
+    const due_months_before =
+      extractDueMonths(itemText) ?? extractDueWeeks(itemText) ?? null;
+    const { error } = await supabase.from('checklist_items').insert({
+      couple_id: coupleId,
+      title,
+      due_months_before,
+      assigned_to: 'both',
+    });
+    setAddingItem(null);
+    if (error) {
+      showToast('추가 실패 — 다시 시도해주세요');
+      return;
+    }
+    setSessionAdded((prev) => new Set(prev).add(itemText));
+    setExistingTitles((prev) => new Set(prev).add(title));
+    showToast('체크리스트에 추가됐어요');
+  }
 
   return (
     <div className="page-wrapper">
+      {toast && (
+        <div className="fixed left-1/2 px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg"
+          style={{
+            bottom: 'calc(92px + env(safe-area-inset-bottom))',
+            zIndex: 60,
+            transform: 'translateX(-50%)',
+            backgroundColor: 'var(--ink)',
+            color: 'white',
+            pointerEvents: 'none',
+            whiteSpace: 'nowrap',
+          }}>
+          {toast}
+        </div>
+      )}
+
       <div className="mb-4">
         <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>정보 &amp; 가이드</h1>
         <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>wedding guide</p>
@@ -305,7 +425,7 @@ export default function GuidePage() {
                 <Icon name={cat.icon} size={20} color="var(--champagne)" />
                 <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{cat.title}</p>
               </div>
-              <ContentSection content={cat.content} />
+              <ContentSection content={cat.content} onAddToChecklist={addToChecklist} addedItems={addedItemsView} addingItem={addingItem} />
             </div>
           ) : null;
         })()}
@@ -333,7 +453,7 @@ export default function GuidePage() {
               </div>
               {openGuide === g.title && (
                 <div style={{ borderTop: '1px solid var(--beige)', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
-                  <ContentSection content={g.content} />
+                  <ContentSection content={g.content} onAddToChecklist={addToChecklist} addedItems={addedItemsView} addingItem={addingItem} />
                 </div>
               )}
             </div>
