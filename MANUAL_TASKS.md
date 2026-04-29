@@ -294,28 +294,7 @@ alter table checklist_items
 
 ---
 
-### MT-014 · 의사결정 — candidates 컬럼 추가 (DB 마이그레이션)
-**목적**: 의사결정 항목 안에 후보 A/B/C 비교 보드 (3-way comparison).
-**실행 위치**: Supabase Dashboard → SQL Editor
-
-```sql
-alter table decisions
-  add column if not exists candidates jsonb default '[]'::jsonb;
-```
-
-**데이터 구조**:
-```ts
-[{
-  id: string,            // 클라이언트 생성 (crypto.randomUUID)
-  name: string,          // 후보 이름 (예: "포시즌스 호텔")
-  price: number | null,  // 만원 단위
-  note: string,          // 위치/옵션/일정 자유 메모
-  url: string,           // 후기/사이트 링크
-  groom_score: 1..5 | null,
-  bride_score: 1..5 | null,
-}]
-```
-**마이그레이션 후**: 의사결정 카드 안 "후보 비교" 펼침 영역 즉시 동작.
+### ~~MT-014 · 의사결정 — candidates 컬럼 추가~~ ✅ 완료 (2026-04-29)
 
 ---
 
@@ -323,6 +302,7 @@ alter table decisions
 
 | 항목 | 완료일 | 비고 |
 |------|--------|------|
+| MT-014 decisions.candidates jsonb 컬럼 추가 | 2026-04-29 | 3-way 비교 보드 활성화 |
 | Supabase SUPABASE_SERVICE_ROLE_KEY 로컬 설정 | 2026-04-22 | `.env.local` |
 | CRON_SECRET 로컬 생성 | 2026-04-22 | `.env.local` |
 | **CRON_SECRET Vercel 등록** | 2026-04-23 | Vercel Dashboard |
