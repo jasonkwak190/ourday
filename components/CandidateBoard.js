@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Plus, X, Star, ExternalLink, Table2, ChevronDown, ChevronUp, Crown } from 'lucide-react';
+import { Plus, X, Star, ExternalLink, Table2, ChevronDown, ChevronUp, Crown, Check } from 'lucide-react';
 import Icon from '@/components/Icon';
 
 /**
@@ -65,7 +65,7 @@ function ScoreStars({ value, onChange, readOnly = false, color = 'var(--champagn
   );
 }
 
-export default function CandidateBoard({ decisionId, candidates, myRole, onSave, onPickFinal }) {
+export default function CandidateBoard({ decisionId, candidates, myRole, onSave, onPickFinal, finalDecision }) {
   const initial = Array.isArray(candidates) ? candidates : [];
   const [expanded, setExpanded] = useState(initial.length > 0);
   const [items, setItems] = useState(initial);
@@ -129,6 +129,14 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
     return best;
   }, [items]);
 
+  /* 결정된 후보 — final_decision과 이름이 일치하는 후보 ID */
+  const chosenId = useMemo(() => {
+    const f = (finalDecision || '').trim();
+    if (!f) return null;
+    const match = items.find((c) => (c.name || '').trim() === f);
+    return match ? match.id : null;
+  }, [items, finalDecision]);
+
   /* 토글 헤더 (후보 0개일 때도 노출 — 추가 진입점) */
   if (items.length === 0 && !expanded) {
     return (
@@ -188,19 +196,32 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {items.map((c, idx) => {
-              const isRec = c.id === recommendedId && items.length >= 2;
+              const isChosen = c.id === chosenId;
+              const isRec = !isChosen && c.id === recommendedId && items.length >= 2 && !chosenId;
               const myField = myRole === 'groom' ? 'groom_score' : myRole === 'bride' ? 'bride_score' : null;
+              const highlight = isChosen || isRec;
               return (
                 <div
                   key={c.id}
                   style={{
                     padding: '12px 12px 10px',
                     borderRadius: 12,
-                    border: isRec ? '1.5px solid var(--champagne)' : '1px solid var(--rule)',
-                    backgroundColor: isRec ? 'var(--champagne-wash)' : 'var(--ivory)',
+                    border: highlight ? '1.5px solid var(--champagne)' : '1px solid var(--rule)',
+                    backgroundColor: highlight ? 'var(--champagne-wash)' : 'var(--ivory)',
                     position: 'relative',
                   }}
                 >
+                  {isChosen && (
+                    <div style={{
+                      position: 'absolute', top: -8, left: 10,
+                      padding: '2px 8px', borderRadius: 999,
+                      backgroundColor: 'var(--ink)', color: 'var(--ivory)',
+                      fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
+                      display: 'inline-flex', alignItems: 'center', gap: 4,
+                    }}>
+                      <Check size={10} strokeWidth={2.4} /> 결정됨
+                    </div>
+                  )}
                   {isRec && (
                     <div style={{
                       position: 'absolute', top: -8, left: 10,
@@ -253,10 +274,13 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
                   {/* 가격 + 링크 */}
                   <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
                     <div style={{
-                      flex: '1 1 50%',
+                      flex: '1 1 0',
+                      minWidth: 0,
+                      overflow: 'hidden',
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '6px 10px', borderRadius: 8,
                       backgroundColor: 'var(--paper)', border: '1px solid var(--rule)',
+                      boxSizing: 'border-box',
                     }}>
                       <input
                         type="number"
@@ -269,7 +293,7 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
                         placeholder="가격"
                         className="tabular-nums"
                         style={{
-                          flex: 1, minWidth: 0,
+                          flex: 1, minWidth: 0, width: '100%',
                           border: 'none', outline: 'none',
                           backgroundColor: 'transparent',
                           fontSize: 12, color: 'var(--ink)', textAlign: 'right',
@@ -278,22 +302,26 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
                       <span style={{ fontSize: 11, color: 'var(--ink-4)', flexShrink: 0 }}>만원</span>
                     </div>
                     <div style={{
-                      flex: '1 1 50%',
+                      flex: '1 1 0',
+                      minWidth: 0,
+                      overflow: 'hidden',
                       display: 'flex', alignItems: 'center', gap: 4,
                       padding: '6px 10px', borderRadius: 8,
                       backgroundColor: 'var(--paper)', border: '1px solid var(--rule)',
+                      boxSizing: 'border-box',
                     }}>
                       <ExternalLink size={11} style={{ color: 'var(--ink-4)', flexShrink: 0 }} />
                       <input
                         type="url"
-                        value={c.url}
+                        value={c.url || ''}
                         onChange={(e) => updateItem(c.id, { url: e.target.value })}
                         placeholder="후기 링크"
                         style={{
-                          flex: 1, minWidth: 0,
+                          flex: 1, minWidth: 0, width: '100%',
                           border: 'none', outline: 'none',
                           backgroundColor: 'transparent',
                           fontSize: 12, color: 'var(--ink)',
+                          textOverflow: 'ellipsis',
                         }}
                       />
                     </div>

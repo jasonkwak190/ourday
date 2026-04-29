@@ -610,6 +610,7 @@ export default function DecisionsPage() {
                   decisionId={d.id}
                   candidates={d.candidates}
                   myRole={myRole}
+                  finalDecision={d.final_decision}
                   onSave={(next) => saveCandidates(d.id, next)}
                   onPickFinal={(name) => pickFinalFromCandidate(d.id, name)}
                 />
