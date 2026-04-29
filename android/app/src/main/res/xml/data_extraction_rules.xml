@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ 데이터 백업 정책 — allowBackup=false에 맞춰 모든 데이터 백업 차단.
+  cloud-backup / device-transfer 모두 exclude domain="root"로 막아 민감정보 유출 차단.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="root" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="root" />
+    </device-transfer>
+</data-extraction-rules>

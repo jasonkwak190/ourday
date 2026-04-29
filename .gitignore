@@ -39,7 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-android/
-ios/
+# Capacitor 네이티브 폴더는 커밋 (빌드 캐시는 폴더 내부 .gitignore가 제외)
 out/
 .idea/
