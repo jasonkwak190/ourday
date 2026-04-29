@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageLoader from '@/components/PageLoader';
 import PaymentCalendar from '@/components/PaymentCalendar';
+import VendorLineItems from '@/components/VendorLineItems';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
@@ -358,7 +359,7 @@ export default function BudgetPage() {
     const load = async () => {
       const [coupleRes, vendorRes] = await Promise.all([
         supabase.from('couples').select('total_budget').eq('id', coupleId).single(),
-        supabase.from('vendors').select('id, type, name, contact_name, contact_phone, deposit, balance, balance_due, contract_status, memo, attachments, created_at').eq('couple_id', coupleId).order('created_at'),
+        supabase.from('vendors').select('id, type, name, contact_name, contact_phone, deposit, balance, balance_due, contract_status, memo, attachments, line_items, created_at').eq('couple_id', coupleId).order('created_at'),
       ]);
       setTotalBudget(coupleRes.data?.total_budget || 0);
       setVendors(vendorRes.data || []);
@@ -996,6 +997,20 @@ export default function BudgetPage() {
                   onUpload={uploadAttachment}
                   onOpen={openAttachment}
                   onRemove={att => removeAttachment(vendor, att)}
+                />
+
+                <VendorLineItems
+                  vendorId={vendor.id}
+                  vendorType={vendor.type}
+                  lineItems={vendor.line_items || []}
+                  onSave={async (newItems) => {
+                    const { error } = await supabase
+                      .from('vendors')
+                      .update({ line_items: newItems })
+                      .eq('id', vendor.id);
+                    if (error) throw error;
+                    setVendors(prev => prev.map(v => v.id === vendor.id ? { ...v, line_items: newItems } : v));
+                  }}
                 />
 
                 {menuId === vendor.id && (
