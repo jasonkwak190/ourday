@@ -148,6 +148,7 @@ create policy "커플만 예산 접근" on budget_items
 | groom_opinion | text | 신랑 의견 |
 | bride_opinion | text | 신부 의견 |
 | final_decision | text | 최종 결정 |
+| candidates | jsonb default '[]' | 후보 비교 보드 (3-way). `[{id,name,price,note,url,groom_score,bride_score}]` |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 

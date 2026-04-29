@@ -7,6 +7,7 @@ import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
 import { MessageSquarePlus, Pencil, Trash2 } from 'lucide-react';
 import Icon from '@/components/Icon';
+import CandidateBoard from '@/components/CandidateBoard';
 
 const FILTERS = [
   { key: 'all',        label: '전체' },
@@ -91,7 +92,7 @@ export default function DecisionsPage() {
     const load = async () => {
       const { data } = await supabase
         .from('decisions')
-        .select('id, title, groom_opinion, bride_opinion, final_decision, status, created_at')
+        .select('id, title, groom_opinion, bride_opinion, final_decision, status, candidates, created_at')
         .eq('couple_id', coupleId)
         .order('created_at');
       setDecisions(data || []);
@@ -226,6 +227,32 @@ export default function DecisionsPage() {
     }
     setEditingFinal(null);
     setFinalText('');
+    setSaving(false);
+  }
+
+  async function saveCandidates(decisionId, nextCandidates) {
+    setDecisions((prev) => prev.map((d) =>
+      d.id === decisionId ? { ...d, candidates: nextCandidates } : d
+    ));
+    const { error } = await supabase
+      .from('decisions')
+      .update({ candidates: nextCandidates })
+      .eq('id', decisionId);
+    if (error) throw error;
+  }
+
+  async function pickFinalFromCandidate(decisionId, candidateName) {
+    setSaving(true);
+    const { error } = await supabase
+      .from('decisions')
+      .update({ final_decision: candidateName, status: 'decided' })
+      .eq('id', decisionId);
+    if (!error) {
+      setDecisions((prev) => prev.map((d) =>
+        d.id === decisionId ? { ...d, final_decision: candidateName, status: 'decided' } : d
+      ));
+      showToast('최종 결정으로 저장됐어요');
+    }
     setSaving(false);
   }
 
@@ -577,6 +604,15 @@ export default function DecisionsPage() {
                     </div>
                   </div>
                 )}
+
+                {/* 후보 비교 보드 (3-way) */}
+                <CandidateBoard
+                  decisionId={d.id}
+                  candidates={d.candidates}
+                  myRole={myRole}
+                  onSave={(next) => saveCandidates(d.id, next)}
+                  onPickFinal={(name) => pickFinalFromCandidate(d.id, name)}
+                />
 
                 {/* 최종 결정 */}
                 {isEditingFin ? (
