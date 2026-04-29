@@ -2,6 +2,10 @@ export const dynamic = 'force-dynamic';
 
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+
+// IP당 1분에 5건 — CRON_SECRET 유출 시 무차별 호출 차단 (정상 cron은 일 1회)
+const cleanupLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
 
 /**
  * GET /api/cleanup
@@ -14,6 +18,12 @@ import { NextResponse } from 'next/server';
  *   - invitation_guestbook: 동일 조건 커플의 청첩장 방명록
  */
 export async function GET(request) {
+  // ── 레이트리밋 ─────────────────────────────────────────────
+  const ip = getClientIp(request);
+  if (!cleanupLimiter(ip)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 });
+  }
+
   // ── 인증 ──────────────────────────────────────────────────
   const authHeader = request.headers.get('authorization');
   const secret = process.env.CRON_SECRET;

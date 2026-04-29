@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+import { isShortCode } from '@/lib/validate';
 
 const MAX_FREE_PHOTOS = 50;
 const MAX_FILE_SIZE  = 10 * 1024 * 1024; // 10 MB
@@ -38,6 +39,9 @@ export async function POST(request) {
     // ── 기본 검증 ──────────────────────────────────────────────
     if (!file || !eventCode) {
       return NextResponse.json({ error: '파일과 이벤트 코드가 필요해요.' }, { status: 400 });
+    }
+    if (!isShortCode(eventCode)) {
+      return NextResponse.json({ error: '유효하지 않은 이벤트 코드 형식이에요.' }, { status: 400 });
     }
 
     // 파일 확장자 + MIME 타입 화이트리스트 검증

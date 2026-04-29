@@ -18,7 +18,7 @@ const PROTECTED_ROUTES = [
   '/invitation',
 ];
 
-export async function proxy(request) {
+export async function middleware(request) {
   const { pathname } = request.nextUrl;
   const isProtected = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route)

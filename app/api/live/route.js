@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
+import { isShortCode } from '@/lib/validate';
 
 // IP당 1분에 최대 60건 (슬라이드쇼 폴링 고려, 브루트포스 방어)
 const liveLimiter = createRateLimiter({ windowMs: 60_000, max: 60 });
@@ -26,7 +27,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
-    if (!code) return NextResponse.json({ error: 'code required' }, { status: 400 });
+    if (!isShortCode(code)) return NextResponse.json({ error: 'invalid code' }, { status: 400 });
 
     const supabase = serviceClient();
 

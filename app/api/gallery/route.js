@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { createClient } from '@supabase/supabase-js';
 import { createSupabaseServerClient } from '@/lib/supabase-server';
 import { NextResponse } from 'next/server';
+import { isUUID, isISOTimestamp } from '@/lib/validate';
 
 function serviceClient() {
   return createClient(
@@ -20,6 +21,13 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const explicitEventId = searchParams.get('event_id');
     const since           = searchParams.get('since'); // ISO timestamp, 증분 갱신용
+
+    if (explicitEventId && !isUUID(explicitEventId)) {
+      return NextResponse.json({ error: 'invalid event_id' }, { status: 400 });
+    }
+    if (since && !isISOTimestamp(since)) {
+      return NextResponse.json({ error: 'invalid since timestamp' }, { status: 400 });
+    }
 
     // ── 인증 확인 ──────────────────────────────────────────────
     const authClient = await createSupabaseServerClient();
@@ -107,7 +115,7 @@ export async function DELETE(request) {
   try {
     const { searchParams } = new URL(request.url);
     const photoId = searchParams.get('photo_id');
-    if (!photoId) return NextResponse.json({ error: 'photo_id required' }, { status: 400 });
+    if (!isUUID(photoId)) return NextResponse.json({ error: 'invalid photo_id' }, { status: 400 });
 
     const authClient = await createSupabaseServerClient();
     const { data: { session } } = await authClient.auth.getSession();
