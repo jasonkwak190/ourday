@@ -24,6 +24,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
+            <!-- App Link: 청첩장 링크(/i/*)를 카카오톡 등에서 클릭 시 앱 자동 오픈 -->
+            <!-- autoVerify=true → assetlinks.json 검증으로 다른 앱의 URL 가로채기 차단 -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="ourday-rust.vercel.app" />
+                <data android:pathPrefix="/i/" />
+            </intent-filter>
+
         </activity>
 
         <provider

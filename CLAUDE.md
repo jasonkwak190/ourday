@@ -86,7 +86,17 @@ PATH="$HOME/.nvm/versions/node/v20.19.3/bin:$PATH" npm run build
 
 **Capacitor 동기화** (네이티브 플러그인 변경 시)
 ```bash
-PATH="$HOME/.nvm/versions/node/v20.19.3/bin:$PATH" npx cap sync android
+# Capacitor CLI는 Node 22+ 필요 (앱 자체는 Node 20에서 dev/build 가능)
+PATH="$HOME/.nvm/versions/node/v22.17.0/bin:$PATH" npx cap sync android
+```
+
+**다른 머신에서 처음 시작할 때** (안드 폴더는 git에 커밋되어 있음)
+```bash
+git pull
+nvm use 22 && npm install
+PATH="$HOME/.nvm/versions/node/v22.17.0/bin:$PATH" npx cap sync android
+# Android Studio로 android/ 폴더 열기 → SDK 자동 감지 → local.properties 자동 생성
+# 키스토어(*.jks)는 git에 없으니 1Password 등에서 별도 복원 필요
 ```
 
 **환경변수** (`.env.local`, git 제외됨)
