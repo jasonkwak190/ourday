@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageLoader from '@/components/PageLoader';
+import PaymentCalendar from '@/components/PaymentCalendar';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import EmptyState from '@/components/EmptyState';
@@ -825,6 +826,9 @@ export default function BudgetPage() {
 
       {/* ── 도넛 차트 ── */}
       <DonutChart vendors={vendors} />
+
+      {/* ── 결제 캘린더 (다음 6개월 입금 예정) ── */}
+      <PaymentCalendar vendors={vendors} />
 
       {/* ── 잔금 임박·연체 알림 ── */}
       {urgentVendors.length > 0 && (() => {
