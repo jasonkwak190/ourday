@@ -37,6 +37,7 @@ const CATEGORIES = [
     icon: 'bouquet',
     title: '폐백 & 예절',
     desc: '전통 혼례 예절과 폐백 준비 방법',
+    recommended: { from: 3, to: 0 },
     content: [
       {
         heading: '폐백 음식 종류와 의미',
@@ -73,6 +74,7 @@ const CATEGORIES = [
     icon: 'invite',
     title: '청첩장',
     desc: '청첩장 문구, 디자인, 발송 시기',
+    recommended: { from: 3, to: 1 },
     content: [
       {
         heading: '발송 시기',
@@ -106,6 +108,7 @@ const CATEGORIES = [
     icon: 'checklist',
     title: '계약 주의사항',
     desc: '웨딩홀·스드메 계약 시 확인할 것들',
+    recommended: { from: 12, to: 5 },
     content: [
       {
         heading: '웨딩홀 계약 전 10가지 체크',
@@ -147,6 +150,7 @@ const CATEGORIES = [
     icon: 'gift',
     title: '예단 & 예물',
     desc: '예단·예물 품목과 금액 가이드',
+    recommended: { from: 6, to: 2 },
     content: [
       {
         heading: '예단 (신부 → 신랑 집안)',
@@ -184,6 +188,7 @@ const POPULAR_GUIDES = [
   {
     emoji: 'venue',
     title: '웨딩홀 계약 전 반드시 확인해야 할 10가지',
+    recommended: { from: 12, to: 6 },
     tag: '계약',
     tagCls: 'tag-rose',
     desc: '취소 위약금, 인원 추가 비용, 주차 조건 등 놓치기 쉬운 항목들을 정리했어요.',
@@ -216,6 +221,7 @@ const POPULAR_GUIDES = [
   {
     emoji: 'diamond',
     title: '스드메 패키지 가격 비교 가이드 2025',
+    recommended: { from: 9, to: 5 },
     tag: '스드메',
     tagCls: 'tag-purple',
     desc: '드레스·헤어메이크업·스튜디오를 분리 계약할 때 vs 패키지로 묶을 때 비용 차이',
@@ -247,6 +253,7 @@ const POPULAR_GUIDES = [
   {
     emoji: 'calendar',
     title: '결혼 준비 12개월 타임라인 총정리',
+    recommended: { from: 12, to: 0 },
     tag: '일정',
     tagCls: 'tag-green',
     desc: '언제 무엇을 해야 하는지 한눈에 보는 월별 체크리스트예요.',
@@ -323,6 +330,37 @@ export default function GuidePage() {
   const [sessionAdded, setSessionAdded] = useState(() => new Set());
   const [addingItem, setAddingItem] = useState(null);
   const [toast, setToast] = useState('');
+  const [monthsToWedding, setMonthsToWedding] = useState(null);
+
+  /* 결혼 D-day → 개월 환산 */
+  useEffect(() => {
+    if (!coupleId) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from('couples')
+        .select('wedding_date')
+        .eq('id', coupleId)
+        .single();
+      if (cancelled || !data?.wedding_date) return;
+      const days = Math.ceil((new Date(data.wedding_date) - new Date()) / 86400000);
+      setMonthsToWedding(days >= 0 ? days / 30.44 : null);
+    })();
+    return () => { cancelled = true; };
+  }, [coupleId]);
+
+  /* "지금 봐야 할" 가이드 — recommended 범위에 D-month가 포함되는 항목 */
+  const recommendedNow = useMemo(() => {
+    if (monthsToWedding === null) return [];
+    const m = monthsToWedding;
+    const cats = CATEGORIES
+      .filter((c) => c.recommended && m <= c.recommended.from && m >= c.recommended.to)
+      .map((c) => ({ kind: 'cat', icon: c.icon, title: c.title, desc: c.desc, key: c.title }));
+    const guides = POPULAR_GUIDES
+      .filter((g) => g.recommended && m <= g.recommended.from && m >= g.recommended.to)
+      .map((g) => ({ kind: 'guide', icon: g.emoji, title: g.title, desc: g.desc, key: g.title }));
+    return [...cats, ...guides].slice(0, 4);
+  }, [monthsToWedding]);
 
   /* 기존 체크리스트 타이틀 미리 로드 — 중복 추가 방지 + UI 상태 복원 */
   useEffect(() => {
@@ -392,6 +430,54 @@ export default function GuidePage() {
         <p style={{ fontFamily: 'var(--font-serif-en)', fontStyle: 'italic', fontSize: 12, color: 'var(--champagne-2)', margin: '2px 0 0', letterSpacing: '0.04em' }}>wedding guide</p>
       </div>
 
+      {/* 지금 봐야 할 가이드 — D-month 기반 추천 */}
+      {recommendedNow.length > 0 && (
+        <section className="mb-6">
+          <div className="flex items-end justify-between mb-3">
+            <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>지금 봐야 할 가이드</p>
+            <p className="tabular-nums" style={{ fontSize: 11, color: 'var(--champagne-2)', fontFamily: 'var(--font-serif-en)', fontStyle: 'italic' }}>
+              D-{Math.round(monthsToWedding)}개월
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            {recommendedNow.map((r) => (
+              <button
+                key={`${r.kind}-${r.key}`}
+                onClick={() => {
+                  if (r.kind === 'cat') {
+                    setOpenCat(r.key);
+                    requestAnimationFrame(() => {
+                      document.querySelector('[data-cat-detail]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                  } else {
+                    setOpenGuide(r.key);
+                    requestAnimationFrame(() => {
+                      document.querySelector(`[data-guide-key="${r.key}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                  }
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '12px 14px',
+                  borderRadius: 14,
+                  border: '1px solid var(--champagne)',
+                  backgroundColor: 'var(--champagne-wash)',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                }}
+              >
+                <Icon name={r.icon} size={20} color="var(--champagne-2)" />
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p className="text-sm font-semibold" style={{ color: 'var(--ink)', margin: 0 }}>{r.title}</p>
+                  <p className="text-xs" style={{ color: 'var(--ink-3)', margin: '2px 0 0' }}>{r.desc}</p>
+                </div>
+                <span style={{ flexShrink: 0, color: 'var(--champagne-2)', fontSize: 16, lineHeight: 1 }}>›</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* 카테고리 2x2 */}
       <section className="mb-6">
         <p className="text-sm font-semibold mb-3" style={{ color: 'var(--ink)' }}>카테고리</p>
@@ -420,7 +506,7 @@ export default function GuidePage() {
         {openCat && (() => {
           const cat = CATEGORIES.find((c) => c.title === openCat);
           return cat ? (
-            <div className="card mt-3" style={{ border: '1.5px solid var(--rose)' }}>
+            <div className="card mt-3" data-cat-detail style={{ border: '1.5px solid var(--rose)' }}>
               <div className="flex items-center gap-2 mb-1">
                 <Icon name={cat.icon} size={20} color="var(--champagne)" />
                 <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{cat.title}</p>
@@ -436,7 +522,7 @@ export default function GuidePage() {
         <p className="text-sm font-semibold mb-3" style={{ color: 'var(--ink)' }}>인기 가이드</p>
         <div className="flex flex-col gap-3">
           {POPULAR_GUIDES.map((g) => (
-            <div key={g.title} className="card cursor-pointer" style={{ border: `1.5px solid ${openGuide === g.title ? 'var(--rose)' : 'transparent'}` }}
+            <div key={g.title} data-guide-key={g.title} className="card cursor-pointer" style={{ border: `1.5px solid ${openGuide === g.title ? 'var(--rose)' : 'transparent'}` }}
               onClick={() => setOpenGuide(openGuide === g.title ? null : g.title)}>
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0"><Icon name={g.emoji} size={24} color="var(--champagne)" /></div>
