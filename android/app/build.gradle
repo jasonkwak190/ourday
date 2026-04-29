@@ -16,10 +16,28 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    // 릴리즈 서명 — keystore.properties는 gitignored (각 머신에서 별도 관리)
+    signingConfigs {
+        release {
+            def propsFile = rootProject.file('app/keystore.properties')
+            if (propsFile.exists()) {
+                def props = new Properties()
+                props.load(new FileInputStream(propsFile))
+                storeFile     = file(props['storeFile'])
+                storePassword = props['storePassword']
+                keyAlias      = props['keyAlias']
+                keyPassword   = props['keyPassword']
+            }
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            // keystore.properties 있을 때만 release signing 적용 (CI나 신규 머신에서 안전)
+            if (rootProject.file('app/keystore.properties').exists()) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }
