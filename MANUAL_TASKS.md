@@ -202,6 +202,44 @@ Vercel Dashboard에 `CRON_SECRET` 등록 완료. 매일 KST 03:00 자동 파기 
 
 ---
 
+### MT-015 · Android 릴리즈 키스토어 생성 + 서명 + assetlinks 갱신 ⭐ 출시 직전
+**자동화 스크립트 준비 완료** (2026-04-29). 사용자 입력만 필요.
+
+**절차** (10분):
+```bash
+# 1. 키스토어 생성 — 비밀번호 입력 (8자 이상, 절대 잊지 말 것!)
+bash scripts/create-android-keystore.sh
+
+# 2. 즉시 백업 (1Password 첨부 등)
+cp android/app/ourday-release.jks ~/your-secure-backup/
+
+# 3. android/app/keystore.properties 작성 (gitignored)
+cat > android/app/keystore.properties <<EOF
+storeFile=ourday-release.jks
+storePassword=<위에서 입력한 비밀번호>
+keyAlias=ourday
+keyPassword=<별칭 비밀번호>
+EOF
+
+# 4. assetlinks.json 자동 갱신 (디버그 + 릴리즈 SHA-256 모두 등록)
+bash scripts/update-assetlinks.sh
+
+# 5. 커밋 + 푸시
+git add public/.well-known/assetlinks.json
+git commit -m "chore: assetlinks.json 프로덕션 SHA-256 추가"
+git push origin main
+```
+
+**왜 자동화 스크립트로 만들었나**: 키스토어는 분실 시 같은 패키지명으로 스토어 재배포 영구 불가 → 한 번에 안전하게 처리. SHA-256 추출·assetlinks 갱신도 키스토어 비밀번호 1회로 끝남.
+
+**완료 후 효과**:
+- App Link 활성화 → 카카오톡으로 받은 청첩장 링크 클릭 시 앱 자동 오픈 (브라우저 안 거침)
+- 릴리즈 빌드 (`./gradlew bundleRelease`) 자동 서명 → AAB 바로 업로드 가능
+
+**다음 단계** (이 작업 후): MT-016 AAB 빌드·Google Play Console 업로드.
+
+---
+
 ### MT-011 · Supabase 비밀번호 재설정 이메일 리디렉션 URL 설정
 **필요 시점**: 비밀번호 재설정 기능 사용 전
 
