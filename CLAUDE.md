@@ -206,6 +206,7 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 | `DOMAIN_CHANGE.md` | **도메인 변경 시** 수정해야 할 모든 위치 목록 |
 | `FEATURES.md` | 경쟁 앱 분석·추가 기능 백로그 |
 | `BM.md` | 비즈니스 모델·수익화 플래닝 (Freemium·청첩장·B2B 제휴·광고) |
+| `MARKETING.md` | 마케팅 자산 — 영상 스크립트·AI 프롬프트·ASO·채널 전략 |
 | `TDS_MIGRATION.md` | Toss 스타일 전환 체크리스트 |
 | `SUPABASE.md` | Supabase 스키마·RLS 정책 |
 
