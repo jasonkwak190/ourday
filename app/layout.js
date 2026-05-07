@@ -1,6 +1,8 @@
 import './globals.css';
 import BackButtonHandler from '@/components/BackButtonHandler';
 import CookieBanner from '@/components/CookieBanner';
+import NativeBridge from '@/components/NativeBridge';
+import OfflineBanner from '@/components/OfflineBanner';
 
 export const metadata = {
   title: 'Ourday · 우리의 날',
@@ -57,7 +59,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        <NativeBridge />
         <BackButtonHandler />
+        <OfflineBanner />
         {children}
         <CookieBanner />
       </body>

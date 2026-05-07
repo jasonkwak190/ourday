@@ -315,6 +315,10 @@ body {
 .btn-ghost:active { transform: scale(0.97); }
 
 /* ─── Inputs ─── */
+/* Q-004: iOS Safari/WebView는 font-size 16px 미만 input 포커스 시 화면 자동 확대 (기괴 UX).
+   모든 input/textarea/select에 16px 강제. */
+input, textarea, select { font-size: 16px; }
+
 .input-field {
   width: 100%;
   border: none;

@@ -353,8 +353,12 @@ export default function InvitationTab({ coupleId }) {
     setCoverError('');
     setUploadingCover(true);
 
+    // Q-002 EXIF strip + Q-003 압축·리사이즈
+    const { processImage } = await import('@/lib/imageProcess');
+    const processed = await processImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920 });
+
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', processed);
     fd.append('couple_id', coupleId);
 
     const ctrl = new AbortController();
@@ -422,8 +426,11 @@ export default function InvitationTab({ coupleId }) {
     setUploadingPhoto(true);
 
     const uploadOne = async (file) => {
+      // Q-002 EXIF strip + Q-003 압축·리사이즈
+      const { processImage } = await import('@/lib/imageProcess');
+      const processed = await processImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920 });
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', processed);
       fd.append('couple_id', coupleId);
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 30_000);

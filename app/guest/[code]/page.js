@@ -43,8 +43,12 @@ export default function GuestUploadPage({ params }) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), UPLOAD_TIMEOUT_MS);
     try {
+      // Q-002 EXIF strip + Q-003 압축·리사이즈 (식장 와이파이 부하 절감)
+      const { processImage } = await import('@/lib/imageProcess');
+      const processed = await processImage(item.file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920 });
+
       const fd = new FormData();
-      fd.append('file', item.file);
+      fd.append('file', processed);
       fd.append('event_code', code);
       if (name.trim()) fd.append('uploader_name', name.trim());
 
