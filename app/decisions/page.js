@@ -263,6 +263,9 @@ export default function DecisionsPage() {
       setDecisions((prev) => prev.map((d) =>
         d.id === decisionId ? { ...d, final_decision: candidateName, status: 'decided' } : d
       ));
+      // Q-015: 큰 결정 = medium 햅틱
+      const { hapticNotify } = await import('@/components/NativeBridge');
+      hapticNotify('success');
       showToast('최종 결정으로 저장됐어요');
     }
     setSaving(false);
