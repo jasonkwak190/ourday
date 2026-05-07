@@ -85,6 +85,7 @@ export default function DecisionsPage() {
   const [menuId, setMenuId] = useState(null);
   const [editingTitle, setEditingTitle] = useState(null);
   const [editTitleText, setEditTitleText] = useState('');
+  const [conflictToast, setConflictToast] = useState('');
 
   useEffect(() => {
     if (authLoading) return;
@@ -118,6 +119,17 @@ export default function DecisionsPage() {
             return [...prev, payload.new];
           });
         } else if (payload.eventType === 'UPDATE') {
+          // Q-007 동시편집 충돌: 사용자가 이 row를 편집 중이면 로컬 편집을 보존하고 알림만 띄움
+          // (덮어쓰면 사용자가 방금 친 내용 사라짐)
+          const isLocallyEditing =
+            editingOpinion === payload.new.id ||
+            editingFinal === payload.new.id ||
+            editingTitle === payload.new.id;
+          if (isLocallyEditing) {
+            setConflictToast('상대방이 방금 변경했어요. 저장 후 충돌 가능');
+            setTimeout(() => setConflictToast(''), 2800);
+            return;
+          }
           setDecisions((prev) => prev.map((d) => d.id === payload.new.id ? payload.new : d));
         } else if (payload.eventType === 'DELETE') {
           setDecisions((prev) => prev.filter((d) => d.id !== payload.old.id));
@@ -277,6 +289,20 @@ export default function DecisionsPage() {
 
   return (
     <div className="page-wrapper" onClick={() => setMenuId(null)}>
+      {conflictToast && (
+        <div role="status" aria-live="polite"
+          style={{
+            position: 'fixed', top: 'calc(env(safe-area-inset-top) + 12px)',
+            left: '50%', transform: 'translateX(-50%)', zIndex: 60,
+            backgroundColor: 'var(--ink)', color: 'white',
+            padding: '10px 16px', borderRadius: 24,
+            fontSize: 13, fontWeight: 600,
+            boxShadow: '0 4px 12px rgba(0,0,0,.18)',
+            pointerEvents: 'none', whiteSpace: 'nowrap',
+          }}>
+          {conflictToast}
+        </div>
+      )}
       {/* 저장 토스트 — BottomNav 위에 항상 표시 */}
       {toast && (
         <div className="fixed left-1/2 px-5 py-3 rounded-2xl text-sm font-semibold shadow-lg"
@@ -595,7 +621,8 @@ export default function DecisionsPage() {
                       rows={3}
                       placeholder="의견을 입력해주세요"
                       value={opinionText}
-                      onChange={(e) => setOpinionText(e.target.value)}
+                      onChange={(e) => setOpinionText(e.target.value.slice(0, 500))}
+                      maxLength={500}
                       autoFocus
                     />
                     <div className="flex gap-2">
@@ -622,7 +649,8 @@ export default function DecisionsPage() {
                       rows={2}
                       placeholder="최종 결정 내용을 입력해주세요"
                       value={finalText}
-                      onChange={(e) => setFinalText(e.target.value)}
+                      onChange={(e) => setFinalText(e.target.value.slice(0, 500))}
+                      maxLength={500}
                       autoFocus
                     />
                     <div className="flex gap-2">

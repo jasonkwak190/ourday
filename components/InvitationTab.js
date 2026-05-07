@@ -853,8 +853,9 @@ export default function InvitationTab({ coupleId }) {
                   ) : type === 'textarea' ? (
                     <textarea
                       value={form[key]}
+                      maxLength={2000}
                       onChange={e => {
-                        update(key, e.target.value);
+                        update(key, e.target.value.slice(0, 2000));
                         // auto-resize
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';
