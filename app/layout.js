@@ -1,8 +1,22 @@
 import './globals.css';
+import { Cormorant_Garamond } from 'next/font/google';
 import BackButtonHandler from '@/components/BackButtonHandler';
 import CookieBanner from '@/components/CookieBanner';
 import NativeBridge from '@/components/NativeBridge';
 import OfflineBanner from '@/components/OfflineBanner';
+
+// Q-PERF: Cormorant는 next/font로 자체 호스팅 (Google Fonts CDN 라운드트립 제거)
+//   - 라틴 위주 디스플레이 폰트 → next/font 최적화 효과 큼
+//   - 사용 weight만 (4종) + display=swap + 자동 preload
+//   - 폴백 메트릭 자동 매칭으로 CLS 0
+// Noto Serif KR은 한글 글리프 크기 때문에 Google Fonts CDN 동적 subsetting 유지
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  style: ['normal', 'italic'],
+  display: 'swap',
+  variable: '--font-cormorant-next',
+});
 
 export const metadata = {
   title: 'Ourday · 우리의 날',
@@ -39,23 +53,25 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={cormorant.variable}>
       <head>
-        {/* DNS / TCP 사전 연결 — 폰트 다운로드 LCP 단축 */}
+        {/* DNS / TCP 사전 연결 — 폰트·API 첫 요청 LCP 단축 */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        {/* Supabase — 로그인 직후 첫 쿼리/Storage 다운로드를 위해 미리 연결 */}
+        <link rel="preconnect" href="https://eapmagibtipjbagitqmf.supabase.co" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://eapmagibtipjbagitqmf.supabase.co" />
 
-        {/* Pretendard — 본문 폰트 */}
+        {/* Pretendard — 본문 폰트 (dynamic subset, display=swap 내장) */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
         />
-        {/* Cormorant Garamond — 영문 디스플레이 / Noto Serif KR — 한글 디스플레이
-            (사용 weight만 로드: 400/500 + italic 400/500 — 7→4, 한글 5→3) */}
+        {/* Noto Serif KR — 한글 디스플레이 (사용 weight 3종, dynamic subsetting) */}
         <link
           rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Noto+Serif+KR:wght@400;500;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700&display=swap"
         />
       </head>
       <body>

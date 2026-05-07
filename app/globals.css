@@ -56,7 +56,9 @@
   --accent-wash:      var(--champagne-wash);
 
   /* Fonts */
-  --font-serif-en:    "Cormorant Garamond", Georgia, serif;
+  /* Q-PERF: next/font가 주입한 --font-cormorant-next 변수 사용 (자체 호스팅 + 폴백 매칭).
+     변수 미정의 환경(SSR 첫 페인트)에서는 Georgia로 자연스럽게 fallback. */
+  --font-serif-en:    var(--font-cormorant-next), "Cormorant Garamond", Georgia, serif;
   --font-serif-ko:    "Noto Serif KR", "Nanum Myeongjo", serif;
   --font-sans:        "Pretendard Variable", "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
 
