@@ -184,6 +184,7 @@ export default function RSVPPage({ params }) {
         <Section title="성함">
           <input
             type="text"
+            aria-label="성함"
             placeholder="홍길동"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -256,6 +257,7 @@ export default function RSVPPage({ params }) {
         <Section title="연락처 (선택)">
           <input
             type="tel"
+            aria-label="연락처 (선택)"
             placeholder="010-0000-0000"
             value={phone}
             onChange={e => setPhone(e.target.value)}

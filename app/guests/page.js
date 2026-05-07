@@ -322,7 +322,7 @@ export default function GuestsPage() {
                       </button>
                     ))}
                   </div>
-                  <input className="input-field" placeholder="이름" value={editForm.name}
+                  <input className="input-field" aria-label="하객 이름" placeholder="이름" value={editForm.name}
                     onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
                   <div className="flex flex-wrap gap-2">
                     {RELATIONS.map(r => (
@@ -348,10 +348,10 @@ export default function GuestsPage() {
                           style={{ backgroundColor: 'var(--rose-light)', color: 'var(--rose)', border: 'none', cursor: 'pointer' }}>+</button>
                       </div>
                     </div>
-                    <input className="input-field flex-1" placeholder="연락처 (선택)" value={editForm.phone}
+                    <input className="input-field flex-1" aria-label="연락처 (선택)" placeholder="연락처 (선택)" value={editForm.phone}
                       onChange={e => setEditForm(f => ({ ...f, phone: e.target.value }))} />
                   </div>
-                  <input className="input-field" placeholder="메모 (선택)" value={editForm.memo}
+                  <input className="input-field" aria-label="하객 메모 (선택)" placeholder="메모 (선택)" value={editForm.memo}
                     onChange={e => setEditForm(f => ({ ...f, memo: e.target.value }))} />
                   {error && <p className="text-xs" style={{ color: 'var(--rose)' }}>{error}</p>}
                   <div className="flex gap-2">
@@ -480,7 +480,7 @@ export default function GuestsPage() {
                   </button>
                 ))}
               </div>
-              <input className="input-field" placeholder="이름" value={form.name}
+              <input className="input-field" aria-label="하객 이름" placeholder="이름" value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
               <div className="flex flex-wrap gap-2">
                 {RELATIONS.map(r => (
@@ -506,10 +506,10 @@ export default function GuestsPage() {
                       style={{ backgroundColor: 'var(--rose-light)', color: 'var(--rose)', border: 'none', cursor: 'pointer' }}>+</button>
                   </div>
                 </div>
-                <input className="input-field flex-1" placeholder="연락처 (선택)" value={form.phone}
+                <input className="input-field flex-1" aria-label="연락처 (선택)" placeholder="연락처 (선택)" value={form.phone}
                   onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} />
               </div>
-              <input className="input-field" placeholder="메모 (선택)" value={form.memo}
+              <input className="input-field" aria-label="하객 메모 (선택)" placeholder="메모 (선택)" value={form.memo}
                 onChange={e => setForm(f => ({ ...f, memo: e.target.value }))} />
               {error && <p className="text-xs" style={{ color: 'var(--rose)' }}>{error}</p>}
               <div className="flex gap-2">

@@ -75,10 +75,12 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
+        {/* a11y: 키보드/스크린리더 사용자가 nav 건너뛰고 본문으로 바로 이동 */}
+        <a href="#main-content" className="skip-link">본문 바로가기</a>
         <NativeBridge />
         <BackButtonHandler />
         <OfflineBanner />
-        {children}
+        <main id="main-content">{children}</main>
         <CookieBanner />
       </body>
     </html>
