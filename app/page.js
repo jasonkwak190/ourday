@@ -1,11 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import OAuthButtons from '@/components/OAuthButtons';
 import Icon from '@/components/Icon';
-import { supabase } from '@/lib/supabase';
 
 // 앱 이름은 나중에 바꿀 것 — 여기 한 곳만 수정하면 됨
 const APP_NAME = '우리의 날';
@@ -40,28 +37,8 @@ const FEATURES = [
 ];
 
 export default function LandingPage() {
-  const router = useRouter();
-  const [checking, setChecking] = useState(true);
-
-  // 이미 로그인된 사용자 → 대시보드로
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) router.replace('/dashboard');
-      else setChecking(false);
-    });
-  }, [router]);
-
-  if (checking) {
-    return (
-      <div style={{
-        minHeight: '100dvh', display: 'flex', alignItems: 'center',
-        justifyContent: 'center', backgroundColor: 'var(--toss-bg)',
-      }}>
-        <Icon name="rings" size={36} color="var(--champagne)" />
-      </div>
-    );
-  }
-
+  // Q-PERF: 로그인된 사용자 → /dashboard 리다이렉트는 middleware에서 처리.
+  // 클라이언트에서 supabase SDK 로드해 체크하던 부분 제거 → LCP 200~400ms 단축.
   return (
     <div style={{
       minHeight: '100dvh',

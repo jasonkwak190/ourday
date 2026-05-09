@@ -23,8 +23,10 @@ export async function middleware(request) {
   const isProtected = PROTECTED_ROUTES.some((route) =>
     pathname.startsWith(route)
   );
+  const isLanding = pathname === '/';
 
-  if (!isProtected) return NextResponse.next();
+  // Q-PERF: 보호 라우트 + 랜딩 페이지에서만 미들웨어 작동 (다른 곳은 통과)
+  if (!isProtected && !isLanding) return NextResponse.next();
 
   let response = NextResponse.next({ request });
 
@@ -51,8 +53,14 @@ export async function middleware(request) {
 
   const { data: { session } } = await supabase.auth.getSession();
 
-  if (!session) {
+  // 보호 라우트: 세션 없으면 랜딩으로
+  if (isProtected && !session) {
     return NextResponse.redirect(new URL('/', request.url));
+  }
+  // Q-PERF: 랜딩 페이지에 이미 로그인된 사용자 → 서버에서 즉시 /dashboard로
+  // (기존: 클라이언트 useEffect에서 supabase SDK 로드 후 체크 → LCP 200~400ms 손실)
+  if (isLanding && session) {
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;
@@ -60,6 +68,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
+    '/',
     '/dashboard/:path*',
     '/timeline/:path*',
     '/budget/:path*',

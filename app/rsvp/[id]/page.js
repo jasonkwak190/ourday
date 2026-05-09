@@ -27,6 +27,7 @@ export default function RSVPPage({ params }) {
   const [phone, setPhone]         = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone]           = useState(false);
+  const [wasUpdate, setWasUpdate] = useState(false);
   const [error, setError]         = useState('');
 
   useEffect(() => {
@@ -61,6 +62,11 @@ export default function RSVPPage({ params }) {
     });
     setSubmitting(false);
     if (!res.ok) { setError('전송에 실패했어요. 잠시 후 다시 시도해주세요.'); return; }
+    // Q-014: 같은 이름으로 이미 응답한 적 있으면 "수정 완료" 메시지
+    try {
+      const json = await res.clone().json();
+      if (json.wasUpdate) setWasUpdate(true);
+    } catch {}
     setDone(true);
   }
 
@@ -101,7 +107,10 @@ export default function RSVPPage({ params }) {
           }
         </div>
         <p style={{ fontSize: 20, fontWeight: 700, color: '#191f28', marginBottom: 8 }}>
-          {attending ? '참석 확인 완료! 🎉' : '전달 완료'}
+          {wasUpdate
+            ? (attending ? '참석으로 수정됐어요 ✓' : '응답이 수정됐어요 ✓')
+            : (attending ? '참석 확인 완료! 🎉' : '전달 완료')
+          }
         </p>
         <p style={{ fontSize: 14, color: '#8b95a1', textAlign: 'center', lineHeight: 1.8 }}>
           {attending
@@ -175,6 +184,7 @@ export default function RSVPPage({ params }) {
         <Section title="성함">
           <input
             type="text"
+            aria-label="성함"
             placeholder="홍길동"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -247,6 +257,7 @@ export default function RSVPPage({ params }) {
         <Section title="연락처 (선택)">
           <input
             type="tel"
+            aria-label="연락처 (선택)"
             placeholder="010-0000-0000"
             value={phone}
             onChange={e => setPhone(e.target.value)}

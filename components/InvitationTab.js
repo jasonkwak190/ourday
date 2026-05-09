@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Copy, Check, Eye, Save, X, ExternalLink, Plus, Camera, Loader } from 'lucide-react';
 import Icon from '@/components/Icon';
+import SafeImage from '@/components/SafeImage';
 import { supabase } from '@/lib/supabase';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
@@ -353,8 +354,12 @@ export default function InvitationTab({ coupleId }) {
     setCoverError('');
     setUploadingCover(true);
 
+    // Q-002 EXIF strip + Q-003 압축·리사이즈
+    const { processImage } = await import('@/lib/imageProcess');
+    const processed = await processImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920 });
+
     const fd = new FormData();
-    fd.append('file', file);
+    fd.append('file', processed);
     fd.append('couple_id', coupleId);
 
     const ctrl = new AbortController();
@@ -422,8 +427,11 @@ export default function InvitationTab({ coupleId }) {
     setUploadingPhoto(true);
 
     const uploadOne = async (file) => {
+      // Q-002 EXIF strip + Q-003 압축·리사이즈
+      const { processImage } = await import('@/lib/imageProcess');
+      const processed = await processImage(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920 });
       const fd = new FormData();
-      fd.append('file', file);
+      fd.append('file', processed);
       fd.append('couple_id', coupleId);
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 30_000);
@@ -578,7 +586,7 @@ export default function InvitationTab({ coupleId }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
                 {form.photos.map((url, i) => (
                   <div key={i} style={{ position: 'relative', aspectRatio: '3/4', borderRadius: 10, overflow: 'hidden' }}>
-                    <img src={url} alt={`사진 ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <SafeImage src={url} alt={`사진 ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <button
                       onClick={() => removePhoto(i)}
                       style={{
@@ -642,7 +650,7 @@ export default function InvitationTab({ coupleId }) {
               {form.cover_image_url ? (
                 /* 이미지 있을 때 */
                 <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', aspectRatio: '3/2' }}>
-                  <img
+                  <SafeImage
                     src={form.cover_image_url}
                     alt="커버 사진"
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -846,8 +854,9 @@ export default function InvitationTab({ coupleId }) {
                   ) : type === 'textarea' ? (
                     <textarea
                       value={form[key]}
+                      maxLength={2000}
                       onChange={e => {
-                        update(key, e.target.value);
+                        update(key, e.target.value.slice(0, 2000));
                         // auto-resize
                         e.target.style.height = 'auto';
                         e.target.style.height = e.target.scrollHeight + 'px';

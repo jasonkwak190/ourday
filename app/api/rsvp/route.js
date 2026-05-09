@@ -198,7 +198,8 @@ export async function POST(request) {
       }
     }
 
-    return NextResponse.json({ success: true, data });
+    // Q-014: 클라이언트가 "수정 완료" vs "새 응답 등록" 구분할 수 있도록 플래그 반환
+    return NextResponse.json({ success: true, data, wasUpdate: !!existingRsvp });
   } catch (e) {
     console.error('[rsvp] unexpected error:', e.message);
     return NextResponse.json({ error: '서버 오류가 발생했어요.' }, { status: 500 });

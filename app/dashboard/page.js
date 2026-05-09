@@ -1,8 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import PageLoader from '@/components/PageLoader';
+import PullToRefresh from '@/components/PullToRefresh';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
 import Icon from '@/components/Icon';
@@ -52,48 +53,50 @@ export default function DashboardPage() {
   const userName = userData?.name  || '';
   const userRole = userData?.role  || '';
 
+  const load = useCallback(async () => {
+    if (!coupleId) return;
+    const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes, noteRes] = await Promise.all([
+      supabase.from('couples').select('id, wedding_date, total_budget').eq('id', coupleId).single(),
+      supabase.from('checklist_items').select('id, title, is_done, due_months_before, due_date, assigned_to').eq('couple_id', coupleId),
+      supabase.from('decisions').select('id, title, status').eq('couple_id', coupleId),
+      supabase.from('budget_items').select('estimated_amount, actual_amount').eq('couple_id', coupleId),
+      supabase.from('vendors').select('id, name, type, deposit, balance, balance_due, contract_status').eq('couple_id', coupleId),
+      supabase.from('invitations').select('id').eq('couple_id', coupleId).maybeSingle(),
+      supabase.from('couple_notes').select('content, updated_at').eq('couple_id', coupleId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
+    ]);
+
+    if (coupleRes.error) { setError('데이터를 불러오지 못했어요.'); setLoading(false); return; }
+
+    setCouple(coupleRes.data);
+    setItems(itemsRes.data || []);
+    setDecisions(decisionsRes.data || []);
+    setBudgetItems(budgetRes.data || []);
+    setVendors(vendorsRes.data || []);
+    setLatestNote(noteRes.data?.content ? noteRes.data : null);
+
+    // 방명록: 청첩장 id 확보 후 비동기로 로드
+    const invId = invRes.data?.id || null;
+    if (invId) {
+      supabase
+        .from('invitation_guestbook')
+        .select('id, name, message, created_at')
+        .eq('invitation_id', invId)
+        .order('created_at', { ascending: false })
+        .limit(3)
+        .then(({ data }) => setGuestbook(data || []));
+    } else {
+      setGuestbook([]);
+    }
+
+    setLoading(false);
+  }, [coupleId]);
+
   useEffect(() => {
     if (authLoading) return;
     if (!coupleId) { setLoading(false); return; }
-
     if (userData?.onboarding_dismissed) setOnboardingDismissed(true);
-
-    const load = async () => {
-      const [coupleRes, itemsRes, decisionsRes, budgetRes, vendorsRes, invRes, noteRes] = await Promise.all([
-        supabase.from('couples').select('id, wedding_date, total_budget').eq('id', coupleId).single(),
-        supabase.from('checklist_items').select('id, title, is_done, due_months_before, due_date, assigned_to').eq('couple_id', coupleId),
-        supabase.from('decisions').select('id, title, status').eq('couple_id', coupleId),
-        supabase.from('budget_items').select('estimated_amount, actual_amount').eq('couple_id', coupleId),
-        supabase.from('vendors').select('id, name, type, deposit, balance, balance_due, contract_status').eq('couple_id', coupleId),
-        supabase.from('invitations').select('id').eq('couple_id', coupleId).maybeSingle(),
-        supabase.from('couple_notes').select('content, updated_at').eq('couple_id', coupleId).order('updated_at', { ascending: false }).limit(1).maybeSingle(),
-      ]);
-
-      if (coupleRes.error) { setError('데이터를 불러오지 못했어요.'); setLoading(false); return; }
-
-      setCouple(coupleRes.data);
-      setItems(itemsRes.data || []);
-      setDecisions(decisionsRes.data || []);
-      setBudgetItems(budgetRes.data || []);
-      setVendors(vendorsRes.data || []);
-      if (noteRes.data?.content) setLatestNote(noteRes.data);
-
-      // 방명록: 청첩장 id 확보 후 비동기로 로드 (N+1 방지 — 블로킹 없이 병렬 처리)
-      const invId = invRes.data?.id || null;
-      if (invId) {
-        supabase
-          .from('invitation_guestbook')
-          .select('id, name, message, created_at')
-          .eq('invitation_id', invId)
-          .order('created_at', { ascending: false })
-          .limit(3)
-          .then(({ data }) => setGuestbook(data || []));
-      }
-
-      setLoading(false);
-    };
     load();
-  }, [authLoading, coupleId, userData]);
+  }, [authLoading, coupleId, userData, load]);
 
   async function toggleItem(id, current) {
     setItems(prev => prev.map(it => it.id === id ? { ...it, is_done: !current } : it));
@@ -232,6 +235,7 @@ export default function DashboardPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={load}>
     <div className="page-wrapper">
       {/* 상단 바 */}
       <div className="flex justify-between items-center mb-4">
@@ -747,5 +751,6 @@ export default function DashboardPage() {
 
       <BottomNav active="home" />
     </div>
+    </PullToRefresh>
   );
 }

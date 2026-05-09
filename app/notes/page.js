@@ -361,10 +361,11 @@ export default function NotesPage() {
           <textarea
             ref={inputRef}
             rows={1}
+            maxLength={1000}
             placeholder="링크나 메모를 남겨보세요..."
             value={content}
             onChange={e => {
-              setContent(e.target.value);
+              setContent(e.target.value.slice(0, 1000));
               e.target.style.height = 'auto';
               e.target.style.height = Math.min(e.target.scrollHeight, 100) + 'px';
             }}
@@ -423,8 +424,8 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, editLink, deleteId
       }}>
         {isEditing ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 200 }}>
-            <textarea autoFocus value={editContent}
-              onChange={e => onEditChange(e.target.value, editLink)} rows={2}
+            <textarea autoFocus value={editContent} maxLength={1000}
+              onChange={e => onEditChange(e.target.value.slice(0, 1000), editLink)} rows={2}
               style={{ border: 'none', outline: 'none', resize: 'none', fontSize: 14,
                 lineHeight: 1.5, fontFamily: 'inherit', color: 'var(--toss-text-primary)', width: '100%' }} />
             <div className="flex items-center gap-1.5"

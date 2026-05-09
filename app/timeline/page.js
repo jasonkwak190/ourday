@@ -423,6 +423,11 @@ export default function TimelinePage() {
   /* ─ 액션 ─ */
   async function toggleItem(id, current) {
     setItems(prev => prev.map(it => it.id === id ? { ...it, is_done: !current } : it));
+    // Q-015: 완료 시 가벼운 햅틱 피드백 (모바일에서 직관적 만족감)
+    if (!current) {
+      const { hapticImpact } = await import('@/components/NativeBridge');
+      hapticImpact('light');
+    }
     await supabase.from('checklist_items').update({ is_done: !current }).eq('id', id);
   }
 
