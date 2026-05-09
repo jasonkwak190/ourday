@@ -6,11 +6,16 @@ import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
 import { isShortCode } from '@/lib/validate';
 
 const MAX_FREE_PHOTOS = 50;
-const MAX_FILE_SIZE  = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE  = 15 * 1024 * 1024; // 15 MB (iPhone Live Photo·HEIC 여유)
 
 // 허용 확장자 + MIME 타입 화이트리스트
-const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp']);
-const ALLOWED_MIME_TYPES  = new Set(['image/jpeg', 'image/png', 'image/webp']);
+// HEIC/HEIF: iPhone 기본 포맷. 갤러리 표시는 Safari만 가능하지만 저장은 허용
+const ALLOWED_EXTENSIONS = new Set(['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif']);
+const ALLOWED_MIME_TYPES  = new Set([
+  'image/jpeg', 'image/png', 'image/webp',
+  'image/heic', 'image/heif',
+  'image/heic-sequence', 'image/heif-sequence',
+]);
 
 // Rate limit: IP당 1분에 최대 5장 업로드
 const uploadLimiter = createRateLimiter({ windowMs: 60_000, max: 5 });
@@ -44,15 +49,35 @@ export async function POST(request) {
       return NextResponse.json({ error: '유효하지 않은 이벤트 코드 형식이에요.' }, { status: 400 });
     }
 
-    // 파일 확장자 + MIME 타입 화이트리스트 검증
-    const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    if (!ALLOWED_EXTENSIONS.has(ext) || !ALLOWED_MIME_TYPES.has(file.type)) {
-      return NextResponse.json({ error: 'jpg, png, webp 파일만 업로드할 수 있어요.' }, { status: 400 });
+    // 파일 확장자 추출 — 점이 없으면 MIME에서 추론
+    const filename = String(file.name || '');
+    const dotIdx = filename.lastIndexOf('.');
+    let ext = dotIdx > 0 ? filename.slice(dotIdx + 1).toLowerCase() : '';
+    // 일부 모바일은 file.name이 'image' 처럼 확장자 없이 옴 → MIME에서 ext 추론
+    if (!ext && file.type) {
+      const mimeMap = {
+        'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp',
+        'image/heic': 'heic', 'image/heif': 'heif',
+        'image/heic-sequence': 'heic', 'image/heif-sequence': 'heif',
+      };
+      ext = mimeMap[file.type] || '';
+    }
+
+    // ext OR MIME 둘 중 하나라도 화이트리스트에 있으면 허용 (관대한 검증)
+    const extOk  = ALLOWED_EXTENSIONS.has(ext);
+    const mimeOk = ALLOWED_MIME_TYPES.has(file.type);
+    if (!extOk && !mimeOk) {
+      return NextResponse.json({
+        error: `이 형식은 지원하지 않아요 (${file.type || ext || '알수없음'}). jpg/png/webp/heic만 가능합니다.`,
+      }, { status: 400 });
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json({ error: '파일 크기는 10MB 이하여야 해요.' }, { status: 400 });
+      return NextResponse.json({ error: '파일 크기는 15MB 이하여야 해요.' }, { status: 400 });
     }
+
+    // ext가 비어있으면 fallback (Storage 경로 생성용)
+    if (!ext) ext = 'jpg';
 
     // uploader_name 길이 제한
     const safeUploaderName = uploaderName ? String(uploaderName).slice(0, 50) : null;
@@ -90,13 +115,13 @@ export async function POST(request) {
     }
 
     // ── Storage 업로드 ─────────────────────────────────────────
-    const filename = `${event.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const buffer   = Buffer.from(await file.arrayBuffer());
+    const storagePath = `${event.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const buffer      = Buffer.from(await file.arrayBuffer());
 
     const { error: uploadErr } = await supabase.storage
       .from('guest-photos')
-      .upload(filename, buffer, {
-        contentType: file.type,
+      .upload(storagePath, buffer, {
+        contentType: file.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`,
         upsert: false,
       });
 
@@ -108,11 +133,11 @@ export async function POST(request) {
     // ── guest_photos 레코드 삽입 ───────────────────────────────
     const { error: insertErr } = await supabase
       .from('guest_photos')
-      .insert({ event_id: event.id, storage_path: filename, uploader_name: safeUploaderName });
+      .insert({ event_id: event.id, storage_path: storagePath, uploader_name: safeUploaderName });
 
     if (insertErr) {
       // 롤백: 이미 업로드된 파일 삭제
-      await supabase.storage.from('guest-photos').remove([filename]);
+      await supabase.storage.from('guest-photos').remove([storagePath]);
       console.error('DB insert error:', insertErr);
       return NextResponse.json({ error: '저장에 실패했어요. 다시 시도해주세요.' }, { status: 500 });
     }

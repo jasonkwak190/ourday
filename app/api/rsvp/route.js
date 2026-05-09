@@ -82,7 +82,8 @@ export async function POST(request) {
     }
 
     const body = await request.json();
-    const { couple_id, name, side, attending, meal_count, phone, message } = body;
+    const { couple_id, name, side, attending, meal_count, phone } = body;
+    // NOTE: message 컬럼은 2026-04에 DROP됨 (방명록으로 통합) — 절대 insert/update에 포함 X
 
     if (!isUUID(couple_id)) {
       return NextResponse.json({ error: 'couple_id required (UUID)' }, { status: 400 });
@@ -97,7 +98,6 @@ export async function POST(request) {
     // 입력값 정제 (validate 유틸 + 기존 패턴 통합)
     const safeName    = nameResult.value;
     const safePhone   = phone ? String(phone).trim().slice(0, 20) : null;
-    const safeMessage = message ? String(message).trim().slice(0, 500) : null;
     const safeSide    = isOneOf(side, ['groom', 'bride']) ? side : null;
     const safeMeals   = sanitizeInt(meal_count, { min: 1, max: 20, fallback: 1 });
 
@@ -133,7 +133,6 @@ export async function POST(request) {
           attending: Boolean(attending),
           meal_count: safeMeals,
           phone: safePhone,
-          message: safeMessage,
         })
         .eq('id', existingRsvp.id)
         .select()
@@ -151,7 +150,6 @@ export async function POST(request) {
           attending: Boolean(attending),
           meal_count: safeMeals,
           phone: safePhone,
-          message: safeMessage,
         })
         .select()
         .single();
