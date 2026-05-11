@@ -11,7 +11,7 @@ import {
   CheckSquare, List, CalendarDays,
   ChevronLeft, ChevronRight, Heart, Building2,
   Calendar, Clock, HelpCircle, Edit3, Trash2,
-  FileText,
+  FileText, MessageSquare,
 } from 'lucide-react';
 
 /* ─── 상수 ───────────────────────────────────────────────────── */
@@ -526,6 +526,23 @@ export default function TimelinePage() {
     setMenuId(null);
   }
 
+  /* 체크리스트 항목을 의사결정 보드로 promote — '선택지 비교' 흐름 진입 */
+  async function promoteToDecision(item) {
+    if (!coupleId) return;
+    setMenuId(null);
+    const { data, error } = await supabase
+      .from('decisions')
+      .insert({ couple_id: coupleId, title: item.title, status: 'undiscussed' })
+      .select().single();
+    if (error) {
+      console.error('[promoteToDecision]', error.message);
+      alert('의사결정 보드 추가 실패');
+      return;
+    }
+    // 의사결정 페이지로 이동 — 사용자가 의견·후보 비교 입력 시작 가능
+    router.push('/decisions');
+  }
+
   /* ─ 오늘의 추천 (미완료 + 마감 가까운 3개) ─ */
   const todaysFocus = useMemo(() => {
     const candidates = items
@@ -863,12 +880,18 @@ export default function TimelinePage() {
 
         {isMenuOpen && (
           <div className="absolute right-0 z-10 rounded-xl shadow-lg overflow-hidden"
-            style={{ top: '100%', backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: 110 }}
+            style={{ top: '100%', backgroundColor: 'white', border: '1.5px solid var(--stone-light)', minWidth: 150 }}
             onClick={e => e.stopPropagation()}>
             <button className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium"
               style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
               onClick={() => startEdit(item)}>
               <Edit3 size={14} /> 수정
+            </button>
+            <div style={{ height: 1, backgroundColor: 'var(--beige)' }} />
+            <button className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium"
+              style={{ color: 'var(--ink)', background: 'none', border: 'none', cursor: 'pointer' }}
+              onClick={() => promoteToDecision(item)}>
+              <MessageSquare size={14} /> 선택지 비교
             </button>
             <div style={{ height: 1, backgroundColor: 'var(--beige)' }} />
             <button className="w-full flex items-center gap-2 px-4 py-3 text-sm font-medium"

@@ -271,6 +271,26 @@ export default function DecisionsPage() {
     setSaving(false);
   }
 
+  /* 결정된 항목을 체크리스트로 promote — '결정' → '실행' 단계 전환 */
+  async function promoteToChecklist(decision) {
+    if (!coupleId || !decision?.final_decision) return;
+    const title = `${decision.title} — ${decision.final_decision}`.slice(0, 200);
+    const { error } = await supabase
+      .from('checklist_items')
+      .insert({
+        couple_id: coupleId,
+        title,
+        assigned_to: 'both',
+        is_done: false,
+      });
+    if (error) {
+      console.error('[promoteToChecklist]', error.message);
+      showToast('체크리스트 추가 실패');
+      return;
+    }
+    showToast('체크리스트에 추가됐어요 ✓');
+  }
+
   async function clearFinal(decisionId) {
     await supabase.from('decisions')
       .update({ final_decision: null, status: 'discussing' }).eq('id', decisionId);
@@ -694,6 +714,21 @@ export default function DecisionsPage() {
                       </button>
                     </div>
                     <p className="text-sm" style={{ color: 'var(--ink)' }}>{d.final_decision}</p>
+                    {/* 체크리스트로 promote — 결정 → 실행 단계 전환 */}
+                    <button
+                      onClick={() => promoteToChecklist(d)}
+                      className="mt-2 text-xs font-semibold w-full py-2 rounded-xl"
+                      style={{
+                        backgroundColor: 'rgba(0,0,0,0.05)',
+                        color: 'var(--ink-2)',
+                        border: '1px dashed var(--rule-strong)',
+                        cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}
+                    >
+                      <Icon name="checklist" size={13} color="currentColor" />
+                      체크리스트로 보내기
+                    </button>
                     {confirmClearId === d.id ? (
                       <div className="mt-2 flex items-center gap-2">
                         <p className="text-xs flex-1" style={{ color: 'var(--rose)' }}>

@@ -5,7 +5,7 @@ import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import { copyToClipboard } from '@/lib/clipboard';
 import BottomNav from '@/components/BottomNav';
-import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2, MessageSquare } from 'lucide-react';
+import { Copy, Check, UserPlus, ClipboardList, UserCheck, Pencil, Trash2 } from 'lucide-react';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 
@@ -43,36 +43,21 @@ export default function GuestsPage() {
   const [rsvpCopied, setRsvpCopied] = useState(false);
   const [addingRsvpId, setAddingRsvpId] = useState(null); // RSVP → 명단 추가 중
 
-  // 방명록
-  const [guestbook, setGuestbook] = useState([]);
-  const [invitationId, setInvitationId] = useState(null);
+  // 방명록은 /invitation 페이지로 이동됨
 
   useEffect(() => {
     if (authLoading) return;
     if (!coupleId) { setLoading(false); return; }
     const load = async () => {
-      const [guestRes, budgetRes, rsvpRes, invRes] = await Promise.all([
+      const [guestRes, budgetRes, rsvpRes] = await Promise.all([
         supabase.from('guests').select('id, name, side, relation, meal_count, phone, memo, gift_amount, created_at').eq('couple_id', coupleId).order('created_at'),
         supabase.from('budget_items').select('actual_amount').eq('couple_id', coupleId),
         supabase.from('rsvp_responses').select('id, name, side, attending, meal_count, message, created_at').eq('couple_id', coupleId).order('created_at', { ascending: false }),
-        supabase.from('invitations').select('id').eq('couple_id', coupleId).maybeSingle(),
       ]);
 
       setGuests(guestRes.data || []);
       setBudgetItems(budgetRes.data || []);
       setRsvpList(rsvpRes.data || []);
-
-      const invId = invRes.data?.id || null;
-      setInvitationId(invId);
-      if (invId) {
-        supabase
-          .from('invitation_guestbook')
-          .select('id, name, message, created_at')
-          .eq('invitation_id', invId)
-          .order('created_at', { ascending: false })
-          .limit(50)
-          .then(({ data }) => setGuestbook(data || []));
-      }
 
       setLoading(false);
     };
@@ -652,65 +637,7 @@ export default function GuestsPage() {
         </>
       )}
 
-      {/* ── 방명록 섹션 (RSVP 탭 하단) ── */}
-      {tab === 'rsvp' && (
-        <div className="mt-6 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <BookOpen size={16} color="var(--rose)" />
-            <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
-              방명록
-              {guestbook.length > 0 && (
-                <span className="ml-1.5 text-xs font-medium px-1.5 py-0.5 rounded-full"
-                  style={{ backgroundColor: 'var(--rose-light)', color: 'var(--rose)' }}>
-                  {guestbook.length}
-                </span>
-              )}
-            </p>
-          </div>
-
-          {!invitationId ? (
-            <div className="card">
-              <p className="text-sm text-center py-2" style={{ color: 'var(--stone)' }}>
-                청첩장을 만들면 방명록이 생겨요
-              </p>
-              <button className="btn-outline w-full mt-2 text-sm"
-                onClick={() => { window.location.href = '/invitation'; }}>
-                청첩장 만들러 가기
-              </button>
-            </div>
-          ) : guestbook.length === 0 ? (
-            <div className="card">
-              <EmptyState
-                icon={MessageSquare}
-                title="아직 방명록 메시지가 없어요"
-                description="청첩장 링크를 받은 하객이 남기는 축하 메시지가 여기에 모여요"
-                compact
-              />
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {guestbook.map(msg => (
-                <div key={msg.id} className="card" style={{ padding: '14px 16px' }}>
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
-                      {msg.name}
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--ink-3)' }}>
-                      {new Date(msg.created_at).toLocaleDateString('ko-KR', {
-                        month: 'short', day: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                  <p className="text-sm" style={{ color: 'var(--stone)', lineHeight: 1.6 }}>
-                    "{msg.message}"
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
+      {/* 방명록은 /invitation 페이지로 이동됨 (청첩장과 의미적으로 한 흐름) */}
       {/* 청첩장은 /invitation 별도 페이지로 분리됨 (BottomNav 메인 메뉴) */}
 
       <BottomNav active="guests" />
