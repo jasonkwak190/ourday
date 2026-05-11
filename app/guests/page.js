@@ -8,7 +8,6 @@ import BottomNav from '@/components/BottomNav';
 import { Copy, Check, UserPlus, ClipboardList, UserCheck, BookOpen, Pencil, Trash2, MessageSquare } from 'lucide-react';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
-import InvitationTab from '@/components/InvitationTab';
 
 const RELATIONS = ['가족', '친척', '친구', '직장', '지인', '기타'];
 const EMPTY_FORM = { name: '', side: 'groom', relation: '친구', meal_count: 1, phone: '', memo: '' };
@@ -253,12 +252,11 @@ export default function GuestsPage() {
         </div>
       </div>
 
-      {/* 탭 — 3개 */}
+      {/* 탭 — 2개 (청첩장은 별도 메뉴로 분리됨) */}
       <div className="flex mb-4 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--beige)' }}>
         {[
           { key: 'list',   label: '명단',   icon: 'guests' },
           { key: 'rsvp',   label: `참석확인${unmappedRsvp.length > 0 ? ` (${unmappedRsvp.length})` : ''}`, icon: 'check' },
-          { key: 'invite', label: '청첩장', icon: 'invite' },
         ].map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
             className="flex-1 py-2.5 text-sm font-medium transition-all flex items-center justify-center gap-1"
@@ -676,7 +674,7 @@ export default function GuestsPage() {
                 청첩장을 만들면 방명록이 생겨요
               </p>
               <button className="btn-outline w-full mt-2 text-sm"
-                onClick={() => setTab('invite')}>
+                onClick={() => { window.location.href = '/invitation'; }}>
                 청첩장 만들러 가기
               </button>
             </div>
@@ -713,8 +711,7 @@ export default function GuestsPage() {
         </div>
       )}
 
-      {/* ── 청첩장 탭 ── */}
-      {tab === 'invite' && <InvitationTab coupleId={coupleId} />}
+      {/* 청첩장은 /invitation 별도 페이지로 분리됨 (BottomNav 메인 메뉴) */}
 
       <BottomNav active="guests" />
     </div>

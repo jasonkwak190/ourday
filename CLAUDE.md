@@ -35,11 +35,12 @@ app/
   dashboard/         # D-day · 스탯 · 진행률 · 이번달 할일
   timeline/          # 월별 탭 + 캘린더 뷰 통합 체크리스트
   budget/            # 업체 기반 예산 관리 (vendors 테이블 통합, 도넛 차트)
-  guests/            # 하객 관리 + 축의금 + 사진 갤러리 탭 + RSVP
-  decisions/         # 의사결정 보드 (신랑/신부 의견 + 최종 결정)
+  guests/            # 하객 관리 + 축의금 — 탭: 명단 / 참석확인(+방명록)
+  gallery/           # 웨딩 사진 — 하객 QR + 사진 모아보기 (별도 페이지)
+  decisions/         # 의사결정 보드 (신랑/신부 의견 + 후보 비교 + 최종 결정)
   guide/             # 정보·예절 가이드 (정적)
-  notes/             # 커플 실시간 메모 (Supabase Realtime)
-  invitation/        # 모바일 청첩장 편집
+  notes/             # 우리 노트 — 커플 실시간 메모 (Supabase Realtime)
+  invitation/        # 모바일 청첩장 편집 (메인 네비 4번째 탭, 2026-05 승격)
   privacy/           # 개인정보처리방침 (법적 필수 페이지)
   settings/          # 프로필 · 초대코드 확인 · 결혼정보 수정 · 로그아웃
   auth/callback/     # OAuth 콜백 처리 (신규/기존 유저 분기)

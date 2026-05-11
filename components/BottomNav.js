@@ -5,18 +5,19 @@ import { useRouter } from 'next/navigation';
 import Icon from '@/components/Icon';
 
 const NAV_ITEMS = [
-  { key: 'home',      label: '홈',         icon: 'home',      href: '/dashboard' },
-  { key: 'timeline',  label: '체크리스트', icon: 'checklist', href: '/timeline' },
-  { key: 'budget',    label: '예산',       icon: 'wallet',    href: '/budget' },
-  { key: 'decisions', label: '의사결정',   icon: 'chat',      href: '/decisions' },
+  { key: 'home',       label: '홈',         icon: 'home',      href: '/dashboard' },
+  { key: 'timeline',   label: '체크리스트', icon: 'checklist', href: '/timeline' },
+  { key: 'budget',     label: '예산',       icon: 'wallet',    href: '/budget' },
+  { key: 'invitation', label: '청첩장',     icon: 'invite',    href: '/invitation' },
 ];
 
 const MORE_ITEMS = [
-  { key: 'guests',   label: '하객 관리',   icon: 'guests',    href: '/guests',    desc: '하객 명단·축의금·청첩장' },
-  { key: 'gallery',  label: '웨딩 사진',   icon: 'camera',    href: '/gallery',   desc: '촬영 QR·사진 모아보기' },
-  { key: 'notes',    label: '정보 공유',   icon: 'paperclip', href: '/notes',     desc: '링크·메모 함께 모아두기' },
-  { key: 'guide',    label: '예식 가이드', icon: 'book',      href: '/guide',     desc: '폐백·청첩장·예단 정보' },
-  { key: 'settings', label: '설정',        icon: 'settings',  href: '/settings',  desc: '프로필·결혼정보 수정' },
+  { key: 'decisions', label: '의사결정',    icon: 'chat',      href: '/decisions', desc: '함께 비교하고 결정하기' },
+  { key: 'guests',    label: '하객 관리',   icon: 'guests',    href: '/guests',    desc: '명단·축의금·참석확인' },
+  { key: 'gallery',   label: '웨딩 사진',   icon: 'camera',    href: '/gallery',   desc: '촬영 QR·사진 모아보기' },
+  { key: 'notes',     label: '우리 노트',   icon: 'paperclip', href: '/notes',     desc: '채팅처럼 빠르게 메모' },
+  { key: 'guide',     label: '예식 가이드', icon: 'book',      href: '/guide',     desc: '폐백·예단·식순 정보' },
+  { key: 'settings',  label: '설정',        icon: 'settings',  href: '/settings',  desc: '프로필·결혼정보 수정' },
 ];
 
 const MORE_KEYS = MORE_ITEMS.map(i => i.key);
