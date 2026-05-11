@@ -44,7 +44,7 @@ export default function InvitationPage() {
 
   return (
     <div className="page-wrapper">
-      <div className="mb-4">
+      <div className="mb-3">
         <h1 style={{ fontFamily: 'var(--font-serif-ko)', fontWeight: 500, fontSize: 20, color: 'var(--ink)', margin: 0, letterSpacing: '-0.01em' }}>
           모바일 청첩장
         </h1>
@@ -52,6 +52,24 @@ export default function InvitationPage() {
           our wedding invitation
         </p>
       </div>
+
+      {/* 가이드 deep-link — 청첩장 문구·예절 정보로 한 번에 점프 */}
+      <a
+        href="/guide"
+        className="mb-3 flex items-center justify-between"
+        style={{
+          padding: '10px 14px',
+          borderRadius: 10,
+          backgroundColor: 'var(--paper)',
+          border: '1px solid var(--rule)',
+          textDecoration: 'none',
+          color: 'var(--ink-2)',
+          fontSize: 12.5,
+        }}
+      >
+        <span>💡 청첩장 문구·발송 시기·예절 정보</span>
+        <span style={{ color: 'var(--ink-4)', fontSize: 14 }}>→</span>
+      </a>
 
       <InvitationTab coupleId={coupleId} />
 

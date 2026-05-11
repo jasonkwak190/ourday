@@ -351,6 +351,24 @@ export default function DecisionsPage() {
         </p>
       </div>
 
+      {/* ── 첫 진입 안내 — 체크리스트와의 차이 명확화 ── */}
+      {decisionStats.total === 0 && (
+        <div className="mb-4" style={{
+          padding: '14px 16px',
+          borderRadius: 12,
+          backgroundColor: 'var(--champagne-wash)',
+          border: '1px solid var(--champagne-soft, #E8DDC4)',
+        }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--champagne-2)', margin: 0, letterSpacing: '0.04em' }}>
+            💡 의사결정 vs 체크리스트
+          </p>
+          <p style={{ fontSize: 12.5, color: 'var(--ink-2)', margin: '4px 0 0', lineHeight: 1.55 }}>
+            <strong>의사결정</strong> = <em>무엇을</em> 할지 (선택지 비교: 어느 웨딩홀? 어느 신혼여행지?)<br />
+            <strong>체크리스트</strong> = <em>언제·누가</em> 할지 (마감 있는 할 일)
+          </p>
+        </div>
+      )}
+
       {/* ── 인사이트 헤더 카드 ── */}
       {decisionStats.total > 0 && (
         <div className="card mb-4" style={{ padding: '18px 20px' }}>
