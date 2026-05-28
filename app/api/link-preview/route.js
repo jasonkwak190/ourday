@@ -5,8 +5,32 @@ import { createRateLimiter, getClientIp } from '@/lib/rate-limit';
 // IP당 1분에 최대 20건 (과도한 외부 fetch 방어)
 const previewLimiter = createRateLimiter({ windowMs: 60_000, max: 20 });
 
-// SSRF 방어: 허용할 공개 프로토콜만 허용, 내부망 주소 차단
-const BLOCKED_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/i;
+// SSRF 방어: 내부망·클라우드 메타데이터·루프백 차단
+// (169.254.169.254 = AWS/GCP 메타데이터, 0.0.0.0, IPv6 루프백 등 포함)
+const BLOCKED_HOSTS = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|0\.0\.0\.0$|0\.|\[?::1\]?$|\[?::ffff:|\[?fc|\[?fd|metadata\.|.*\.internal$)/i;
+
+function isBlockedHost(hostname) {
+  const h = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  return BLOCKED_HOSTS.test(hostname) || BLOCKED_HOSTS.test(h);
+}
+
+/* charset 감지 후 1회 디코드 — 청크 경계 멀티바이트 깨짐·EUC-KR 모지바케 방지 */
+function decodeHtml(bytes, contentTypeHeader) {
+  // 1) Content-Type 헤더의 charset
+  let charset = (contentTypeHeader || '').match(/charset=["']?([\w-]+)/i)?.[1]?.toLowerCase();
+  // 2) 없으면 첫 부분을 ascii로 훑어 <meta charset> 탐지
+  if (!charset) {
+    const head = new TextDecoder('latin1').decode(bytes.slice(0, 4096));
+    charset = head.match(/charset=["']?([\w-]+)/i)?.[1]?.toLowerCase();
+  }
+  // euc-kr 계열 정규화
+  if (charset === 'ms949' || charset === 'cp949' || charset === 'ks_c_5601-1987') charset = 'euc-kr';
+  try {
+    return new TextDecoder(charset || 'utf-8').decode(bytes);
+  } catch {
+    return new TextDecoder('utf-8').decode(bytes);
+  }
+}
 
 export async function GET(request) {
   const ip = getClientIp(request);
@@ -30,7 +54,7 @@ export async function GET(request) {
   if (!['http:', 'https:'].includes(parsed.protocol)) {
     return Response.json({ error: 'Invalid URL' }, { status: 400 });
   }
-  if (BLOCKED_HOSTS.test(parsed.hostname)) {
+  if (isBlockedHost(parsed.hostname)) {
     return Response.json({ error: 'Invalid URL' }, { status: 400 });
   }
 
@@ -52,16 +76,30 @@ export async function GET(request) {
 
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-    // 최대 200KB만 읽어서 OG 태그 파싱 (이미지 등 불필요한 바이트 방지)
+    // 리다이렉트 후 최종 목적지가 내부망으로 바뀌었는지 재검증 (SSRF redirect bypass 방어)
+    try {
+      const finalHost = new URL(res.url).hostname;
+      if (isBlockedHost(finalHost)) {
+        return Response.json({ error: 'Invalid URL' }, { status: 400 });
+      }
+    } catch { /* res.url 파싱 실패 시 무시 */ }
+
+    // 최대 200KB만 바이트로 모은 뒤, charset 감지하여 한 번에 디코드
+    // (청크 경계에서 한글 멀티바이트가 쪼개져 깨지는 문제 + EUC-KR 모지바케 방지)
     const reader = res.body.getReader();
-    let html = '';
+    const chunks = [];
+    let total = 0;
     let done = false;
-    while (!done && html.length < 200_000) {
+    while (!done && total < 200_000) {
       const { value, done: d } = await reader.read();
       done = d;
-      if (value) html += new TextDecoder().decode(value);
+      if (value) { chunks.push(value); total += value.length; }
     }
     reader.cancel().catch(() => {});
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const c of chunks) { bytes.set(c, offset); offset += c.length; }
+    const html = decodeHtml(bytes, res.headers.get('content-type'));
 
     // OG 태그 추출 헬퍼
     function getOg(prop) {
@@ -77,11 +115,9 @@ export async function GET(request) {
     }
 
     function getMeta(name) {
-      const re = new RegExp(
-        `<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`,
-        'i'
-      );
-      return html.match(re)?.[1]?.trim() || null;
+      const re1 = new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["']`, 'i');
+      const re2 = new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+name=["']${name}["']`, 'i');
+      return (html.match(re1) || html.match(re2))?.[1]?.trim() || null;
     }
 
     const titleMatch = html.match(/<title[^>]*>([^<]{1,200})<\/title>/i);
@@ -105,12 +141,15 @@ export async function GET(request) {
       `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
 
     return Response.json({
-      title:       getOg('title')       || pageTitle,
-      description: getOg('description') || getMeta('description'),
-      image:       toAbsUrl(getOg('image')),
+      title:       getOg('title')       || getMeta('twitter:title') || pageTitle,
+      description: getOg('description') || getMeta('twitter:description') || getMeta('description'),
+      image:       toAbsUrl(getOg('image') || getMeta('twitter:image')),
       site_name:   getOg('site_name')   || domain,
       favicon,
       domain,
+    }, {
+      // CDN 캐시 — 같은 링크 재요청 시 외부 fetch 절감 (1시간)
+      headers: { 'Cache-Control': 's-maxage=3600, stale-while-revalidate=86400' },
     });
   } catch {
     return Response.json({ error: 'Failed to fetch preview' }, { status: 500 });

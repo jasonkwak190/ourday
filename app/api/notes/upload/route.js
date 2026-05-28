@@ -51,17 +51,28 @@ export async function POST(request) {
       ext = mimeMap[file.type] || '';
     }
 
-    const extOk = ALLOWED_EXTENSIONS.has(ext);
-    const mimeOk = ALLOWED_MIME_TYPES.has(file.type);
-    if (!extOk && !mimeOk) {
+    // 확장자는 반드시 화이트리스트에 있어야 함 (public 버킷이라 위장 파일 stored-XSS 방어)
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
       return NextResponse.json({
         error: `이 형식은 지원하지 않아요 (${file.type || ext || '알수없음'}). jpg/png/webp/heic만 가능합니다.`,
+      }, { status: 400 });
+    }
+    // MIME이 명시됐다면 그것도 이미지 화이트리스트여야 함 (text/html 등 위장 차단)
+    if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({
+        error: `이 형식은 지원하지 않아요 (${file.type}). 이미지 파일만 가능합니다.`,
       }, { status: 400 });
     }
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: '파일 크기는 15MB 이하여야 해요.' }, { status: 400 });
     }
-    if (!ext) ext = 'jpg';
+
+    // contentType은 클라이언트 값을 신뢰하지 않고 검증된 확장자에서 직접 도출
+    const EXT_TO_MIME = {
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+      webp: 'image/webp', heic: 'image/heic', heif: 'image/heif',
+    };
+    const safeContentType = EXT_TO_MIME[ext] || 'image/jpeg';
 
     // ── Storage 업로드 (service role) ──
     const supabase = serviceClient();
@@ -71,7 +82,7 @@ export async function POST(request) {
     const { error: uploadErr } = await supabase.storage
       .from('note-images')
       .upload(storagePath, buffer, {
-        contentType: file.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+        contentType: safeContentType,
         upsert: false,
       });
 
@@ -86,6 +97,40 @@ export async function POST(request) {
     return NextResponse.json({ success: true, url: pub.publicUrl, path: storagePath });
   } catch (err) {
     console.error('[notes/upload] error:', err);
+    return NextResponse.json({ error: '서버 오류가 발생했어요.' }, { status: 500 });
+  }
+}
+
+// DELETE /api/notes/upload?url=... — 노트 삭제 시 Storage 사진 정리 (orphan 방지)
+export async function DELETE(request) {
+  try {
+    const authClient = await createSupabaseServerClient();
+    const { data: { session } } = await authClient.auth.getSession();
+    if (!session) return NextResponse.json({ error: '로그인이 필요해요.' }, { status: 401 });
+
+    const { data: userData } = await authClient
+      .from('users').select('couple_id').eq('id', session.user.id).single();
+    if (!userData?.couple_id) return NextResponse.json({ error: '커플 연동이 필요해요.' }, { status: 403 });
+
+    const { searchParams } = new URL(request.url);
+    const url = searchParams.get('url');
+    if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
+
+    // public URL → storage 경로 추출 (.../note-images/{path})
+    const marker = '/note-images/';
+    const idx = url.indexOf(marker);
+    if (idx === -1) return NextResponse.json({ error: 'invalid url' }, { status: 400 });
+    const path = decodeURIComponent(url.slice(idx + marker.length).split('?')[0]);
+
+    // 소유권 확인 — 경로는 ${coupleId}/... 형태. 본인 커플 사진만 삭제 가능
+    if (!path.startsWith(`${userData.couple_id}/`)) {
+      return NextResponse.json({ error: 'forbidden' }, { status: 403 });
+    }
+
+    await serviceClient().storage.from('note-images').remove([path]);
+    return NextResponse.json({ success: true });
+  } catch (err) {
+    console.error('[notes/upload DELETE] error:', err);
     return NextResponse.json({ error: '서버 오류가 발생했어요.' }, { status: 500 });
   }
 }

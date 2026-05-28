@@ -397,7 +397,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <BottomNav active="home" />
+      <BottomNav active="settings" />
     </div>
   );
 }

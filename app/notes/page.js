@@ -16,8 +16,12 @@ function extractFirstUrl(text) {
   if (!text) return null;
   const m = text.match(URL_RE);
   if (!m) return null;
+  let url = m[0];
   // 끝에 붙은 문장부호 제거 (예: "...com)." → "...com")
-  return m[0].replace(/[.,)\]}>!?]+$/, '');
+  // 단, URL 안에 여는 괄호가 있으면 닫는 괄호는 URL의 일부로 보존 (위키백과 등)
+  url = url.replace(/[.,!?]+$/, '');
+  if (!url.includes('(')) url = url.replace(/[)\]}>]+$/, '');
+  return url;
 }
 
 /* ─── 날짜 포맷 ─────────────────────────────────────────────── */
@@ -167,11 +171,16 @@ export default function NotesPage() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'couple_notes', filter: `couple_id=eq.${coupleId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            const isNew = !notes.find(n => n.id === payload.new.id);
-            setNotes(prev => prev.find(n => n.id === payload.new.id) ? prev : [...prev, payload.new]);
-            // 상대방 메시지 + 사용자가 맨 아래 근처일 때만 자동 스크롤
+            // 중복 여부를 functional update 안에서 판정 (stale closure 방지)
+            let wasNew = false;
+            setNotes(prev => {
+              if (prev.find(n => n.id === payload.new.id)) return prev;
+              wasNew = true;
+              return [...prev, payload.new];
+            });
+            // 상대방의 새 메시지 + 사용자가 맨 아래 근처일 때만 자동 스크롤
             // (스크롤 위로 올려 과거 메시지 읽는 중이면 방해 안 함)
-            if (isNew && payload.new.user_id !== myUserId && isNearBottom()) {
+            if (wasNew && payload.new.user_id !== myUserId && isNearBottom()) {
               setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 100);
             }
           }
@@ -185,8 +194,14 @@ export default function NotesPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [coupleId, myUserId]);
 
+  // 언마운트/미리보기 교체 시 object URL 해제 (메모리 누수 방지)
+  useEffect(() => {
+    return () => { if (imagePreview) URL.revokeObjectURL(imagePreview); };
+  }, [imagePreview]);
+
   function pickImage(file) {
     if (!file || !file.type.startsWith('image/')) return;
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
   }
@@ -256,9 +271,14 @@ export default function NotesPage() {
   }
 
   async function handleDelete(id) {
+    const note = notes.find(n => n.id === id);
     await supabase.from('couple_notes').delete().eq('id', id);
     setNotes(prev => prev.filter(n => n.id !== id));
     setDeleteId(null);
+    // 첨부 사진이 있으면 Storage에서도 정리 (orphan 방지) — 실패해도 무시
+    if (note?.image_url) {
+      fetch(`/api/notes/upload?url=${encodeURIComponent(note.image_url)}`, { method: 'DELETE' }).catch(() => {});
+    }
   }
 
   function startEdit(note) {
