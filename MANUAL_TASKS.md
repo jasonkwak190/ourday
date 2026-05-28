@@ -7,6 +7,19 @@
 
 ## 🔴 CRITICAL — 출시 전 필수
 
+### MT-017 · couple_notes.image_url 컬럼 추가 ⭐ 10초 (우리 노트 사진 업로드)
+**상태**: 미완료 — 이 SQL을 실행해야 우리 노트 사진 첨부가 동작함
+**준비됨**: `note-images` Storage 버킷(public) 생성 완료, `/api/notes/upload` 라우트·UI 구현 완료
+
+**Supabase Dashboard → SQL Editor에서 실행:**
+```sql
+alter table couple_notes add column if not exists image_url text;
+```
+- 컬럼 없으면 사진 전송 시 "DB 컬럼 추가 필요" 알림 뜨고 텍스트만 저장됨 (graceful degrade)
+- 컬럼 추가 후 즉시 사진 업로드·표시 동작 (재배포 불필요)
+
+---
+
 ### MT-007 · rsvp_responses.message 컬럼 DROP ⭐ 1분
 **상태**: 미완료  
 **이유**: RSVP 폼에서 message 필드 제거됨, 방명록으로 통합. 컬럼은 항상 NULL이고 앱 코드에서 미사용.
