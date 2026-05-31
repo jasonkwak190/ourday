@@ -300,7 +300,16 @@ export default function NotesPage() {
   });
 
   return (
-    <div className="page-wrapper" style={{ paddingBottom: 0 }}>
+    <div className="page-wrapper" style={{
+      // 채팅 UX — 입력창을 늘 맨 아래에 두기 위한 flex column 레이아웃
+      // 100dvh: 모바일 키보드 열릴 때 자동 축소 (정적 vh보다 정확)
+      height: '100dvh',
+      minHeight: 0,
+      paddingTop: 24,
+      paddingBottom: 'calc(88px + env(safe-area-inset-bottom))', // BottomNav 자리 확보
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
       {/* 헤더 */}
       <div className="flex items-center justify-between mb-3">
         <div>
@@ -355,8 +364,8 @@ export default function NotesPage() {
         </span>
       </div>
 
-      {/* 노트 목록 */}
-      <div style={{ overflowY: 'auto', maxHeight: 'calc(100dvh - 340px)', paddingBottom: 8 }}>
+      {/* 노트 목록 — flex:1로 가용 공간 자동 차지, 내부에서 스크롤 */}
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: 8 }}>
         {filtered.length === 0 ? (
           <EmptyState
             icon={StickyNote}
@@ -415,8 +424,14 @@ export default function NotesPage() {
         </div>
       )}
 
-      {/* 입력창 */}
-      <div className="card" style={{ borderRadius: 20, marginBottom: 'calc(80px + env(safe-area-inset-bottom))', padding: '12px 16px' }}>
+      {/* 입력창 — flex 컨테이너 맨 아래. 자동 확장돼도 바닥 위치는 고정.
+          (이전: marginBottom으로 카드가 위로 자라 리스트를 밀어내던 문제 수정) */}
+      <div className="card" style={{
+        borderRadius: 20,
+        padding: '12px 16px',
+        flexShrink: 0,
+        marginTop: 8,
+      }}>
         {/* 첨부 사진 미리보기 */}
         {imagePreview && (
           <div className="mb-2" style={{ position: 'relative', display: 'inline-block' }}>
