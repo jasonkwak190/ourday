@@ -716,7 +716,7 @@ export default function DashboardPage() {
         <button
           className="card mb-4 w-full text-left"
           style={{ cursor: 'pointer' }}
-          onClick={() => router.push('/guests')}
+          onClick={() => router.push('/invitation')}
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">

@@ -41,12 +41,17 @@ export async function POST(request) {
       return NextResponse.json({ error: '권한이 없어요.' }, { status: 403 });
     }
 
-    const ext   = file.name.split('.').pop()?.toLowerCase() || '';
-    const mimeOk = ['image/jpeg','image/png','image/webp'].includes(file.type)
-                || file.type === '' || file.type.includes('heic');
-
-    if (!ALLOWED_EXTENSIONS.has(ext) || !mimeOk) {
-      return NextResponse.json({ error: 'jpg, png, webp 파일만 업로드할 수 있어요.' }, { status: 400 });
+    // 확장자 필수 화이트리스트 (public 버킷이라 위장 파일 stored-XSS 방어)
+    const filename0 = String(file.name || '');
+    const dotIdx = filename0.lastIndexOf('.');
+    const ext = dotIdx > 0 ? filename0.slice(dotIdx + 1).toLowerCase() : '';
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return NextResponse.json({ error: 'jpg, png, webp, heic 파일만 업로드할 수 있어요.' }, { status: 400 });
+    }
+    // MIME이 명시됐다면 그것도 이미지 화이트리스트여야 함
+    const ALLOWED_MIME = new Set(['image/jpeg','image/png','image/webp','image/heic','image/heif']);
+    if (file.type && !ALLOWED_MIME.has(file.type)) {
+      return NextResponse.json({ error: `이 형식은 지원하지 않아요 (${file.type}).` }, { status: 400 });
     }
     if (file.size > MAX_SIZE) {
       return NextResponse.json({ error: '파일 크기는 10MB 이하여야 해요.' }, { status: 400 });
@@ -54,6 +59,9 @@ export async function POST(request) {
 
     const supabase = serviceClient();
     const realExt  = ext === 'heic' ? 'jpg' : ext;
+    // contentType은 클라 값 불신 — 검증된 확장자에서 직접 도출
+    const EXT_TO_MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/jpeg' };
+    const safeContentType = EXT_TO_MIME[ext] || 'image/jpeg';
     // 파일명 충돌 방지: 같은 ms에 여러 요청 → Date.now() 같은 값 → upsert:false면 실패
     // → 16바이트 랜덤 suffix로 고유성 보장
     const rnd = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -63,7 +71,7 @@ export async function POST(request) {
     const { error: uploadErr } = await supabase.storage
       .from(BUCKET)
       .upload(filename, buffer, {
-        contentType: ext === 'heic' ? 'image/jpeg' : file.type,
+        contentType: safeContentType,
         upsert: false,
       });
 

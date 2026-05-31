@@ -111,6 +111,7 @@ function useLinkPreview(url) {
 export default function NotesPage() {
   const bottomRef = useRef(null);
   const inputRef  = useRef(null);
+  const scrollerRef = useRef(null); // 노트 리스트 스크롤 컨테이너
 
   const { coupleId, userData, userId: myUserId, loading: authLoading } = useCouple('couple_id, role, id');
   const myRole = userData?.role ?? null;
@@ -160,11 +161,12 @@ export default function NotesPage() {
   useEffect(() => {
     if (!coupleId) return;
 
-    // 사용자가 맨 아래 근처(200px 이내)에 있는지
+    // 사용자가 맨 아래 근처(200px 이내)에 있는지 — 내부 스크롤 컨테이너 기준
+    // (page-wrapper가 flex column이라 window 스크롤이 아닌 scrollerRef 내부 스크롤)
     const isNearBottom = () => {
-      if (!bottomRef.current) return true;
-      const rect = bottomRef.current.getBoundingClientRect();
-      return rect.top - window.innerHeight < 200;
+      const el = scrollerRef.current;
+      if (!el) return true;
+      return el.scrollHeight - el.scrollTop - el.clientHeight < 200;
     };
 
     const channel = supabase.channel(`notes-${coupleId}`)
@@ -212,25 +214,31 @@ export default function NotesPage() {
   }
 
   async function handleSend() {
+    if (sending) return; // 중복 전송 가드 (Enter 연타 등)
     const text = content.trim();
     if ((!text && !imageFile) || !coupleId || !myRole) return;
     setSending(true);
 
-    // 1) 사진 있으면 먼저 업로드
+    // 1) 사진 있으면 먼저 업로드 (30초 타임아웃)
     let imageUrl = null;
     if (imageFile) {
       setUploading(true);
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 30_000);
       try {
         const fd = new FormData();
         fd.append('file', imageFile);
-        const res = await fetch('/api/notes/upload', { method: 'POST', body: fd });
+        const res = await fetch('/api/notes/upload', { method: 'POST', body: fd, signal: ctrl.signal });
         const out = await res.json();
         if (!res.ok) throw new Error(out.error || '사진 업로드 실패');
         imageUrl = out.url;
       } catch (e) {
-        alert(e.message || '사진 업로드에 실패했어요.');
+        const msg = e.name === 'AbortError' ? '네트워크가 느려요. 다시 시도해주세요.' : (e.message || '사진 업로드에 실패했어요.');
+        alert(msg);
         setUploading(false); setSending(false);
         return;
+      } finally {
+        clearTimeout(timer);
       }
       setUploading(false);
     }
@@ -356,7 +364,7 @@ export default function NotesPage() {
         }}>
           <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isGroom ? 'var(--champagne)' : 'var(--rose-ed)', display: 'inline-block' }} />
           <span style={{ fontSize: 12, fontWeight: 600, color: isGroom ? 'var(--champagne-2)' : 'var(--rose-ed)' }}>
-            {isGroom ? '신랑' : '신부'}으로 작성 중
+            {isGroom ? '신랑으로' : '신부로'} 작성 중
           </span>
         </div>
         <span className="tabular-nums" style={{ fontSize: 12, color: 'var(--ink-3)', fontWeight: 500 }}>
@@ -365,7 +373,7 @@ export default function NotesPage() {
       </div>
 
       {/* 노트 목록 — flex:1로 가용 공간 자동 차지, 내부에서 스크롤 */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: 8 }}>
+      <div ref={scrollerRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', paddingBottom: 8 }}>
         {filtered.length === 0 ? (
           <EmptyState
             icon={StickyNote}

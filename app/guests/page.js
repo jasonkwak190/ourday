@@ -52,7 +52,8 @@ export default function GuestsPage() {
       const [guestRes, budgetRes, rsvpRes] = await Promise.all([
         supabase.from('guests').select('id, name, side, relation, meal_count, phone, memo, gift_amount, created_at').eq('couple_id', coupleId).order('created_at'),
         supabase.from('budget_items').select('actual_amount').eq('couple_id', coupleId),
-        supabase.from('rsvp_responses').select('id, name, side, attending, meal_count, message, created_at').eq('couple_id', coupleId).order('created_at', { ascending: false }),
+        // message 컬럼은 DROP 예정(MT-007) — 선택하지 않음
+        supabase.from('rsvp_responses').select('id, name, side, attending, meal_count, created_at').eq('couple_id', coupleId).order('created_at', { ascending: false }),
       ]);
 
       setGuests(guestRes.data || []);
@@ -623,7 +624,6 @@ export default function GuestsPage() {
                           </span>
                         </div>
                         {r.phone && <p className="text-xs mt-0.5" style={{ color: 'var(--stone)' }}>{r.phone}</p>}
-                        {r.message && <p className="text-xs mt-1 italic" style={{ color: 'var(--stone)' }}>"{r.message}"</p>}
                         <p className="text-xs mt-0.5" style={{ color: 'var(--ink-3)' }}>
                           {new Date(r.created_at).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </p>

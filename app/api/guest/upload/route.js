@@ -63,21 +63,28 @@ export async function POST(request) {
       ext = mimeMap[file.type] || '';
     }
 
-    // ext OR MIME 둘 중 하나라도 화이트리스트에 있으면 허용 (관대한 검증)
-    const extOk  = ALLOWED_EXTENSIONS.has(ext);
-    const mimeOk = ALLOWED_MIME_TYPES.has(file.type);
-    if (!extOk && !mimeOk) {
+    // 확장자는 반드시 화이트리스트에 있어야 함 (위장 파일 stored-XSS 방어)
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
       return NextResponse.json({
         error: `이 형식은 지원하지 않아요 (${file.type || ext || '알수없음'}). jpg/png/webp/heic만 가능합니다.`,
       }, { status: 400 });
     }
-
+    // MIME이 명시됐다면 그것도 이미지 화이트리스트여야 함
+    if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({
+        error: `이 형식은 지원하지 않아요 (${file.type}). 이미지 파일만 가능합니다.`,
+      }, { status: 400 });
+    }
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json({ error: '파일 크기는 15MB 이하여야 해요.' }, { status: 400 });
     }
 
-    // ext가 비어있으면 fallback (Storage 경로 생성용)
-    if (!ext) ext = 'jpg';
+    // contentType은 클라이언트 값을 신뢰하지 않고 검증된 확장자에서 직접 도출
+    const EXT_TO_MIME = {
+      jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png',
+      webp: 'image/webp', heic: 'image/heic', heif: 'image/heif',
+    };
+    const safeContentType = EXT_TO_MIME[ext] || 'image/jpeg';
 
     // uploader_name 길이 제한
     const safeUploaderName = uploaderName ? String(uploaderName).slice(0, 50) : null;
@@ -121,7 +128,7 @@ export async function POST(request) {
     const { error: uploadErr } = await supabase.storage
       .from('guest-photos')
       .upload(storagePath, buffer, {
-        contentType: file.type || `image/${ext === 'jpg' ? 'jpeg' : ext}`,
+        contentType: safeContentType,
         upsert: false,
       });
 

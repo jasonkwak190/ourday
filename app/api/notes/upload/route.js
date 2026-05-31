@@ -116,11 +116,24 @@ export async function DELETE(request) {
     const url = searchParams.get('url');
     if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
 
-    // public URL → storage 경로 추출 (.../note-images/{path})
+    // URL 파싱 + 호스트가 우리 Supabase 프로젝트인지 확인 (외부 URL 차단)
+    let parsed;
+    try { parsed = new URL(url); } catch { return NextResponse.json({ error: 'invalid url' }, { status: 400 }); }
+    const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).host;
+    if (parsed.host !== supabaseHost) {
+      return NextResponse.json({ error: 'forbidden host' }, { status: 403 });
+    }
+
+    // 경로 추출 — pathname에서 /storage/v1/object/public/note-images/ 이후를 사용
     const marker = '/note-images/';
-    const idx = url.indexOf(marker);
+    const idx = parsed.pathname.indexOf(marker);
     if (idx === -1) return NextResponse.json({ error: 'invalid url' }, { status: 400 });
-    const path = decodeURIComponent(url.slice(idx + marker.length).split('?')[0]);
+    const path = decodeURIComponent(parsed.pathname.slice(idx + marker.length));
+
+    // 경로 정규화 공격 차단 (../, .\, 빈 세그먼트 등) — Storage 드라이버에 따라 통과 가능
+    if (path.includes('..') || path.includes('\\') || path.includes('//')) {
+      return NextResponse.json({ error: 'invalid path' }, { status: 400 });
+    }
 
     // 소유권 확인 — 경로는 ${coupleId}/... 형태. 본인 커플 사진만 삭제 가능
     if (!path.startsWith(`${userData.couple_id}/`)) {

@@ -42,17 +42,24 @@ export async function POST(request) {
       return NextResponse.json({ error: '권한이 없어요.' }, { status: 403 });
     }
 
-    const ext = file.name.split('.').pop()?.toLowerCase() || '';
-    // HEIC는 서버에서 JPEG로 처리 (브라우저 MIME 타입이 다를 수 있음)
-    const mimeOk = ALLOWED_MIME_TYPES.has(file.type) || file.type === '' || file.type.includes('heic');
-
-    if (!ALLOWED_EXTENSIONS.has(ext) || !mimeOk) {
-      return NextResponse.json({ error: 'jpg, png, webp 파일만 업로드할 수 있어요.' }, { status: 400 });
+    // 확장자 필수 화이트리스트 검증 (public 버킷이라 위장 파일 stored-XSS 방어)
+    const filename0 = String(file.name || '');
+    const dotIdx = filename0.lastIndexOf('.');
+    const ext = dotIdx > 0 ? filename0.slice(dotIdx + 1).toLowerCase() : '';
+    if (!ALLOWED_EXTENSIONS.has(ext)) {
+      return NextResponse.json({ error: 'jpg, png, webp, heic 파일만 업로드할 수 있어요.' }, { status: 400 });
     }
-
+    // MIME이 명시됐다면 그것도 이미지 화이트리스트여야 함 (text/html 등 위장 차단)
+    if (file.type && !ALLOWED_MIME_TYPES.has(file.type)) {
+      return NextResponse.json({ error: `이 형식은 지원하지 않아요 (${file.type}).` }, { status: 400 });
+    }
     if (file.size > MAX_SIZE) {
       return NextResponse.json({ error: '파일 크기는 10MB 이하여야 해요.' }, { status: 400 });
     }
+
+    // contentType은 클라이언트 값 불신 — 검증된 확장자에서 직접 도출
+    const EXT_TO_MIME = { jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', heic: 'image/jpeg' };
+    const safeContentType = EXT_TO_MIME[ext] || 'image/jpeg';
 
     const supabase = serviceClient();
 
@@ -73,7 +80,7 @@ export async function POST(request) {
     const { error: uploadErr } = await supabase.storage
       .from(BUCKET)
       .upload(filename, buffer, {
-        contentType: ext === 'heic' ? 'image/jpeg' : file.type,
+        contentType: safeContentType,
         upsert: true,
       });
 

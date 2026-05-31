@@ -7,8 +7,9 @@
 
 ## 🔴 CRITICAL — 출시 전 필수
 
-### MT-017 · couple_notes.image_url 컬럼 추가 ⭐ 10초 (우리 노트 사진 업로드)
-**상태**: 미완료 — 이 SQL을 실행해야 우리 노트 사진 첨부가 동작함
+### MT-017 · couple_notes.image_url 컬럼 추가 ✅ 완료 (2026-05-11)
+**상태**: 완료 — SQL 실행됨, 사진 첨부 즉시 동작
+~~다음 SQL을 실행해야 우리 노트 사진 첨부가 동작함~~
 **준비됨**: `note-images` Storage 버킷(public) 생성 완료, `/api/notes/upload` 라우트·UI 구현 완료
 
 **Supabase Dashboard → SQL Editor에서 실행:**
