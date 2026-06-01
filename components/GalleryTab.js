@@ -346,11 +346,11 @@ export default function GalleryTab() {
               </p>
             </div>
             <div className="flex items-center gap-1">
-              <button onClick={() => deletePhoto(modalPhoto)} disabled={deleting === modalPhoto.id}
+              <button aria-label="사진 삭제" onClick={() => deletePhoto(modalPhoto)} disabled={deleting === modalPhoto.id}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
                 <Trash2 size={20} color={deleting === modalPhoto.id ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.7)'} />
               </button>
-              <button onClick={closeModal}
+              <button aria-label="닫기" onClick={closeModal}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
                 <X size={22} color="rgba(255,255,255,0.8)" />
               </button>
@@ -362,7 +362,7 @@ export default function GalleryTab() {
             onClick={e => e.stopPropagation()}>
             {/* 이전 버튼 */}
             {canPrev && (
-              <button onClick={goPrev}
+              <button aria-label="이전 사진" onClick={goPrev}
                 style={{
                   position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)',
                   background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',
@@ -387,7 +387,7 @@ export default function GalleryTab() {
 
             {/* 다음 버튼 */}
             {canNext && (
-              <button onClick={goNext}
+              <button aria-label="다음 사진" onClick={goNext}
                 style={{
                   position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                   background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: '50%',

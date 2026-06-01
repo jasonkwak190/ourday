@@ -132,15 +132,16 @@ function DonutChart({ vendors }) {
 }
 
 /* ─── 업체 추가/수정 폼 ─────────────────────────────────────────── */
-function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
+function VendorForm({ form, setForm, onSave, onCancel, saving, error, title, formId = 'budget-vendor' }) {
   return (
     <div className="card flex flex-col gap-3 mb-4">
       <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{title}</p>
 
       {/* 종류 */}
-      <div className="grid grid-cols-5 gap-1.5">
+      <div role="radiogroup" aria-label="업체 종류" className="grid grid-cols-5 gap-1.5">
         {VENDOR_TYPES.map(t => (
-          <button key={t.value} onClick={() => setForm(f => ({ ...f, type: t.value }))}
+          <button key={t.value} type="button" role="radio" aria-checked={form.type === t.value}
+            onClick={() => setForm(f => ({ ...f, type: t.value }))}
             className="py-2 rounded-xl text-xs font-semibold flex items-center justify-center"
             style={{
               backgroundColor: form.type === t.value ? 'var(--rose-light)' : 'var(--beige)',
@@ -167,36 +168,37 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
       />
 
       <div className="flex gap-2">
-        <input className="input-field flex-1" placeholder="담당자" value={form.contact_name}
+        <input className="input-field flex-1" aria-label="담당자" placeholder="담당자" value={form.contact_name}
           onChange={e => setForm(f => ({ ...f, contact_name: e.target.value }))} />
-        <input className="input-field flex-1" placeholder="연락처" value={form.contact_phone}
+        <input className="input-field flex-1" aria-label="연락처" placeholder="연락처" value={form.contact_phone}
           onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))} />
       </div>
 
       <div className="flex gap-2">
         <div className="flex-1">
-          <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>계약금 (만원)</p>
-          <input className="input-field" type="number" placeholder="0" value={form.deposit}
+          <label htmlFor={`${formId}-deposit`} className="text-xs mb-1 block" style={{ color: 'var(--stone)' }}>계약금 (만원)</label>
+          <input id={`${formId}-deposit`} className="input-field" type="number" placeholder="0" value={form.deposit}
             onChange={e => setForm(f => ({ ...f, deposit: e.target.value }))} />
         </div>
         <div className="flex-1">
-          <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>잔금 (만원)</p>
-          <input className="input-field" type="number" placeholder="0" value={form.balance}
+          <label htmlFor={`${formId}-balance`} className="text-xs mb-1 block" style={{ color: 'var(--stone)' }}>잔금 (만원)</label>
+          <input id={`${formId}-balance`} className="input-field" type="number" placeholder="0" value={form.balance}
             onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} />
         </div>
       </div>
 
       <div>
-        <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>잔금 납부일</p>
-        <input className="input-field" type="date" value={form.balance_due}
+        <label htmlFor={`${formId}-balance-due`} className="text-xs mb-1 block" style={{ color: 'var(--stone)' }}>잔금 납부일</label>
+        <input id={`${formId}-balance-due`} className="input-field" type="date" value={form.balance_due}
           onChange={e => setForm(f => ({ ...f, balance_due: e.target.value }))} />
       </div>
 
       <div>
-        <p className="text-xs mb-2" style={{ color: 'var(--stone)' }}>계약 상태</p>
-        <div className="flex flex-wrap gap-2">
+        <p id={`${formId}-status-label`} className="text-xs mb-2" style={{ color: 'var(--stone)' }}>계약 상태</p>
+        <div role="radiogroup" aria-labelledby={`${formId}-status-label`} className="flex flex-wrap gap-2">
           {CONTRACT_STATUS.map(s => (
-            <button key={s.value} onClick={() => setForm(f => ({ ...f, contract_status: s.value }))}
+            <button key={s.value} type="button" role="radio" aria-checked={form.contract_status === s.value}
+              onClick={() => setForm(f => ({ ...f, contract_status: s.value }))}
               className="px-3 py-1.5 rounded-xl text-xs font-semibold"
               style={{
                 backgroundColor: form.contract_status === s.value ? s.bg : 'var(--beige)',
@@ -209,7 +211,7 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
         </div>
       </div>
 
-      <textarea className="input-field text-sm resize-none" rows={2} placeholder="메모 (선택)"
+      <textarea className="input-field text-sm resize-none" rows={2} aria-label="메모 (선택)" placeholder="메모 (선택)"
         value={form.memo} onChange={e => setForm(f => ({ ...f, memo: e.target.value }))} />
 
       {error && <p className="text-xs" style={{ color: 'var(--rose)' }}>{error}</p>}
@@ -757,6 +759,7 @@ export default function BudgetPage() {
             {editingBudget ? (
               <div className="flex items-center gap-1.5">
                 <input
+                  aria-label="총 예산 (만원)"
                   className="input-field text-sm py-1 px-2 tabular-nums"
                   style={{ width: 96 }} type="number" value={budgetInput}
                   onChange={e => setBudgetInput(e.target.value)}
@@ -770,7 +773,9 @@ export default function BudgetPage() {
                 <p className="text-xl font-bold tabular-nums" style={{ color: 'var(--ink)' }}>
                   {totalBudget > 0 ? `${totalBudget.toLocaleString()}만원` : '미설정'}
                 </p>
-                <button onClick={() => { setBudgetInput(String(totalBudget)); setEditingBudget(true); }}
+                <button
+                  aria-label="총 예산 수정"
+                  onClick={() => { setBudgetInput(String(totalBudget)); setEditingBudget(true); }}
                   style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                   <Edit3 size={14} strokeWidth={2} />
                 </button>
@@ -911,7 +916,8 @@ export default function BudgetPage() {
                 <VendorForm key={vendor.id} form={editForm} setForm={setEditForm}
                   onSave={handleEdit}
                   onCancel={() => { setEditingId(null); setError(''); }}
-                  saving={saving} error={error} title="업체 수정" />
+                  saving={saving} error={error} title="업체 수정"
+                  formId={`budget-vendor-edit-${vendor.id}`} />
               );
             }
             let balanceDday = null;
@@ -985,7 +991,10 @@ export default function BudgetPage() {
                     )}
                   </div>
 
-                  <button onClick={e => { e.stopPropagation(); setMenuId(menuId === vendor.id ? null : vendor.id); }}
+                  <button
+                    aria-label={`${vendor.name} 더보기`}
+                    aria-expanded={menuId === vendor.id}
+                    onClick={e => { e.stopPropagation(); setMenuId(menuId === vendor.id ? null : vendor.id); }}
                     className="flex-shrink-0 text-lg"
                     style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}>
                     ···
@@ -1060,7 +1069,8 @@ export default function BudgetPage() {
       {showForm ? (
         <VendorForm form={form} setForm={setForm} onSave={handleAdd}
           onCancel={() => { setShowForm(false); setError(''); setForm(EMPTY_FORM); }}
-          saving={saving} error={error} title="업체 추가" />
+          saving={saving} error={error} title="업체 추가"
+          formId="budget-vendor-add" />
       ) : (
         <button className="btn-outline w-full" onClick={() => setShowForm(true)}>
           + 업체 추가

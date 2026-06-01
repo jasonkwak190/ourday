@@ -142,6 +142,7 @@ function PreviewModal({ form, onClose, onSave, saving }) {
             {saving ? '저장 중...' : '저장하기'}
           </button>
           <button
+            aria-label="미리보기 닫기"
             onClick={onClose}
             style={{
               width: 36, height: 36, borderRadius: 10,
@@ -561,6 +562,7 @@ export default function InvitationTab({ coupleId }) {
             </p>
             {!section.required && (
               <button
+                aria-label={`${section.label} 섹션 제거`}
                 onClick={() => removeSection(section.key)}
                 style={{
                   width: 24, height: 24, borderRadius: 8,
@@ -591,6 +593,7 @@ export default function InvitationTab({ coupleId }) {
                   <div key={i} style={{ position: 'relative', aspectRatio: '3/4', borderRadius: 10, overflow: 'hidden' }}>
                     <SafeImage src={url} alt={`사진 ${i+1}`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     <button
+                      aria-label={`사진 ${i+1} 제거`}
                       onClick={() => removePhoto(i)}
                       style={{
                         position: 'absolute', top: 4, right: 4,
@@ -680,6 +683,7 @@ export default function InvitationTab({ coupleId }) {
                       사진 변경
                     </button>
                     <button
+                      aria-label="커버 사진 제거"
                       onClick={() => update('cover_image_url', '')}
                       style={{
                         width: 32, height: 32, borderRadius: '50%',
@@ -753,11 +757,13 @@ export default function InvitationTab({ coupleId }) {
                                : key === 'bride_name' ? accountNames.bride
                                : null;
               const isNameChanged = accountVal && form[key] !== accountVal;
+              // a11y: 입력에 연결할 안정적 id (key는 폼 필드 이름)
+              const fieldId = `invitation-field-${key}`;
 
               return (
                 <div key={key}>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-semibold" style={{ color: 'var(--toss-text-secondary)' }}>
+                    <label htmlFor={fieldId} className="text-xs font-semibold" style={{ color: 'var(--toss-text-secondary)' }}>
                       {label}
                     </label>
                     {accountVal && (
@@ -856,6 +862,7 @@ export default function InvitationTab({ coupleId }) {
                     />
                   ) : type === 'textarea' ? (
                     <textarea
+                      id={fieldId}
                       value={form[key]}
                       maxLength={2000}
                       onChange={e => {
@@ -875,6 +882,7 @@ export default function InvitationTab({ coupleId }) {
                     />
                   ) : (
                     <input
+                      id={fieldId}
                       type={type || 'text'}
                       value={form[key]}
                       onChange={e => update(key, e.target.value)}

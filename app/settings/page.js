@@ -354,10 +354,11 @@ export default function SettingsPage() {
               ? '탈퇴하면 커플 연동이 해제되며, 두 분이 함께 쌓은 모든 준비 기록이 영구 삭제됩니다. (내 로그인 정보 + 공유 데이터)'
               : '작성한 체크리스트, 예산, 하객 명단 등 모든 데이터가 삭제됩니다.'}
           </p>
-          <label className="text-xs font-semibold block mb-1.5" style={{ color: 'var(--toss-text-secondary)' }}>
+          <label htmlFor="settings-delete-confirm" className="text-xs font-semibold block mb-1.5" style={{ color: 'var(--toss-text-secondary)' }}>
             확인을 위해 <strong style={{ color: 'var(--toss-red)' }}>탈퇴합니다</strong> 를 입력해주세요
           </label>
           <input
+            id="settings-delete-confirm"
             className="input-field"
             type="text"
             placeholder="탈퇴합니다"

@@ -341,7 +341,7 @@ export default function NotesPage() {
         <div className="mb-3 flex items-center gap-2 px-4 rounded-2xl"
           style={{ backgroundColor: 'var(--toss-bg)', border: '1.5px solid var(--toss-border)', height: 44 }}>
           <Search size={16} color="var(--toss-text-tertiary)" />
-          <input autoFocus type="text" placeholder="링크·메모 검색..." value={search}
+          <input aria-label="링크 또는 메모 검색" autoFocus type="text" placeholder="링크·메모 검색..." value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ flex: 1, border: 'none', background: 'none', outline: 'none',
               fontSize: 14, color: 'var(--toss-text-primary)', fontFamily: 'inherit' }} />
@@ -467,6 +467,7 @@ export default function NotesPage() {
             <ImagePlus size={18} />
           </button>
           <textarea
+            aria-label="메모 또는 링크 입력"
             ref={inputRef}
             rows={1}
             maxLength={1000}
@@ -550,7 +551,7 @@ function NoteItem({ note, isMe, isGroom, editId, editContent, deleteId,
       }}>
         {isEditing ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 200 }}>
-            <textarea autoFocus value={editContent} maxLength={1000}
+            <textarea aria-label="메모 수정" autoFocus value={editContent} maxLength={1000}
               onChange={e => onEditChange(e.target.value.slice(0, 1000))} rows={2}
               style={{ border: 'none', outline: 'none', resize: 'none', fontSize: 14,
                 lineHeight: 1.5, fontFamily: 'inherit', color: 'var(--toss-text-primary)', width: '100%' }} />

@@ -247,6 +247,7 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
                       {String.fromCharCode(65 + idx)}
                     </span>
                     <input
+                      aria-label={`후보 ${String.fromCharCode(65 + idx)} 이름`}
                       type="text"
                       value={c.name}
                       onChange={(e) => updateItem(c.id, { name: e.target.value })}
@@ -283,6 +284,7 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
                       boxSizing: 'border-box',
                     }}>
                       <input
+                        aria-label={`후보 ${String.fromCharCode(65 + idx)} 가격 (만원)`}
                         type="number"
                         inputMode="numeric"
                         value={c.price ?? ''}
@@ -312,6 +314,7 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
                     }}>
                       <ExternalLink size={11} style={{ color: 'var(--ink-4)', flexShrink: 0 }} />
                       <input
+                        aria-label={`후보 ${String.fromCharCode(65 + idx)} 후기 링크`}
                         type="url"
                         value={c.url || ''}
                         onChange={(e) => updateItem(c.id, { url: e.target.value })}
@@ -329,6 +332,7 @@ export default function CandidateBoard({ decisionId, candidates, myRole, onSave,
 
                   {/* 메모 */}
                   <textarea
+                    aria-label={`후보 ${String.fromCharCode(65 + idx)} 메모`}
                     value={c.note}
                     onChange={(e) => updateItem(c.id, { note: e.target.value })}
                     placeholder="위치/옵션/일정 등 메모"

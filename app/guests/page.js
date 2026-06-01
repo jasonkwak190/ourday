@@ -295,9 +295,10 @@ export default function GuestsPage() {
               if (isEditing) return (
                 <div key={guest.id} className="card flex flex-col gap-3">
                   <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>하객 수정</p>
-                  <div className="flex gap-2">
+                  <div role="radiogroup" aria-label="신랑측 또는 신부측" className="flex gap-2">
                     {['groom', 'bride'].map(s => (
-                      <button key={s} onClick={() => setEditForm(f => ({ ...f, side: s }))}
+                      <button key={s} type="button" role="radio" aria-checked={editForm.side === s}
+                        onClick={() => setEditForm(f => ({ ...f, side: s }))}
                         className="flex-1 py-2 rounded-xl text-sm font-medium"
                         style={{ backgroundColor: editForm.side === s ? 'var(--rose-light)' : 'var(--beige)',
                           color: editForm.side === s ? 'var(--rose)' : 'var(--stone)',
@@ -308,9 +309,10 @@ export default function GuestsPage() {
                   </div>
                   <input className="input-field" aria-label="하객 이름" placeholder="이름" value={editForm.name}
                     onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
-                  <div className="flex flex-wrap gap-2">
+                  <div role="radiogroup" aria-label="관계" className="flex flex-wrap gap-2">
                     {RELATIONS.map(r => (
-                      <button key={r} onClick={() => setEditForm(f => ({ ...f, relation: r }))}
+                      <button key={r} type="button" role="radio" aria-checked={editForm.relation === r}
+                        onClick={() => setEditForm(f => ({ ...f, relation: r }))}
                         className="px-3 py-1.5 rounded-xl text-xs font-medium"
                         style={{ backgroundColor: editForm.relation === r ? 'var(--rose-light)' : 'var(--beige)',
                           color: editForm.relation === r ? 'var(--rose)' : 'var(--stone)',
@@ -322,12 +324,14 @@ export default function GuestsPage() {
                   <div className="flex gap-2">
                     <div className="flex-1">
                       <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>식사 수</p>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => setEditForm(f => ({ ...f, meal_count: Math.max(1, Number(f.meal_count) - 1) }))}
+                      <div role="group" aria-label="식사 수" className="flex items-center gap-2">
+                        <button aria-label="식사 1식 감소"
+                          onClick={() => setEditForm(f => ({ ...f, meal_count: Math.max(1, Number(f.meal_count) - 1) }))}
                           className="w-8 h-8 rounded-lg text-lg font-bold flex items-center justify-center"
                           style={{ backgroundColor: 'var(--beige)', color: 'var(--ink)', border: 'none', cursor: 'pointer' }}>−</button>
-                        <span className="text-base font-semibold w-6 text-center" style={{ color: 'var(--ink)' }}>{editForm.meal_count}</span>
-                        <button onClick={() => setEditForm(f => ({ ...f, meal_count: Number(f.meal_count) + 1 }))}
+                        <span aria-live="polite" className="text-base font-semibold w-6 text-center" style={{ color: 'var(--ink)' }}>{editForm.meal_count}</span>
+                        <button aria-label="식사 1식 증가"
+                          onClick={() => setEditForm(f => ({ ...f, meal_count: Number(f.meal_count) + 1 }))}
                           className="w-8 h-8 rounded-lg text-lg font-bold flex items-center justify-center"
                           style={{ backgroundColor: 'var(--rose-light)', color: 'var(--rose)', border: 'none', cursor: 'pointer' }}>+</button>
                       </div>
@@ -383,6 +387,7 @@ export default function GuestsPage() {
                         {isGiftEdit ? (
                           <div className="flex items-center gap-1">
                             <input
+                              aria-label="축의금 (만원)"
                               className="input-field text-sm py-1 px-2 text-right tabular-nums"
                               style={{ width: 72 }}
                               type="number" placeholder="0" value={giftInput}
@@ -420,7 +425,10 @@ export default function GuestsPage() {
                       </div>
 
                       {/* 더보기 메뉴 */}
-                      <button onClick={e => { e.stopPropagation(); setMenuId(isMenuOpen ? null : guest.id); }}
+                      <button
+                        aria-label={`${guest.name} 더보기`}
+                        aria-expanded={isMenuOpen}
+                        onClick={e => { e.stopPropagation(); setMenuId(isMenuOpen ? null : guest.id); }}
                         className="text-lg" style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}>
                         ···
                       </button>
@@ -453,9 +461,10 @@ export default function GuestsPage() {
           {showForm ? (
             <div className="card flex flex-col gap-3 mb-4">
               <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>하객 추가</p>
-              <div className="flex gap-2">
+              <div role="radiogroup" aria-label="신랑측 또는 신부측" className="flex gap-2">
                 {['groom', 'bride'].map(s => (
-                  <button key={s} onClick={() => setForm(f => ({ ...f, side: s }))}
+                  <button key={s} type="button" role="radio" aria-checked={form.side === s}
+                    onClick={() => setForm(f => ({ ...f, side: s }))}
                     className="flex-1 py-2 rounded-xl text-sm font-medium"
                     style={{ backgroundColor: form.side === s ? 'var(--rose-light)' : 'var(--beige)',
                       color: form.side === s ? 'var(--rose)' : 'var(--stone)',
@@ -466,9 +475,10 @@ export default function GuestsPage() {
               </div>
               <input className="input-field" aria-label="하객 이름" placeholder="이름" value={form.name}
                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-              <div className="flex flex-wrap gap-2">
+              <div role="radiogroup" aria-label="관계" className="flex flex-wrap gap-2">
                 {RELATIONS.map(r => (
-                  <button key={r} onClick={() => setForm(f => ({ ...f, relation: r }))}
+                  <button key={r} type="button" role="radio" aria-checked={form.relation === r}
+                    onClick={() => setForm(f => ({ ...f, relation: r }))}
                     className="px-3 py-1.5 rounded-xl text-xs font-medium"
                     style={{ backgroundColor: form.relation === r ? 'var(--rose-light)' : 'var(--beige)',
                       color: form.relation === r ? 'var(--rose)' : 'var(--stone)',
@@ -480,12 +490,14 @@ export default function GuestsPage() {
               <div className="flex gap-2 items-end">
                 <div className="flex-1">
                   <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>식사 수</p>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => setForm(f => ({ ...f, meal_count: Math.max(1, Number(f.meal_count) - 1) }))}
+                  <div role="group" aria-label="식사 수" className="flex items-center gap-2">
+                    <button aria-label="식사 1식 감소"
+                      onClick={() => setForm(f => ({ ...f, meal_count: Math.max(1, Number(f.meal_count) - 1) }))}
                       className="w-8 h-8 rounded-lg text-lg font-bold flex items-center justify-center"
                       style={{ backgroundColor: 'var(--beige)', color: 'var(--ink)', border: 'none', cursor: 'pointer' }}>−</button>
-                    <span className="text-base font-semibold w-6 text-center" style={{ color: 'var(--ink)' }}>{form.meal_count}</span>
-                    <button onClick={() => setForm(f => ({ ...f, meal_count: Number(f.meal_count) + 1 }))}
+                    <span aria-live="polite" className="text-base font-semibold w-6 text-center" style={{ color: 'var(--ink)' }}>{form.meal_count}</span>
+                    <button aria-label="식사 1식 증가"
+                      onClick={() => setForm(f => ({ ...f, meal_count: Number(f.meal_count) + 1 }))}
                       className="w-8 h-8 rounded-lg text-lg font-bold flex items-center justify-center"
                       style={{ backgroundColor: 'var(--rose-light)', color: 'var(--rose)', border: 'none', cursor: 'pointer' }}>+</button>
                   </div>

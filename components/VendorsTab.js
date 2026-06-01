@@ -43,49 +43,51 @@ function StatusTag({ value }) {
   );
 }
 
-function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
+function VendorForm({ form, setForm, onSave, onCancel, saving, error, title, formId = 'vendors-tab' }) {
   return (
     <div className="card flex flex-col gap-3">
       <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{title}</p>
-      <div className="grid grid-cols-5 gap-1.5">
+      <div role="radiogroup" aria-label="업체 종류" className="grid grid-cols-5 gap-1.5">
         {VENDOR_TYPES.map(t => (
-          <button key={t.value} onClick={() => setForm(f => ({ ...f, type: t.value }))}
+          <button key={t.value} type="button" role="radio" aria-checked={form.type === t.value}
+            onClick={() => setForm(f => ({ ...f, type: t.value }))}
             className="py-2 rounded-xl text-xs font-medium flex items-center justify-center"
             style={{ backgroundColor: form.type === t.value ? 'var(--rose-light)' : 'var(--beige)', color: form.type === t.value ? 'var(--rose)' : 'var(--stone)', border: `1.5px solid ${form.type === t.value ? 'var(--rose)' : 'transparent'}` }}>
             <span className="leading-none">{t.label}</span>
           </button>
         ))}
       </div>
-      <input className="input-field" placeholder="업체명 *" value={form.name}
+      <input className="input-field" aria-label="업체명 (필수)" placeholder="업체명 *" value={form.name}
         onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
       <div className="flex gap-2">
-        <input className="input-field flex-1" placeholder="담당자 이름" value={form.contact_name}
+        <input className="input-field flex-1" aria-label="담당자 이름" placeholder="담당자 이름" value={form.contact_name}
           onChange={e => setForm(f => ({ ...f, contact_name: e.target.value }))} />
-        <input className="input-field flex-1" placeholder="연락처" value={form.contact_phone}
+        <input className="input-field flex-1" aria-label="연락처" placeholder="연락처" value={form.contact_phone}
           onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))} />
       </div>
       <div className="flex gap-2">
         <div className="flex-1">
-          <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>계약금 (만원)</p>
-          <input className="input-field" type="number" placeholder="0" value={form.deposit}
+          <label htmlFor={`${formId}-deposit`} className="text-xs mb-1 block" style={{ color: 'var(--stone)' }}>계약금 (만원)</label>
+          <input id={`${formId}-deposit`} className="input-field" type="number" placeholder="0" value={form.deposit}
             onChange={e => setForm(f => ({ ...f, deposit: e.target.value }))} />
         </div>
         <div className="flex-1">
-          <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>잔금 (만원)</p>
-          <input className="input-field" type="number" placeholder="0" value={form.balance}
+          <label htmlFor={`${formId}-balance`} className="text-xs mb-1 block" style={{ color: 'var(--stone)' }}>잔금 (만원)</label>
+          <input id={`${formId}-balance`} className="input-field" type="number" placeholder="0" value={form.balance}
             onChange={e => setForm(f => ({ ...f, balance: e.target.value }))} />
         </div>
       </div>
       <div>
-        <p className="text-xs mb-1" style={{ color: 'var(--stone)' }}>잔금 납부일</p>
-        <input className="input-field" type="date" value={form.balance_due}
+        <label htmlFor={`${formId}-balance-due`} className="text-xs mb-1 block" style={{ color: 'var(--stone)' }}>잔금 납부일</label>
+        <input id={`${formId}-balance-due`} className="input-field" type="date" value={form.balance_due}
           onChange={e => setForm(f => ({ ...f, balance_due: e.target.value }))} />
       </div>
       <div>
-        <p className="text-xs mb-2" style={{ color: 'var(--stone)' }}>계약 상태</p>
-        <div className="flex flex-wrap gap-2">
+        <p id={`${formId}-status-label`} className="text-xs mb-2" style={{ color: 'var(--stone)' }}>계약 상태</p>
+        <div role="radiogroup" aria-labelledby={`${formId}-status-label`} className="flex flex-wrap gap-2">
           {CONTRACT_STATUS.map(s => (
-            <button key={s.value} onClick={() => setForm(f => ({ ...f, contract_status: s.value }))}
+            <button key={s.value} type="button" role="radio" aria-checked={form.contract_status === s.value}
+              onClick={() => setForm(f => ({ ...f, contract_status: s.value }))}
               className="px-3 py-1.5 rounded-xl text-xs font-medium"
               style={{ backgroundColor: form.contract_status === s.value ? s.bg : 'var(--beige)', color: form.contract_status === s.value ? s.color : 'var(--stone)', border: `1.5px solid ${form.contract_status === s.value ? s.color : 'transparent'}` }}>
               {s.label}
@@ -93,7 +95,7 @@ function VendorForm({ form, setForm, onSave, onCancel, saving, error, title }) {
           ))}
         </div>
       </div>
-      <input className="input-field" placeholder="메모 (선택)" value={form.memo}
+      <input className="input-field" aria-label="메모 (선택)" placeholder="메모 (선택)" value={form.memo}
         onChange={e => setForm(f => ({ ...f, memo: e.target.value }))} />
       {error && <p className="text-xs" style={{ color: 'var(--rose)' }}>{error}</p>}
       <div className="flex gap-2">
@@ -273,7 +275,8 @@ export default function VendorsTab({ coupleId }) {
             const typeInfo = getTypeInfo(vendor.type);
             if (editingId === vendor.id) {
               return <VendorForm key={vendor.id} form={editForm} setForm={setEditForm} onSave={handleEdit}
-                onCancel={() => { setEditingId(null); setError(''); }} saving={saving} error={error} title="업체 수정" />;
+                onCancel={() => { setEditingId(null); setError(''); }} saving={saving} error={error} title="업체 수정"
+                formId={`vendors-tab-edit-${vendor.id}`} />;
             }
             let balanceDday = null;
             if (vendor.balance_due && vendor.contract_status !== 'done') {
@@ -311,7 +314,10 @@ export default function VendorsTab({ coupleId }) {
                     )}
                     {vendor.memo && <p className="text-xs mt-1.5" style={{ color: 'var(--ink-3)' }}>{vendor.memo}</p>}
                   </div>
-                  <button onClick={e => { e.stopPropagation(); setMenuId(menuId === vendor.id ? null : vendor.id); }}
+                  <button
+                    aria-label={`${vendor.name} 더보기`}
+                    aria-expanded={menuId === vendor.id}
+                    onClick={e => { e.stopPropagation(); setMenuId(menuId === vendor.id ? null : vendor.id); }}
                     className="text-lg flex-shrink-0" style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}>···</button>
                 </div>
                 {menuId === vendor.id && (
@@ -334,7 +340,8 @@ export default function VendorsTab({ coupleId }) {
         <div className="mb-4">
           <VendorForm form={form} setForm={setForm} onSave={handleAdd}
             onCancel={() => { setShowForm(false); setError(''); setForm(EMPTY_FORM); }}
-            saving={saving} error={error} title="업체 추가" />
+            saving={saving} error={error} title="업체 추가"
+            formId="vendors-tab-add" />
         </div>
       ) : (
         <button className="btn-outline w-full mb-4" onClick={() => setShowForm(true)}>+ 업체 추가</button>

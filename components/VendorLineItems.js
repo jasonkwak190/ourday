@@ -130,6 +130,7 @@ export default function VendorLineItems({ vendorId, vendorType, lineItems, onSav
             >
               {/* 라벨 input */}
               <input
+                aria-label="항목명"
                 type="text"
                 value={it.label}
                 onChange={(e) => update(it.id, 'label', e.target.value)}
@@ -146,6 +147,7 @@ export default function VendorLineItems({ vendorId, vendorType, lineItems, onSav
               />
               {/* 금액 input */}
               <input
+                aria-label={`${it.label || '항목'} 금액 (만원)`}
                 type="number"
                 value={it.amount === 0 ? '' : it.amount}
                 onChange={(e) => update(it.id, 'amount', parseInt(e.target.value, 10) || 0)}

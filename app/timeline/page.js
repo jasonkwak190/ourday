@@ -693,14 +693,15 @@ export default function TimelinePage() {
       return (
         <div key={item.id} className="py-3 flex flex-col gap-2"
           style={{ borderBottom: isLast ? 'none' : '1px solid var(--beige)' }}>
-          <input className="input-field text-sm" value={editTitle}
+          <input aria-label="항목 이름" className="input-field text-sm" value={editTitle}
             onChange={e => setEditTitle(e.target.value)} autoFocus
             onKeyDown={e => e.key === 'Enter' && saveEdit(item.id)} />
 
           {/* 담당 */}
-          <div className="flex gap-2">
+          <div role="radiogroup" aria-label="담당" className="flex gap-2">
             {ASSIGNED_OPTIONS.map(a => (
-              <button key={a} onClick={() => setEditAssigned(a)}
+              <button key={a} type="button" role="radio" aria-checked={editAssigned === a}
+                onClick={() => setEditAssigned(a)}
                 className="flex-1 py-1.5 rounded-xl text-xs font-medium transition-all"
                 style={{ backgroundColor: editAssigned === a ? 'var(--rose)' : 'white', color: editAssigned === a ? 'white' : 'var(--stone)', border: `1.5px solid ${editAssigned === a ? 'var(--rose)' : 'var(--stone-light)'}` }}>
                 {ASSIGNED_LABELS[a].label}
@@ -712,7 +713,7 @@ export default function TimelinePage() {
           <DueModeSelector mode={editMode} onChange={setEditMode} />
           {editMode === 'period' && (
             <div>
-              <select className="input-field text-sm" value={editMonths} onChange={e => setEditMonths(Number(e.target.value))}>
+              <select aria-label="시기 (개월)" className="input-field text-sm" value={editMonths} onChange={e => setEditMonths(Number(e.target.value))}>
                 {TIME_PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
               {editPreview && <p className="text-xs mt-1" style={{ color: 'var(--toss-blue)' }}>= {editPreview}</p>}
@@ -720,7 +721,7 @@ export default function TimelinePage() {
           )}
           {editMode === 'date' && (
             <div>
-              <input type="date" className="input-field text-sm" value={editDueDate}
+              <input aria-label="마감일" type="date" className="input-field text-sm" value={editDueDate}
                 onChange={e => setEditDueDate(e.target.value)} />
             </div>
           )}
@@ -729,7 +730,7 @@ export default function TimelinePage() {
           )}
 
           {/* 메모 */}
-          <textarea className="input-field text-sm resize-none" rows={2}
+          <textarea aria-label="메모" className="input-field text-sm resize-none" rows={2}
             placeholder="메모 (업체명, 계약금, 연락처 등)" value={editMemo}
             onChange={e => setEditMemo(e.target.value)} />
           <div className="flex gap-2">
@@ -744,7 +745,12 @@ export default function TimelinePage() {
       <li key={item.id} className="py-3 relative"
         style={{ borderBottom: isLast ? 'none' : '1px solid var(--beige)' }}>
         <div className="flex items-start gap-3">
-          <button onClick={() => toggleItem(item.id, item.is_done)}
+          <button
+            type="button"
+            role="checkbox"
+            aria-checked={!!item.is_done}
+            aria-label={`${item.title} ${item.is_done ? '완료 해제' : '완료'}`}
+            onClick={() => toggleItem(item.id, item.is_done)}
             className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center transition-all mt-0.5"
             style={{ border: `2px solid ${item.is_done ? 'var(--rose)' : 'var(--stone-light)'}`, backgroundColor: item.is_done ? 'var(--rose)' : 'transparent' }}>
             {item.is_done && <Icon name="check" size={10} color="white" />}
@@ -797,12 +803,18 @@ export default function TimelinePage() {
 
           <span className={`tag ${tag.cls} flex-shrink-0`}>{tag.label}</span>
 
-          <button onClick={() => setExpandedMemo(memoExpanded ? null : item.id)}
+          <button
+            aria-label={memoExpanded ? '메모 접기' : '메모 펼치기'}
+            aria-expanded={!!memoExpanded}
+            onClick={() => setExpandedMemo(memoExpanded ? null : item.id)}
             style={{ color: (item.memo || (item.subtasks?.length > 0)) ? 'var(--rose)' : 'var(--stone-light)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px', flexShrink: 0 }}>
             <FileText size={15} strokeWidth={2} />
           </button>
 
-          <button onClick={e => { e.stopPropagation(); setMenuId(isMenuOpen ? null : item.id); }}
+          <button
+            aria-label={`${item.title} 더보기`}
+            aria-expanded={isMenuOpen}
+            onClick={e => { e.stopPropagation(); setMenuId(isMenuOpen ? null : item.id); }}
             className="text-lg flex-shrink-0"
             style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}>
             ···
@@ -1423,16 +1435,17 @@ export default function TimelinePage() {
           {/* 항목 추가 폼 */}
           {adding ? (
             <div className="card flex flex-col gap-3 mb-4">
-              <input className="input-field" placeholder="항목 이름 입력" value={newTitle}
+              <input aria-label="항목 이름" className="input-field" placeholder="항목 이름 입력" value={newTitle}
                 onChange={e => setNewTitle(e.target.value)} autoFocus
                 onKeyDown={e => e.key === 'Enter' && addItem()} />
 
               {/* 담당 */}
               <div>
-                <p className="text-xs mb-1.5" style={{ color: 'var(--stone)' }}>담당</p>
-                <div className="flex gap-2">
+                <p id="timeline-new-assigned-label" className="text-xs mb-1.5" style={{ color: 'var(--stone)' }}>담당</p>
+                <div role="radiogroup" aria-labelledby="timeline-new-assigned-label" className="flex gap-2">
                   {ASSIGNED_OPTIONS.map(a => (
-                    <button key={a} onClick={() => setNewAssigned(a)}
+                    <button key={a} type="button" role="radio" aria-checked={newAssigned === a}
+                      onClick={() => setNewAssigned(a)}
                       className="flex-1 py-2 rounded-xl text-sm font-medium transition-all"
                       style={{ backgroundColor: newAssigned === a ? 'var(--rose)' : 'white', color: newAssigned === a ? 'white' : 'var(--stone)', border: `1.5px solid ${newAssigned === a ? 'var(--rose)' : 'var(--stone-light)'}` }}>
                       {ASSIGNED_LABELS[a].label}
@@ -1448,7 +1461,7 @@ export default function TimelinePage() {
 
                 {newMode === 'period' && (
                   <div className="mt-2">
-                    <select className="input-field text-sm" value={newMonths} onChange={e => setNewMonths(Number(e.target.value))}>
+                    <select aria-label="시기 (개월)" className="input-field text-sm" value={newMonths} onChange={e => setNewMonths(Number(e.target.value))}>
                       {TIME_PERIODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                     </select>
                     {addPreview && (
@@ -1466,7 +1479,7 @@ export default function TimelinePage() {
 
                 {newMode === 'date' && (
                   <div className="mt-2">
-                    <input type="date" className="input-field text-sm" value={newDueDate}
+                    <input aria-label="마감일" type="date" className="input-field text-sm" value={newDueDate}
                       onChange={e => setNewDueDate(e.target.value)} />
                   </div>
                 )}
@@ -1481,7 +1494,7 @@ export default function TimelinePage() {
               {/* 메모 */}
               <div>
                 <p className="text-xs mb-1.5" style={{ color: 'var(--stone)' }}>메모 (업체명, 계약금 등)</p>
-                <textarea className="input-field text-sm resize-none" rows={2} placeholder="선택사항"
+                <textarea aria-label="메모" className="input-field text-sm resize-none" rows={2} placeholder="선택사항"
                   value={newMemo} onChange={e => setNewMemo(e.target.value)} />
               </div>
 
@@ -1501,7 +1514,7 @@ export default function TimelinePage() {
         <>
           <div className="card mb-4" style={{ padding: '16px 20px' }}>
             <div className="flex items-center justify-between mb-4">
-              <button onClick={prevCalMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+              <button aria-label="이전 달" onClick={prevCalMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <ChevronLeft size={20} color="var(--ink)" />
               </button>
               <div style={{ textAlign: 'center' }}>
@@ -1513,7 +1526,7 @@ export default function TimelinePage() {
                   {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][calMonth]}
                 </span>
               </div>
-              <button onClick={nextCalMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+              <button aria-label="다음 달" onClick={nextCalMonth} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                 <ChevronRight size={20} color="var(--ink)" />
               </button>
             </div>
@@ -1728,7 +1741,7 @@ function MemoEditor({ item, onSave, onClose }) {
   const [text, setText] = useState(item.memo || '');
   return (
     <div className="mt-2 flex flex-col gap-2">
-      <textarea className="input-field text-sm resize-none" rows={3}
+      <textarea aria-label={`${item.title} 메모`} className="input-field text-sm resize-none" rows={3}
         placeholder="업체명, 계약금, 연락처, 메모 등..." value={text}
         onChange={e => setText(e.target.value)} autoFocus />
       <div className="flex gap-2">
@@ -1765,6 +1778,7 @@ function QuickAddRow({ onAdd, onOpenFull }) {
     }}>
       <span style={{ flexShrink: 0, color: 'var(--ink-4)', fontSize: 16, lineHeight: 1, fontWeight: 600 }}>+</span>
       <input
+        aria-label="새 할 일 빠른 추가"
         type="text"
         value={title}
         onChange={e => setTitle(e.target.value)}
@@ -1881,6 +1895,7 @@ function SubtaskList({ subtasks, onChange }) {
 
       <div className="flex items-center gap-2">
         <input
+          aria-label="세부 단계 추가"
           ref={inputRef}
           type="text"
           value={newTitle}

@@ -419,6 +419,7 @@ export default function DecisionsPage() {
       }}>
         <span style={{ flexShrink: 0, color: 'var(--ink-4)', fontSize: 16, lineHeight: 1, fontWeight: 600 }}>+</span>
         <input
+          aria-label="새 결정 항목 제목"
           type="text"
           value={newTitle}
           onChange={e => setNewTitle(e.target.value)}
@@ -545,6 +546,7 @@ export default function DecisionsPage() {
                   {isEditingTit ? (
                     <div className="flex gap-2 flex-1 mr-2">
                       <input
+                        aria-label="결정 항목 제목"
                         className="input-field text-sm flex-1"
                         value={editTitleText}
                         onChange={(e) => setEditTitleText(e.target.value)}
@@ -560,6 +562,8 @@ export default function DecisionsPage() {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <span className={`tag ${st.cls}`}>{st.label}</span>
                     <button
+                      aria-label={`${d.title} 더보기`}
+                      aria-expanded={isMenuOpen}
                       onClick={(e) => { e.stopPropagation(); setMenuId(isMenuOpen ? null : d.id); }}
                       className="text-lg"
                       style={{ color: 'var(--stone)', background: 'none', border: 'none', cursor: 'pointer', padding: '0 2px' }}
@@ -663,6 +667,7 @@ export default function DecisionsPage() {
                 {isEditingOp && (
                   <div className="flex flex-col gap-2 mb-3">
                     <textarea
+                      aria-label="내 의견"
                       className="input-field text-sm resize-none"
                       rows={3}
                       placeholder="의견을 입력해주세요"
@@ -692,6 +697,7 @@ export default function DecisionsPage() {
                 {isEditingFin ? (
                   <div className="flex flex-col gap-2">
                     <textarea
+                      aria-label="최종 결정 내용"
                       className="input-field text-sm resize-none"
                       rows={2}
                       placeholder="최종 결정 내용을 입력해주세요"

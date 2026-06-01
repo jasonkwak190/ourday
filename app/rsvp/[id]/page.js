@@ -181,10 +181,11 @@ export default function RSVPPage({ params }) {
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* 성함 */}
-        <Section title="성함">
+        <Section id="rsvp-public-name-label" title="성함">
           <input
+            id="rsvp-public-name"
             type="text"
-            aria-label="성함"
+            aria-labelledby="rsvp-public-name-label"
             placeholder="홍길동"
             value={name}
             onChange={e => setName(e.target.value)}
@@ -194,8 +195,8 @@ export default function RSVPPage({ params }) {
         </Section>
 
         {/* 신랑측 / 신부측 */}
-        <Section title="어느 분 하객이세요?">
-          <div style={{ display: 'flex', gap: 10 }}>
+        <Section id="rsvp-public-side-label" title="어느 분 하객이세요?">
+          <div role="radiogroup" aria-labelledby="rsvp-public-side-label" style={{ display: 'flex', gap: 10 }}>
             <SideBtn
               selected={side === 'groom'}
               onClick={() => setSide('groom')}
@@ -212,8 +213,8 @@ export default function RSVPPage({ params }) {
         </Section>
 
         {/* 참석 여부 */}
-        <Section title="참석 여부">
-          <div style={{ display: 'flex', gap: 10 }}>
+        <Section id="rsvp-public-attend-label" title="참석 여부">
+          <div role="radiogroup" aria-labelledby="rsvp-public-attend-label" style={{ display: 'flex', gap: 10 }}>
             <AttendBtn
               selected={attending === true}
               onClick={() => setAttending(true)}
@@ -236,15 +237,19 @@ export default function RSVPPage({ params }) {
         {/* 식사 인원 (참석할 경우만) */}
         {attending === true && (
           <Section title="참석 인원 (식사 수)">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div role="group" aria-label="참석 인원 (식사 수)" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               <button
+                type="button"
+                aria-label="인원 1명 감소"
                 onClick={() => setMealCount(c => Math.max(1, c - 1))}
                 style={counterBtnStyle('#f2f4f6', '#191f28')}
               >−</button>
-              <span style={{ fontSize: 22, fontWeight: 700, color: '#191f28', minWidth: 32, textAlign: 'center' }}>
+              <span aria-live="polite" style={{ fontSize: 22, fontWeight: 700, color: '#191f28', minWidth: 32, textAlign: 'center' }}>
                 {mealCount}
               </span>
               <button
+                type="button"
+                aria-label="인원 1명 증가"
                 onClick={() => setMealCount(c => c + 1)}
                 style={counterBtnStyle('#eaf4ff', '#3182f6')}
               >+</button>
@@ -254,10 +259,11 @@ export default function RSVPPage({ params }) {
         )}
 
         {/* 연락처 */}
-        <Section title="연락처 (선택)">
+        <Section id="rsvp-public-phone-label" title="연락처 (선택)">
           <input
+            id="rsvp-public-phone"
             type="tel"
-            aria-label="연락처 (선택)"
+            aria-labelledby="rsvp-public-phone-label"
             placeholder="010-0000-0000"
             value={phone}
             onChange={e => setPhone(e.target.value)}
@@ -290,13 +296,13 @@ export default function RSVPPage({ params }) {
   );
 }
 
-function Section({ title, children }) {
+function Section({ id, title, children }) {
   return (
     <div style={{
       backgroundColor: 'white', borderRadius: 20,
       padding: '20px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
     }}>
-      <p style={{ fontSize: 13, fontWeight: 600, color: '#191f28', marginBottom: 12 }}>{title}</p>
+      <p id={id} style={{ fontSize: 13, fontWeight: 600, color: '#191f28', marginBottom: 12 }}>{title}</p>
       {children}
     </div>
   );
@@ -305,6 +311,9 @@ function Section({ title, children }) {
 function SideBtn({ selected, onClick, icon, label }) {
   return (
     <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
       onClick={onClick}
       style={{
         flex: 1, height: 64, borderRadius: 16,
@@ -325,6 +334,9 @@ function SideBtn({ selected, onClick, icon, label }) {
 function AttendBtn({ selected, onClick, icon, label, color, bg }) {
   return (
     <button
+      type="button"
+      role="radio"
+      aria-checked={selected}
       onClick={onClick}
       style={{
         flex: 1, height: 76, borderRadius: 16, border: `2px solid ${selected ? color : '#e5e8eb'}`,

@@ -198,10 +198,11 @@ export default function GuestUploadPage({ params }) {
         backgroundColor: 'white', borderRadius: 20, padding: '20px',
         marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
       }}>
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#191f28', display: 'block', marginBottom: 8 }}>
+        <label htmlFor="guest-photo-name" style={{ fontSize: 13, fontWeight: 600, color: '#191f28', display: 'block', marginBottom: 8 }}>
           이름 (선택)
         </label>
         <input
+          id="guest-photo-name"
           type="text"
           placeholder="홍길동"
           value={name}
@@ -221,9 +222,9 @@ export default function GuestUploadPage({ params }) {
         marginBottom: 16, boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-          <label style={{ fontSize: 13, fontWeight: 600, color: '#191f28' }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#191f28', margin: 0 }}>
             사진 선택
-          </label>
+          </p>
           {files.length > 0 && (
             <span style={{ fontSize: 12, color: '#3182f6', fontWeight: 600 }}>
               {files.length}장 선택됨
@@ -298,6 +299,8 @@ export default function GuestUploadPage({ params }) {
                 {/* 제거 버튼 (pending만) */}
                 {item.status === 'pending' && (
                   <button
+                    type="button"
+                    aria-label="사진 제거"
                     onClick={() => removeFile(item.id)}
                     style={{
                       position: 'absolute', top: 4, right: 4,

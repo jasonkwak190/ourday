@@ -529,24 +529,29 @@ export default function InvitationViewPage({ params }) {
 
               {/* 1. 이름 */}
               <FormCard>
-                <FieldLabel required>성함</FieldLabel>
+                <FieldLabel id="rsvp-name-label" required>성함</FieldLabel>
                 <input
+                  id="rsvp-name"
                   type="text"
                   placeholder="홍길동"
                   value={name}
                   onChange={e => setName(e.target.value)}
                   maxLength={20}
                   style={inputStyle}
+                  aria-labelledby="rsvp-name-label"
                 />
               </FormCard>
 
               {/* 2. 신랑측 / 신부측 */}
               <FormCard>
-                <FieldLabel required>어느 분 하객이세요?</FieldLabel>
-                <div style={{ display: 'flex', gap: 10 }}>
+                <FieldLabel id="rsvp-side-label" required>어느 분 하객이세요?</FieldLabel>
+                <div role="radiogroup" aria-labelledby="rsvp-side-label" style={{ display: 'flex', gap: 10 }}>
 
                   {/* 신랑측 */}
                   <button
+                    type="button"
+                    role="radio"
+                    aria-checked={side === 'groom'}
                     onClick={() => setSide('groom')}
                     style={{
                       flex: 1, padding: '18px 8px 14px',
@@ -569,6 +574,9 @@ export default function InvitationViewPage({ params }) {
 
                   {/* 신부측 */}
                   <button
+                    type="button"
+                    role="radio"
+                    aria-checked={side === 'bride'}
                     onClick={() => setSide('bride')}
                     style={{
                       flex: 1, padding: '18px 8px 14px',
@@ -593,11 +601,14 @@ export default function InvitationViewPage({ params }) {
 
               {/* 3. 참석 여부 */}
               <FormCard>
-                <FieldLabel required>참석 여부</FieldLabel>
-                <div style={{ display: 'flex', gap: 10 }}>
+                <FieldLabel id="rsvp-attend-label" required>참석 여부</FieldLabel>
+                <div role="radiogroup" aria-labelledby="rsvp-attend-label" style={{ display: 'flex', gap: 10 }}>
 
                   {/* 참석 */}
                   <button
+                    type="button"
+                    role="radio"
+                    aria-checked={attending === true}
                     onClick={() => setAttending(true)}
                     style={{
                       flex: 1, padding: '16px 8px',
@@ -627,6 +638,9 @@ export default function InvitationViewPage({ params }) {
 
                   {/* 불참 */}
                   <button
+                    type="button"
+                    role="radio"
+                    aria-checked={attending === false}
                     onClick={() => setAttending(false)}
                     style={{
                       flex: 1, padding: '16px 8px',
@@ -660,17 +674,21 @@ export default function InvitationViewPage({ params }) {
               {attending === true && (
                 <FormCard>
                   <FieldLabel>참석 인원 (식사 수)</FieldLabel>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div role="group" aria-label="참석 인원 (식사 수)" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                     <button
+                      type="button"
+                      aria-label="인원 1명 감소"
                       onClick={() => setMealCount(c => Math.max(1, c - 1))}
                       style={counterBtnStyle('#f2f4f6', '#191f28')}
                     >
                       <Minus size={16} strokeWidth={2.5} />
                     </button>
-                    <span style={{ fontSize: 22, fontWeight: 700, color: '#191f28', minWidth: 36, textAlign: 'center' }}>
+                    <span aria-live="polite" style={{ fontSize: 22, fontWeight: 700, color: '#191f28', minWidth: 36, textAlign: 'center' }}>
                       {mealCount}
                     </span>
                     <button
+                      type="button"
+                      aria-label="인원 1명 증가"
                       onClick={() => setMealCount(c => c + 1)}
                       style={counterBtnStyle('#eaf4ff', '#3182f6')}
                     >
@@ -683,8 +701,10 @@ export default function InvitationViewPage({ params }) {
 
               {/* 5. 연락처 */}
               <FormCard>
-                <FieldLabel optional>연락처</FieldLabel>
+                <FieldLabel id="rsvp-phone-label" optional>연락처</FieldLabel>
                 <input
+                  id="rsvp-phone"
+                  aria-labelledby="rsvp-phone-label"
                   type="tel"
                   placeholder="010-0000-0000"
                   value={phone}
@@ -696,9 +716,11 @@ export default function InvitationViewPage({ params }) {
 
               {/* 6. 축하 메시지 */}
               <FormCard>
-                <FieldLabel optional>축하 메시지</FieldLabel>
+                <FieldLabel id="rsvp-message-label" optional>축하 메시지</FieldLabel>
                 <div style={{ position: 'relative' }}>
                   <textarea
+                    id="rsvp-message"
+                    aria-labelledby="rsvp-message-label"
                     placeholder="신랑신부에게 따뜻한 축하 메시지를 남겨주세요"
                     value={message}
                     onChange={e => setMessage(e.target.value)}
@@ -965,9 +987,9 @@ function FormCard({ children }) {
   );
 }
 
-function FieldLabel({ children, required, optional }) {
+function FieldLabel({ id, children, required, optional }) {
   return (
-    <p style={{
+    <p id={id} style={{
       fontFamily: FONT, fontStyle: 'normal',
       fontSize: 15, fontWeight: 700, color: '#191f28',
       marginBottom: 10, margin: '0 0 10px',
