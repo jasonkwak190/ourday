@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { BookOpen, MessageSquare } from 'lucide-react';
+import { BookOpen, MessageSquare, Trash2 } from 'lucide-react';
 import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
 import BottomNav from '@/components/BottomNav';
@@ -15,6 +15,33 @@ export default function InvitationPage() {
   const [invitationId, setInvitationId] = useState(null);
   const [guestbook, setGuestbook] = useState([]);
   const [loadingGB, setLoadingGB] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
+
+  // 방명록 항목 삭제 (optimistic — 실패 시 롤백)
+  async function deleteGuestbookEntry(entry) {
+    if (deletingId) return;
+    if (!confirm('이 메시지를 삭제할까요? 되돌릴 수 없어요.')) return;
+    setDeletingId(entry.id);
+    const prev = guestbook;
+    setGuestbook(curr => curr.filter(e => e.id !== entry.id));
+    try {
+      const res = await fetch(`/api/guestbook?id=${encodeURIComponent(entry.id)}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        // 롤백
+        setGuestbook(prev);
+        let msg = '삭제에 실패했어요.';
+        try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* ignore */ }
+        alert(msg);
+      }
+    } catch {
+      setGuestbook(prev);
+      alert('네트워크 오류가 발생했어요.');
+    } finally {
+      setDeletingId(null);
+    }
+  }
 
   // 방명록 로드 — 청첩장(invitation)이 있을 때만
   useEffect(() => {
@@ -117,11 +144,29 @@ export default function InvitationPage() {
                   <p className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>
                     {msg.name}
                   </p>
-                  <p className="text-xs" style={{ color: 'var(--ink-3)' }}>
-                    {new Date(msg.created_at).toLocaleDateString('ko-KR', {
-                      month: 'short', day: 'numeric',
-                    })}
-                  </p>
+                  <div className="flex items-center" style={{ gap: 10 }}>
+                    <p className="text-xs" style={{ color: 'var(--ink-3)', margin: 0 }}>
+                      {new Date(msg.created_at).toLocaleDateString('ko-KR', {
+                        month: 'short', day: 'numeric',
+                      })}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => deleteGuestbookEntry(msg)}
+                      disabled={deletingId === msg.id}
+                      aria-label="이 메시지 삭제"
+                      style={{
+                        background: 'none', border: 'none', padding: 2,
+                        cursor: deletingId === msg.id ? 'wait' : 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: 3,
+                        color: 'var(--ink-4, #9a8f80)',
+                        fontSize: 11, fontWeight: 500,
+                      }}
+                    >
+                      <Trash2 size={12} strokeWidth={2} />
+                      <span>{deletingId === msg.id ? '삭제 중…' : '삭제'}</span>
+                    </button>
+                  </div>
                 </div>
                 <p className="text-sm" style={{ color: 'var(--stone)', lineHeight: 1.6 }}>
                   &ldquo;{msg.message}&rdquo;

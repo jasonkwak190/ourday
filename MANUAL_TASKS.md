@@ -7,6 +7,54 @@
 
 ## 🔴 CRITICAL — 출시 전 필수
 
+### MT-018 · reports 테이블 생성 (UGC 신고 기능) ⭐ 출시 직전 필수
+**상태**: 미완료
+**이유**: Google Play 정책 — UGC(공개 방명록·RSVP 등)가 있는 앱은 신고 메커니즘이 반드시 제공되어야 함. 코드는 이미 배포되어 있고, 테이블만 생성하면 즉시 활성화됨.
+
+**코드 준비됨**:
+- `POST /api/report` — 비인증 신고 접수 (IP 15분당 5건 rate limit)
+- 공개 방명록 페이지 `/i/[slug]` 각 메시지 옆에 "신고" 버튼 + 모달
+- 커플 본인의 `/invitation` 페이지에서 부적절한 방명록 메시지 "삭제" 버튼 (`DELETE /api/guestbook?id=...`)
+
+**graceful degrade**: 테이블이 없으면 신고 API가 500 응답을 내고 클라이언트에서 "잠시 후 다시 시도해주세요" 안내. 앱 자체는 정상 동작.
+
+**Supabase Dashboard → SQL Editor에서 실행:**
+```sql
+create table if not exists public.reports (
+  id uuid primary key default gen_random_uuid(),
+  target_type text not null check (target_type in ('guestbook','rsvp')),
+  target_id uuid not null,
+  reason text not null check (char_length(reason) between 5 and 500),
+  reporter_name text,
+  reporter_ip text,
+  created_at timestamptz not null default now(),
+  handled_at timestamptz,
+  handled_by uuid references public.users(id),
+  handler_action text -- 'kept' | 'hidden' | 'deleted'
+);
+
+alter table public.reports enable row level security;
+
+-- 신고는 누구나 (anon 포함) INSERT 가능
+create policy "anyone can report"
+  on public.reports
+  for insert
+  with check (true);
+
+-- 조회·관리는 관리자만 (현재 RLS는 SELECT 차단; service role로만 접근)
+-- 추후 admin 콘솔이 생기면 SELECT/UPDATE 정책을 별도 추가
+```
+
+**검토 워크플로** (콘솔 작성 전 임시):
+1. Supabase Table Editor → `reports` 테이블 열기 (service role로 자동 표시)
+2. `handled_at IS NULL` 항목 중심으로 검토
+3. 부적절하면 `invitation_guestbook` / `rsvp_responses` 테이블에서 해당 `target_id` 직접 삭제
+4. 처리 후 `reports.handled_at = now()`, `handler_action = 'hidden' | 'deleted' | 'kept'` 업데이트
+
+완료 후 CLAUDE.md 보안 체크리스트에 "UGC 신고 기능 활성화" 항목 체크.
+
+---
+
 ### MT-017 · couple_notes.image_url 컬럼 추가 ✅ 완료 (2026-05-11)
 **상태**: 완료 — SQL 실행됨, 사진 첨부 즉시 동작
 ~~다음 SQL을 실행해야 우리 노트 사진 첨부가 동작함~~

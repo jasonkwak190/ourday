@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, use } from 'react';
-import { Heart, Check, X, Send, Minus, Plus } from 'lucide-react';
+import { Heart, Check, X, Send, Minus, Plus, Flag } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
@@ -205,6 +205,80 @@ export default function InvitationViewPage({ params }) {
   const [entries, setEntries]         = useState([]);
   const [entriesHasMore, setEntriesHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  // ── 방명록 신고 모달 (UGC 정책 대응) ─────────────────────────────
+  const [reportTargetId, setReportTargetId] = useState(null); // 신고 대상 entry.id
+  const [reportReason,   setReportReason]   = useState('');
+  const [reportName,     setReportName]     = useState('');
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportError,    setReportError]    = useState('');
+  // 세션 내 신고 완료된 항목 id 모음 (재신고 버튼 숨김용)
+  const [reportedIds,    setReportedIds]    = useState(() => new Set());
+
+  function openReportModal(entryId) {
+    setReportTargetId(entryId);
+    setReportReason('');
+    setReportName('');
+    setReportError('');
+  }
+
+  function closeReportModal() {
+    if (reportSubmitting) return;
+    setReportTargetId(null);
+    setReportReason('');
+    setReportName('');
+    setReportError('');
+  }
+
+  async function submitReport() {
+    if (reportSubmitting || !reportTargetId) return;
+    const reason = reportReason.trim();
+    if (reason.length < 5) {
+      setReportError('신고 사유를 5자 이상 입력해주세요.');
+      return;
+    }
+    setReportSubmitting(true);
+    setReportError('');
+    try {
+      const res = await fetch('/api/report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          target_type: 'guestbook',
+          target_id: reportTargetId,
+          reason,
+          reporter_name: reportName.trim() || undefined,
+        }),
+      });
+      if (res.status === 429) {
+        setReportError('잠시 후 다시 시도해주세요.');
+        setReportSubmitting(false);
+        return;
+      }
+      if (!res.ok) {
+        let msg = '신고 접수에 실패했어요.';
+        try { const j = await res.json(); if (j?.error) msg = j.error; } catch { /* ignore */ }
+        setReportError(msg);
+        setReportSubmitting(false);
+        return;
+      }
+      // 성공: 해당 entry는 세션 내 다시 신고 못 하도록 마킹
+      setReportedIds(prev => {
+        const next = new Set(prev);
+        next.add(reportTargetId);
+        return next;
+      });
+      setReportSubmitting(false);
+      setReportTargetId(null);
+      // 가벼운 알림
+      setTimeout(() => {
+        try { alert('신고가 접수되었습니다. 신속히 검토하겠습니다.'); } catch { /* ignore */ }
+      }, 50);
+    } catch {
+      setReportError('네트워크 오류가 발생했어요.');
+      setReportSubmitting(false);
+    }
+  }
 
   useEffect(() => {
     const load = async () => {
@@ -660,9 +734,30 @@ export default function InvitationViewPage({ params }) {
                       <p style={{ fontFamily: FONT, fontWeight: 700, fontSize: 15, color: '#191f28', margin: 0 }}>
                         {entry.name}
                       </p>
-                      <p style={{ fontFamily: FONT, fontSize: 12, color: '#8b95a1', margin: 0 }}>
-                        {timeAgo(entry.created_at)}
-                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <p style={{ fontFamily: FONT, fontSize: 12, color: '#8b95a1', margin: 0 }}>
+                          {timeAgo(entry.created_at)}
+                        </p>
+                        {reportedIds.has(entry.id) ? (
+                          <span style={{ fontFamily: FONT, fontSize: 11, color: '#8b95a1' }}>
+                            신고 접수됨
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => openReportModal(entry.id)}
+                            aria-label="이 메시지 신고"
+                            style={{
+                              background: 'none', border: 'none', padding: 2, cursor: 'pointer',
+                              display: 'inline-flex', alignItems: 'center', gap: 3,
+                              color: '#b0b8c1', fontFamily: FONT, fontSize: 11,
+                            }}
+                          >
+                            <Flag size={11} strokeWidth={2} />
+                            <span>신고</span>
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <p style={{ fontFamily: FONT, fontSize: 14, color: '#4e5968', lineHeight: 1.7, margin: 0, whiteSpace: 'pre-wrap' }}>
                       {entry.message}
@@ -689,6 +784,140 @@ export default function InvitationViewPage({ params }) {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── 신고 모달 ── */}
+      {reportTargetId && (
+        <div
+          onClick={closeReportModal}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 400,
+            backgroundColor: 'rgba(26,22,19,0.55)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label="메시지 신고"
+            style={{
+              width: '100%', maxWidth: 430,
+              backgroundColor: 'var(--ivory, #faf8f5)',
+              borderRadius: 20, padding: 20,
+              boxShadow: '0 -8px 28px rgba(0,0,0,0.18)',
+              fontFamily: FONT,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <Flag size={16} color="var(--champagne-2, #b0935a)" strokeWidth={2} />
+              <h3 style={{
+                fontFamily: "'Noto Serif KR', serif", fontWeight: 500, fontSize: 17,
+                color: 'var(--ink, #1a1613)', margin: 0, letterSpacing: '-0.01em',
+              }}>
+                메시지 신고
+              </h3>
+            </div>
+            <p style={{
+              fontFamily: SERIF_EN, fontStyle: 'italic', fontSize: 11,
+              color: 'var(--champagne-2, #b0935a)', letterSpacing: '0.04em',
+              margin: '0 0 14px',
+            }}>
+              report this message
+            </p>
+
+            <label style={{
+              display: 'block', fontSize: 12, color: 'var(--ink-3, #6E6459)',
+              marginBottom: 6,
+            }}>
+              왜 신고하시나요? (5~500자)
+            </label>
+            <textarea
+              value={reportReason}
+              onChange={e => setReportReason(e.target.value)}
+              placeholder="스팸 / 욕설 / 부적절한 내용 등 사유를 알려주세요"
+              maxLength={500}
+              rows={4}
+              style={{
+                width: '100%', borderRadius: 10,
+                border: '1.5px solid var(--rule, #e8e2d9)',
+                padding: '12px 14px', fontSize: 14,
+                color: 'var(--ink, #1a1613)', outline: 'none',
+                resize: 'none', lineHeight: 1.6, boxSizing: 'border-box',
+                fontFamily: FONT, backgroundColor: '#fff',
+              }}
+            />
+            <p style={{
+              fontSize: 11, color: 'var(--ink-4, #9a8f80)',
+              textAlign: 'right', margin: '4px 2px 12px',
+            }}>
+              {reportReason.length}/500
+            </p>
+
+            <label style={{
+              display: 'block', fontSize: 12, color: 'var(--ink-3, #6E6459)',
+              marginBottom: 6,
+            }}>
+              이름 (선택)
+            </label>
+            <input
+              type="text"
+              value={reportName}
+              onChange={e => setReportName(e.target.value)}
+              maxLength={50}
+              placeholder="익명으로 신고하실 수 있어요"
+              style={{
+                width: '100%', height: 44, borderRadius: 10,
+                border: '1.5px solid var(--rule, #e8e2d9)', padding: '0 14px',
+                fontSize: 14, color: 'var(--ink, #1a1613)', outline: 'none',
+                boxSizing: 'border-box', fontFamily: FONT, backgroundColor: '#fff',
+                marginBottom: 12,
+              }}
+            />
+
+            {reportError && (
+              <p style={{
+                fontSize: 12, color: '#ff4d4f', textAlign: 'center',
+                margin: '0 0 10px',
+              }}>
+                {reportError}
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={closeReportModal}
+                disabled={reportSubmitting}
+                style={{
+                  flex: 1, height: 48, borderRadius: 24,
+                  border: '1px solid var(--rule, #e8e2d9)',
+                  backgroundColor: 'transparent',
+                  color: 'var(--ink-2, #4e5968)',
+                  fontFamily: FONT, fontSize: 14, fontWeight: 600,
+                  cursor: reportSubmitting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={submitReport}
+                disabled={reportSubmitting}
+                style={{
+                  flex: 1, height: 48, borderRadius: 24, border: 'none',
+                  backgroundColor: reportSubmitting ? '#c9d1d9' : 'var(--ink, #1a1613)',
+                  color: 'var(--ivory, #faf8f5)',
+                  fontFamily: FONT, fontSize: 14, fontWeight: 600,
+                  cursor: reportSubmitting ? 'not-allowed' : 'pointer',
+                }}
+              >
+                {reportSubmitting ? '전송 중…' : '신고하기'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
