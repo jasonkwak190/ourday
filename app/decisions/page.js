@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import PageLoader from '@/components/PageLoader';
 import { useCouple } from '@/lib/useCouple';
@@ -102,6 +102,11 @@ export default function DecisionsPage() {
     load();
   }, [authLoading, coupleId]);
 
+  // 편집 중 row id를 ref로 추적 — Realtime 콜백이 useEffect 클로저에 갇히지 않게
+  const editingRef = useRef({ opinion: null, final: null, title: null });
+  useEffect(() => { editingRef.current = { opinion: editingOpinion, final: editingFinal, title: editingTitle }; },
+    [editingOpinion, editingFinal, editingTitle]);
+
   // Realtime 구독
   useEffect(() => {
     if (!coupleId) return;
@@ -119,12 +124,12 @@ export default function DecisionsPage() {
             return [...prev, payload.new];
           });
         } else if (payload.eventType === 'UPDATE') {
-          // Q-007 동시편집 충돌: 사용자가 이 row를 편집 중이면 로컬 편집을 보존하고 알림만 띄움
-          // (덮어쓰면 사용자가 방금 친 내용 사라짐)
+          // 동시편집 충돌: ref로 최신 편집 상태 읽기 (stale closure 회피)
+          const e = editingRef.current;
           const isLocallyEditing =
-            editingOpinion === payload.new.id ||
-            editingFinal === payload.new.id ||
-            editingTitle === payload.new.id;
+            e.opinion === payload.new.id ||
+            e.final   === payload.new.id ||
+            e.title   === payload.new.id;
           if (isLocallyEditing) {
             setConflictToast('상대방이 방금 변경했어요. 저장 후 충돌 가능');
             setTimeout(() => setConflictToast(''), 2800);

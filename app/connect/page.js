@@ -52,6 +52,9 @@ export default function ConnectPage() {
       if (user?.couple_id) {
         const cId = user.couple_id;
         setCoupleId(cId);
+        // BUG fix: 기존 커플로 다시 들어왔을 때도 ref 세팅해야 realtime 구독 동작
+        // (이게 없으면 파트너가 join해도 "대기 중" 화면이 영원히 안 풀림)
+        setCoupleIdRef(cId);
 
         // 코드 로드
         const { data: couple } = await supabase

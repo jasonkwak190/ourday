@@ -15,13 +15,26 @@ export default function ResetPasswordConfirmPage() {
   const [done,      setDone]      = useState(false);
   const [error,     setError]     = useState('');
   const [ready,     setReady]     = useState(false);
+  const [linkExpired, setLinkExpired] = useState(false);
 
-  // Supabase가 URL hash(#access_token=...)를 처리해 세션을 설정할 때까지 대기
+  // Supabase가 URL hash(#access_token=...)를 처리해 세션을 설정할 때까지 대기.
+  // PASSWORD_RECOVERY 이벤트가 안 오는 케이스(이미 처리된 세션·재방문)는
+  // 현재 세션 확인 후 ready로 진입. 8초 후에도 둘 다 실패하면 만료 안내.
   useEffect(() => {
+    let cancelled = false;
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') setReady(true);
+      if (event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN') setReady(true);
     });
-    return () => subscription.unsubscribe();
+    // 페이지 진입 시 현재 세션이 이미 있으면 즉시 ready
+    supabase.auth.getSession().then(({ data }) => {
+      if (!cancelled && data?.session) setReady(true);
+    });
+    // 타임아웃 폴백
+    const timer = setTimeout(() => {
+      if (!cancelled) setLinkExpired((prev) => prev || !ready);
+    }, 8000);
+    return () => { cancelled = true; clearTimeout(timer); subscription.unsubscribe(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubmit(e) {
@@ -56,9 +69,21 @@ export default function ResetPasswordConfirmPage() {
           style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: 'var(--toss-blue-light)' }}>
           <Lock size={24} color="var(--toss-blue)" />
         </div>
-        <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
-          인증 중...
-        </p>
+        {linkExpired ? (
+          <>
+            <p className="text-sm mb-3 text-center" style={{ color: 'var(--ink)' }}>
+              링크가 만료되었거나 유효하지 않아요.
+            </p>
+            <button onClick={() => router.push('/reset-password')}
+              className="btn-outline text-sm" style={{ padding: '8px 16px' }}>
+              비밀번호 재설정 다시 요청
+            </button>
+          </>
+        ) : (
+          <p className="text-sm" style={{ color: 'var(--toss-text-tertiary)' }}>
+            인증 중...
+          </p>
+        )}
       </div>
     );
   }

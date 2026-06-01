@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef, useCallback, use } from 'react';
+import { useState, useRef, useCallback, useEffect, use } from 'react';
 import { Upload, Check, X, ImagePlus, Loader2, Camera } from 'lucide-react';
 import Icon from '@/components/Icon';
+import { supabase } from '@/lib/supabase';
 
 export default function GuestUploadPage({ params }) {
   const { code } = use(params);
@@ -12,6 +13,31 @@ export default function GuestUploadPage({ params }) {
   const [submitting, setSubmitting] = useState(false);
   const [allDone, setAllDone]     = useState(false);
   const fileInputRef              = useRef(null);
+
+  // 사전 검증: event_code가 유효한지 페이지 진입 시 1회 확인 (잘못된 QR이면 업로드 UI 자체를 안 보임)
+  const [checkingCode, setCheckingCode] = useState(true);
+  const [codeError, setCodeError]       = useState(null); // 'invalid' | 'expired' | null
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!code || !/^[A-Za-z0-9_-]{6,32}$/.test(code)) {
+        if (!cancelled) { setCodeError('invalid'); setCheckingCode(false); }
+        return;
+      }
+      const { data, error } = await supabase
+        .from('photo_events')
+        .select('expires_at')
+        .eq('event_code', code)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) { setCodeError('invalid'); setCheckingCode(false); return; }
+      if (data.expires_at && new Date(data.expires_at) < new Date()) {
+        setCodeError('expired');
+      }
+      setCheckingCode(false);
+    })();
+    return () => { cancelled = true; };
+  }, [code]);
 
   const addFiles = useCallback((newFiles) => {
     const items = Array.from(newFiles)
@@ -98,6 +124,31 @@ export default function GuestUploadPage({ params }) {
 
   const pendingCount = files.filter(f => f.status === 'pending').length;
   const doneCount    = files.filter(f => f.status === 'done').length;
+
+  // 사전 검증 결과 안내 (RSVP 페이지와 동일 패턴)
+  if (checkingCode) {
+    return (
+      <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#f8f9fa', padding: 24, fontFamily: "'Pretendard Variable','Pretendard',-apple-system,sans-serif" }}>
+        <Loader2 size={24} color="#3182f6" style={{ animation: 'spin 1s linear infinite' }} />
+        <style jsx global>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
+      </div>
+    );
+  }
+  if (codeError) {
+    return (
+      <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#f8f9fa', padding: 24, textAlign: 'center', fontFamily: "'Pretendard Variable','Pretendard',-apple-system,sans-serif" }}>
+        <Icon name="camera" size={36} color="#d4879a" style={{ marginBottom: 12 }} />
+        <p style={{ fontSize: 16, color: '#4e5968', fontWeight: 600, marginBottom: 6 }}>
+          {codeError === 'expired' ? '업로드 기간이 끝났어요' : '잘못된 링크예요'}
+        </p>
+        <p style={{ fontSize: 13, color: '#b0b8c1' }}>
+          {codeError === 'expired' ? '신랑신부에게 새 링크를 받아주세요' : 'QR 코드를 다시 확인해주세요'}
+        </p>
+      </div>
+    );
+  }
 
   if (allDone) {
     return (
