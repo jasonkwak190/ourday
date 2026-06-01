@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { Heart, Check, X, Send, Minus, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { copyToClipboard } from '@/lib/clipboard';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 
 const FONT = "'Pretendard Variable','Pretendard',-apple-system,sans-serif";
@@ -241,9 +242,11 @@ export default function InvitationViewPage({ params }) {
   }
 
   async function copyUrl() {
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await copyToClipboard(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* 클립보드 실패 무시 */ }
   }
 
   async function handleSubmit() {

@@ -5,6 +5,7 @@ import { MapPin, Clock, Copy, Check, Heart, Send, Gift } from 'lucide-react';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import Icon from '@/components/Icon';
 import { loadKakaoMaps, geocodeAddress } from '@/lib/kakaoMaps';
+import { copyToClipboard } from '@/lib/clipboard';
 
 // ─── 날짜 포매터 (timezone 버그 방지: UTC 파싱 대신 로컬 날짜로 처리) ──
 export function formatDate(dateStr) {
@@ -220,9 +221,11 @@ function AccountRow({ label, value }) {
   const [copied, setCopied] = useState(false);
   async function copy() {
     const number = value.replace(/[^0-9\-]/g, '').trim() || value;
-    await navigator.clipboard.writeText(number);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    try {
+      await copyToClipboard(number);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch { /* 무시 */ }
   }
   return (
     <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--rule)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'var(--ivory)' }}>

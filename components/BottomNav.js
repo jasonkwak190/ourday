@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from '@/components/Icon';
 
@@ -33,6 +33,14 @@ export default function BottomNav({ active }) {
     router.push(href);
   }
 
+  // a11y: 더보기 시트 열렸을 때 Escape로 닫기
+  useEffect(() => {
+    if (!showMore) return;
+    const onKey = (e) => { if (e.key === 'Escape') setShowMore(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [showMore]);
+
   return (
     <>
       {/* 더보기 시트 */}
@@ -42,9 +50,13 @@ export default function BottomNav({ active }) {
             className="fixed inset-0 z-40"
             style={{ backgroundColor: 'rgba(26,22,19,0.3)' }}
             onClick={() => setShowMore(false)}
+            aria-hidden="true"
           />
           <div
             className="fixed z-50 left-1/2"
+            role="dialog"
+            aria-modal="true"
+            aria-label="더보기 메뉴"
             style={{
               bottom: 'calc(80px + env(safe-area-inset-bottom))',
               transform: 'translateX(-50%)',

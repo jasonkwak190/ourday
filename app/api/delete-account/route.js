@@ -56,10 +56,24 @@ export async function DELETE(request) {
     const coupleId = userData?.couple_id;
 
     if (coupleId) {
-      // 커플 데이터 전체 삭제 — 파트너 유무와 무관하게 삭제
-      // (couples 삭제 → CASCADE로 checklist_items, vendors, decisions,
-      //  guests, invitations, couple_notes, rsvp_responses 등 모두 삭제)
-      await admin.from('couples').delete().eq('id', coupleId);
+      // PIPA 준수: 파트너의 데이터를 본인 동의 없이 삭제 금지.
+      // 파트너가 있으면 커플 row는 유지하고 본인의 users row만 정리(detach).
+      // 파트너가 없을 때만 커플 전체와 연관 데이터 일괄 삭제.
+      const { data: partners } = await admin
+        .from('users')
+        .select('id')
+        .eq('couple_id', coupleId)
+        .neq('id', user.id);
+
+      if (partners && partners.length > 0) {
+        // 파트너 있음 → 본인 users row만 우선 분리(요청자 데이터에서 단절)
+        // auth.users 삭제 시 ON DELETE CASCADE로 users row가 자동 삭제될 수도 있지만
+        // 명시적으로 couple_id를 NULL로 끊어 leftover 위험 제거.
+        await admin.from('users').update({ couple_id: null }).eq('id', user.id);
+      } else {
+        // 파트너 없음 → 커플 전체와 CASCADE 데이터 삭제 가능
+        await admin.from('couples').delete().eq('id', coupleId);
+      }
     }
 
     // 5. Auth 계정 삭제 (→ users 테이블 CASCADE 삭제)

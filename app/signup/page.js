@@ -124,7 +124,7 @@ export default function SignupPage() {
         <div style={{ fontSize: 13, lineHeight: 1.6 }}>
           <span style={{ fontWeight: 700, color: 'var(--ink)' }}>[필수]&nbsp;</span>
           <span style={{ color: 'var(--ink-2)' }}>
-            서비스 이용을 위한{' '}
+            <strong>만 14세 이상</strong>이며,{' '}
             <Link href="/terms" target="_blank"
               style={{ color: 'var(--champagne)', fontWeight: 600, textDecoration: 'underline' }}
               onClick={e => e.stopPropagation()}>
@@ -140,6 +140,7 @@ export default function SignupPage() {
           </span>
           <p style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 4 }}>
             이메일·이름을 수집하며, 탈퇴 시 즉시 파기됩니다.
+            만 14세 미만은 가입할 수 없습니다(개인정보 보호법 제22조의2).
           </p>
         </div>
         {agreed && (

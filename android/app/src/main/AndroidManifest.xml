@@ -17,6 +17,8 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:resizeableActivity="false"
             android:exported="true">
 
             <intent-filter>
@@ -24,7 +26,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- App Link: 청첩장 링크(/i/*)를 카카오톡 등에서 클릭 시 앱 자동 오픈 -->
+            <!-- App Link: 청첩장 / OAuth 콜백 / RSVP / 하객 사진 / 라이브 슬라이드쇼 모두 앱 내에서 처리 -->
             <!-- autoVerify=true → assetlinks.json 검증으로 다른 앱의 URL 가로채기 차단 -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
@@ -33,6 +35,10 @@
                 <data android:scheme="https" />
                 <data android:host="ourday-rust.vercel.app" />
                 <data android:pathPrefix="/i/" />
+                <data android:pathPrefix="/auth/" />
+                <data android:pathPrefix="/rsvp/" />
+                <data android:pathPrefix="/guest/" />
+                <data android:pathPrefix="/live/" />
             </intent-filter>
 
         </activity>
@@ -51,4 +57,16 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- Package visibility (Android 11+): Chrome Custom Tabs를 통한 외부 URL 열기 가시성 보장 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="https" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="http" />
+        </intent>
+    </queries>
 </manifest>

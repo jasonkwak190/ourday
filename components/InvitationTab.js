@@ -4,6 +4,7 @@ import { Copy, Check, Eye, Save, X, ExternalLink, Plus, Camera, Loader } from 'l
 import Icon from '@/components/Icon';
 import SafeImage from '@/components/SafeImage';
 import { supabase } from '@/lib/supabase';
+import { copyToClipboard } from '@/lib/clipboard';
 import { InvitationRenderer } from '@/components/InvitationTemplates';
 import KakaoShareButton from '@/components/KakaoShareButton';
 import AddressSearch from '@/components/AddressSearch';
@@ -343,9 +344,11 @@ export default function InvitationTab({ coupleId }) {
   }
 
   async function copyLink() {
-    await navigator.clipboard.writeText(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await copyToClipboard(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch { /* 무시 */ }
   }
 
   async function handleCoverUpload(e) {

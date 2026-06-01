@@ -52,8 +52,8 @@ export default function GuestsPage() {
       const [guestRes, budgetRes, rsvpRes] = await Promise.all([
         supabase.from('guests').select('id, name, side, relation, meal_count, phone, memo, gift_amount, created_at').eq('couple_id', coupleId).order('created_at'),
         supabase.from('budget_items').select('actual_amount').eq('couple_id', coupleId),
-        // message 컬럼은 DROP 예정(MT-007) — 선택하지 않음
-        supabase.from('rsvp_responses').select('id, name, side, attending, meal_count, created_at').eq('couple_id', coupleId).order('created_at', { ascending: false }),
+        // message 컬럼은 DROP됨(MT-007 완료) — 선택하지 않음. phone은 RSVP→명단 promote 시 필요해서 포함.
+        supabase.from('rsvp_responses').select('id, name, side, attending, meal_count, phone, created_at').eq('couple_id', coupleId).order('created_at', { ascending: false }),
       ]);
 
       setGuests(guestRes.data || []);

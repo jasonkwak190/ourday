@@ -972,7 +972,7 @@ export default function TimelinePage() {
                   · until our day ·
                 </p>
                 <p className="tabular-nums" style={{ fontSize: 38, fontWeight: 800, color: 'var(--ink)', lineHeight: 1.05, margin: '4px 0 0', letterSpacing: '-0.04em' }}>
-                  {dDay >= 0 ? `D-${dDay}` : dDay === 0 ? 'D-DAY' : `D+${Math.abs(dDay)}`}
+                  {dDay === 0 ? 'D-DAY' : dDay > 0 ? `D-${dDay}` : `D+${Math.abs(dDay)}`}
                 </p>
               </div>
               <div style={{ textAlign: 'right' }}>
