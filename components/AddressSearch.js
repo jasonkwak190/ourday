@@ -94,7 +94,7 @@ export default function AddressSearch({ value, onChange, onClear, placeholder = 
               </p>
             )}
             {value.zonecode && (
-              <p style={{ fontSize: 11, color: 'var(--ink-4)', margin: '2px 0 0', fontFamily: 'monospace' }}>
+              <p style={{ fontSize: 11, color: 'var(--ink-4)', margin: '2px 0 0', fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums' }}>
                 {value.zonecode}
               </p>
             )}

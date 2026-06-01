@@ -15,9 +15,14 @@ export async function GET(request) {
   }
 
   try {
+    // ⚠️ 서비스 롤 사용 이유:
+    // couples 테이블의 RLS 정책은 "자기 행만 select" 이므로 anon 클라이언트로
+    // count 를 요청하면 항상 0 이 반환된다 (SUPABASE.md:39-43 참고).
+    // 랜딩에 노출되는 단순 행 수 집계만 수행하므로 서비스 롤을 count 한정으로 사용한다.
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+      process.env.SUPABASE_SERVICE_ROLE_KEY,
+      { auth: { persistSession: false } },
     );
 
     // couples 테이블 행 수 = 실제 커플 수

@@ -100,12 +100,10 @@ export async function GET(request) {
 
     if (coupleErr) throw new Error(`couples 조회 실패: ${coupleErr.message}`);
     if (!expiredCouples?.length) {
-      console.log('[cleanup] 파기 대상 없음');
       return NextResponse.json({ success: true, message: '파기 대상 없음', cutoff, ...results });
     }
 
     const coupleIds = expiredCouples.map(c => c.id);
-    console.log(`[cleanup] 대상 커플 ${coupleIds.length}개 (wedding_date < ${cutoff})`);
 
     // ── ② rsvp_responses 삭제 ─────────────────────────────
     const { count: rsvpCount, error: rsvpErr } = await supabase
@@ -185,8 +183,7 @@ export async function GET(request) {
     await supabase.from('invitations').delete().in('couple_id', coupleIds);
 
     // ── 결과 ─────────────────────────────────────────
-    console.log(`[cleanup] 완료 — couples ${coupleIds.length}개 만료 처리, errors=${results.errors.length}`);
-
+    // 실행 요약은 응답 페이로드에 포함되어 Vercel 로그에 자동 기록되므로 별도 console.log 불필요.
     return NextResponse.json({
       success: results.errors.length === 0,
       cutoff,

@@ -51,7 +51,7 @@ export default function Error({ error, reset }) {
       </div>
       {/* 고객지원 추적용 ID — 작게 표시 */}
       {eventId && (
-        <p style={{ fontSize: 11, color: 'var(--ink-4, #A79D90)', marginTop: 8, fontFamily: 'monospace' }}>
+        <p style={{ fontSize: 11, color: 'var(--ink-4, #A79D90)', marginTop: 8, fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums' }}>
           오류 ID: {eventId.slice(0, 8)}
           <br />
           <span style={{ fontFamily: 'inherit' }}>문의 시 이 ID를 알려주세요</span>
