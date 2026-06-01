@@ -1,14 +1,17 @@
 # MANUAL_TASKS.md — 사람이 직접 해야 하는 작업 목록
 
 > Claude가 자동화할 수 없는 작업들. 출시 전 반드시 완료할 것.
-> 마지막 업데이트: 2026-04-27
+> 마지막 업데이트: 2026-05-11
 
 ---
 
 ## 🔴 CRITICAL — 출시 전 필수
 
-### MT-018 · reports 테이블 생성 (UGC 신고 기능) ⭐ 출시 직전 필수
-**상태**: 미완료
+### MT-018 · reports 테이블 생성 (UGC 신고 기능) ⚠️ 부분 완료 (2026-05-11)
+**상태**: 테이블·rate limit·API 동작. **단, `for insert with check (true)` 정책이 실제 DB에 누락**(2026-06-01 라이브 검증 — QA_2026_05_11.md W1). `/api/report`가 service role로 인서트하므로 사용자 영향 0. 정합성 회복을 위해 아래 한 줄 SQL 실행 권장:
+```sql
+create policy "anyone can report" on public.reports for insert with check (true);
+```
 **이유**: Google Play 정책 — UGC(공개 방명록·RSVP 등)가 있는 앱은 신고 메커니즘이 반드시 제공되어야 함. 코드는 이미 배포되어 있고, 테이블만 생성하면 즉시 활성화됨.
 
 **코드 준비됨**:
@@ -55,6 +58,20 @@ create policy "anyone can report"
 
 ---
 
+### MT-021 · invitation_guestbook anon INSERT GRANT 보정 ⭐ 선택 (정합성)
+**상태**: 사용자 영향 없음 — `/api/guestbook` POST가 service role로 우회. 다만 SUPABASE.md L437 `for insert with check (true)` 정책 의도와 실제 DB가 불일치(라이브 검증 시 `permission denied for table` — QA_2026_05_11.md W2).
+
+**선택 1**: 문서와 동일하게 만들기
+```sql
+grant insert on public.invitation_guestbook to anon;
+-- 정책이 없다면 함께 실행:
+create policy "누구나 방명록 작성" on public.invitation_guestbook
+  for insert with check (true);
+```
+**선택 2**: SUPABASE.md L430~442를 "anon INSERT는 service-role API(/api/guestbook) 경유 only"로 수정. 권장 — 이미 정책 설계가 그렇게 되어 있음.
+
+---
+
 ### MT-017 · couple_notes.image_url 컬럼 추가 ✅ 완료 (2026-05-11)
 **상태**: 완료 — SQL 실행됨, 사진 첨부 즉시 동작
 ~~다음 SQL을 실행해야 우리 노트 사진 첨부가 동작함~~
@@ -69,15 +86,14 @@ alter table couple_notes add column if not exists image_url text;
 
 ---
 
-### MT-007 · rsvp_responses.message 컬럼 DROP ⭐ 1분
-**상태**: 미완료  
-**이유**: RSVP 폼에서 message 필드 제거됨, 방명록으로 통합. 컬럼은 항상 NULL이고 앱 코드에서 미사용.
+### MT-007 · rsvp_responses.message 컬럼 DROP ✅ 완료 (2026-05-11)
+**상태**: 완료 — SQL 실행됨, 컬럼 제거.
+~~RSVP 폼에서 message 필드 제거됨, 방명록으로 통합~~
+**MT-006과 동일 작업** (중복 항목 통합).
 
-**Supabase Dashboard → SQL Editor에서 실행:**
 ```sql
 alter table rsvp_responses drop column if exists message;
 ```
-완료 후 CLAUDE.md 체크리스트 체크 (`rsvp_responses.message 컬럼 DB에서 DROP`)
 
 ---
 
@@ -151,14 +167,11 @@ alter table rsvp_responses drop column if exists message;
 
 ---
 
-### MT-006 · `rsvp_responses.message` 컬럼 DROP
-**현재 상태**: 항상 NULL (RSVP 폼에서 제거됨, 방명록으로 통합)  
-**방법**: Supabase Dashboard → Table Editor → rsvp_responses → message 컬럼 삭제  
-또는 SQL 에디터에서:
+### MT-006 · `rsvp_responses.message` 컬럼 DROP ✅ 완료 (2026-05-11)
+**상태**: 완료 — MT-007과 동일 작업 (중복 항목으로 통합 완료).
 ```sql
 alter table rsvp_responses drop column if exists message;
 ```
-**주의**: 이미 수집된 데이터 없으므로 안전하게 DROP 가능
 
 ---
 
@@ -398,10 +411,49 @@ alter table checklist_items
 
 ---
 
+### MT-019 · Supabase 리전 확인 ⭐ 출시 전 점검
+**상태**: 미완료 (확인만 필요)
+**목적**: 한국 사용자 latency 최적화 + 개인정보 국외이전 고지 정확성
+
+**방법**:
+1. Supabase Dashboard → Project Settings → General → **Region** 확인
+2. 권장: `ap-northeast-2` (Seoul) 또는 `ap-northeast-1` (Tokyo)
+3. 다른 리전이면 **마이그레이션 신청** (Supabase Pro 플랜 + 1회성 작업)
+4. 현재 리전을 `app/privacy/page.js` 처리위탁 표 "데이터 보관 위치"란에 정확히 표기 (이미 미국으로 표기되어 있다면 갱신)
+
+**왜 필요한가**: 개인정보 처리방침에 "국외이전 국가"를 정확히 명시해야 PIPA 의무 충족. 마케팅 효과: 한국 사용자 응답시간 50–150ms 개선.
+
+---
+
+### MT-020 · Vercel Pro 플랜 전환 (상업적 사용) ⭐ 매출 발생 직전
+**상태**: 미완료 — 무료 Hobby 플랜으로 운영 중
+**이유**: Vercel **Hobby 플랜은 비상업적 사용만 허용**. 청첩장 결제·광고·B2B 제휴 등 매출이 발생하는 순간부터 **Pro($20/월) 플랜 의무**.
+
+**판단 기준** (Vercel ToS):
+- 광고 노출 → Pro 필요
+- 결제 모듈 도입 (청첩장 유료 템플릿 등) → Pro 필요
+- B2B 제휴 트래킹 링크 → Pro 필요
+- 순수 무료 서비스만 유지 → Hobby로 OK
+
+**절차** (5분):
+1. https://vercel.com → ourday 팀 → **Settings → Billing → Upgrade**
+2. Pro 플랜 선택 → 카드 등록
+3. 함께 활성화되는 혜택: 더 큰 함수 한도, Analytics, Password Protection, 우선 지원
+
+완료 후 BM.md 매출 모델 섹션 — Vercel 고정비 $20/월 반영.
+
+---
+
 ## 완료된 수동 작업 ✅
 
 | 항목 | 완료일 | 비고 |
 |------|--------|------|
+| MT-018 reports 테이블 + RLS 생성 | 2026-05-11 | UGC 신고 API 활성화 |
+| MT-017 couple_notes.image_url 컬럼 추가 | 2026-05-11 | 우리 노트 사진 첨부 |
+| MT-007 / MT-006 rsvp_responses.message DROP | 2026-05-11 | 중복 항목 통합 후 처리 |
+| invitations RLS — slug NOT NULL 조건 + 컬럼 grant | 2026-05-11 | 계좌·전화 anon 차단 |
+| invitation_guestbook RLS — anon SELECT 차단 | 2026-05-11 | service role API로만 조회 |
+| note-images Storage 버킷 생성 (public 15MB) | 2026-05-11 | 우리 노트 첨부 |
 | MT-014 decisions.candidates jsonb 컬럼 추가 | 2026-04-29 | 3-way 비교 보드 활성화 |
 | Supabase SUPABASE_SERVICE_ROLE_KEY 로컬 설정 | 2026-04-22 | `.env.local` |
 | CRON_SECRET 로컬 생성 | 2026-04-22 | `.env.local` |

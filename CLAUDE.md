@@ -41,7 +41,8 @@ app/
   guide/             # 정보·예절 가이드 (정적)
   notes/             # 우리 노트 — 커플 실시간 메모 (Supabase Realtime)
   invitation/        # 모바일 청첩장 편집 (메인 네비 4번째 탭, 2026-05 승격)
-  privacy/           # 개인정보처리방침 (법적 필수 페이지)
+  privacy/           # 개인정보처리방침 (법적 필수 페이지, PIPA 처리위탁 5개사 명시)
+  account-deletion/  # 계정·데이터 삭제 안내 (Play Store 정책 필수, 공개 페이지)
   settings/          # 프로필 · 초대코드 확인 · 결혼정보 수정 · 로그아웃
   auth/callback/     # OAuth 콜백 처리 (신규/기존 유저 분기)
   rsvp/[id]/         # 공개 RSVP 폼
@@ -66,8 +67,8 @@ ios/                 # Capacitor iOS 네이티브 프로젝트
 public/.well-known/  # Android App Links 검증용 assetlinks.json
 ```
 
-**DB 테이블**: `couples` · `users` · `checklist_items` · `vendors` · `decisions` · `guests` · `invitations` · `couple_notes` · `photo_events` · `guest_photos` · `guestbook_entries` · `rsvp_responses`
-모든 테이블에 RLS 활성화. 쿼리 시 반드시 `.eq('couple_id', coupleId)` 필터 적용.
+**DB 테이블**: `couples` · `users` · `checklist_items` · `vendors` · `decisions` · `guests` · `invitations` · `couple_notes` · `photo_events` · `guest_photos` · `invitation_guestbook` · `rsvp_responses` · `reports`
+모든 테이블에 RLS 활성화. 쿼리 시 반드시 `.eq('couple_id', coupleId)` 필터 적용. `reports`는 UGC 신고용(2026-05-11 신설, anon insert / service role select).
 
 ---
 
@@ -213,7 +214,7 @@ font-family: 'Pretendard Variable', 'Pretendard', -apple-system, ...
 
 ---
 
-## TODO 체크리스트 (2026-04-27 기준)
+## TODO 체크리스트 (2026-05-11 기준)
 
 > 완료된 항목 ✅ / 진행 중 🔄 / 미착수 ⬜
 
@@ -297,7 +298,20 @@ alter table checklist_items add column if not exists subtasks jsonb default '[]'
 - [x] **Lighthouse 측정** — Performance 82 / A11y 100 / BP 100 / SEO 100 (PageSpeed Insights 2026-04-28)
   - TBT 50ms, LCP 4.7s, CLS 0.022 — Sentry tracing OFF로 TBT 폭락 개선
 - [x] 접근성(a11y) 점검 — BottomNav aria-label/aria-current/aria-expanded, notes 버튼 aria-label 추가
-- [ ] `rsvp_responses.message` 컬럼 DB에서 DROP (Supabase 대시보드 수동, MANUAL_TASKS MT-006)
+- [x] `rsvp_responses.message` 컬럼 DB에서 DROP (2026-05-11)
+- [x] `couple_notes.image_url` 컬럼 추가 + note-images Storage 버킷 (2026-05-11)
+- [x] **UGC 신고 기능** — `reports` 테이블 + `/api/report` (Google Play 정책 충족, 2026-05-11)
+- [x] `invitations` / `invitation_guestbook` anon 권한 축소 — 컬럼 grant + slug NOT NULL 정책 (2026-05-11)
+- [x] Sentry server/edge — DSN 미설정 환경에서 init skip 가드 추가 (2026-05-11)
+- [x] BottomNav 더보기 시트 Escape 키 닫기 (2026-05-11)
+- [x] cleanup cron — guest_photos 행 + Storage 객체(note-images/guest-photos/invitation-covers) orphan 정리 확장 (2026-05-11)
+- [x] App Links 확장 — `/auth/`, `/rsvp/`, `/guest/`, `/live/` 경로 추가 + Capacitor `appUrlOpen` 리스너 (2026-05-11)
+- [x] `/account-deletion` 공개 페이지 (Play Store 정책 필수, 2026-05-11)
+- [x] 개인정보처리방침 PIPA 정합 — 만 14세 이상, 수집항목 전체 명시, 처리위탁 5개사(Supabase/Vercel/Sentry/Google/Kakao), 파트너 보호 조항 (2026-05-11)
+- [x] delete-account API — 파트너 존재 시 본인 행만 detach, 단독일 때만 couple CASCADE (2026-05-11)
+- [x] 보안 5+건 — path traversal / SSRF / MIME 위장 대응 (2026-05-11)
+- [x] Realtime stale-closure 수정 — notes/decisions 채널 (2026-05-11)
+- [x] a11y form labels — 모든 input에 label/aria-label 점검 (2026-05-11)
 
 ### 🚀 출시 준비
 
@@ -307,3 +321,5 @@ alter table checklist_items add column if not exists subtasks jsonb default '[]'
 - [ ] 개인정보처리방침 법적 검토
 - [ ] Google Play Console 데이터 보안 양식 작성 (MANUAL_TASKS.md MT-004 참조)
 - [ ] assetlinks.json 프로덕션 SHA-256 지문 추가 (MANUAL_TASKS.md MT-001 참조)
+- [ ] Supabase 리전 확인 (MANUAL_TASKS.md MT-019)
+- [ ] Vercel Pro 전환 (매출 발생 직전, MANUAL_TASKS.md MT-020)

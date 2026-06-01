@@ -1,6 +1,6 @@
 # CHECKPOINT.md — Ourday 개발 현황
 
-> 마지막 업데이트: 2026-04-27
+> 마지막 업데이트: 2026-05-11
 
 ---
 
@@ -36,9 +36,10 @@
 | 하객 업로드 | `/guest/[code]` | ✅ QR 스캔 후 사진 업로드 |
 | 라이브 슬라이드쇼 | `/live/[code]` | ✅ 식장 대형화면용 자동 슬라이드 |
 | 모바일 청첩장 편집 | `/invitation` | ✅ 3가지 템플릿, 미리보기 모달 |
-| 모바일 청첩장 공개 | `/i/[slug]` | ✅ OG태그, 방명록, 조회수 |
-| 정보 공유 노트 | `/notes` | ✅ 말풍선 UI, Realtime, 검색 |
+| 모바일 청첩장 공개 | `/i/[slug]` | ✅ OG태그, 방명록, 조회수, 신고 모달 |
+| 정보 공유 노트 | `/notes` | ✅ 말풍선 UI, Realtime, 검색, 사진 첨부 |
 | 참석 확인(RSVP) | `/rsvp/[id]` | ✅ 공개 폼, 자동 집계 |
+| 계정·데이터 삭제 안내 | `/account-deletion` | ✅ Play Store 정책 (2026-05-11) |
 
 ### 앱 / 네이티브
 | 항목 | 상태 |
@@ -56,9 +57,12 @@
 | `/api/gallery` | 커플 photo_event CRUD + signed URL |
 | `/api/guest/upload` | 하객 사진 업로드 |
 | `/api/live` | 슬라이드쇼용 사진 조회 |
-| `/api/guestbook` | 청첩장 방명록 CRUD |
+| `/api/guestbook` | 청첩장 방명록 CRUD (service role, 2026-05 anon SELECT 차단) |
 | `/api/rsvp` | 참석 확인 조회·제출 |
 | `/api/stats` | 커플 수 공개 통계 |
+| `/api/report` | UGC 신고 접수 (anon, IP rate limit, 2026-05-11) |
+| `/api/notes/upload` | 우리 노트 이미지 업로드 (note-images, 2026-05-11) |
+| `/api/delete-account` | 계정 삭제 (파트너 존재 시 detach, 단독일 때 CASCADE) |
 
 ---
 
@@ -152,22 +156,54 @@ npx cap sync          # 네이티브 플러그인 변경 시에만 필요
 
 ---
 
+## 📋 출시 전 QA 사이클 (2026-05-11)
+
+장시간 QA 세션을 통한 정책·보안·정합성 일괄 점검 + 신규 기능. 다음 항목 모두 완료.
+
+### 신규 기능
+- ✅ **UGC 신고 기능 신설** — `reports` 테이블 + `POST /api/report` (IP 15분당 5건 rate limit) + `/i/[slug]` 방명록 옆 신고 버튼·모달. Google Play 정책 충족. (※ `for insert with check (true)` 정책 자체는 라이브 DB에 한 줄 추가 권장 — MT-018 참고)
+- ✅ **우리 노트 사진 첨부** — `couple_notes.image_url` 컬럼 + `note-images` Storage 버킷(public, 15MB, image MIME만)
+- ✅ **`/account-deletion` 공개 페이지** — Play Store 계정 삭제 정책 요구사항
+- ✅ **App Links 확장** — AndroidManifest deep-link path prefix를 `/i/`, `/auth/`, `/rsvp/`, `/guest/`, `/live/`로 확장 + Capacitor `appUrlOpen` 리스너 (카톡 링크 클릭 시 앱 오픈)
+
+### 보안 (BUG·HIGH 5+건)
+- ✅ Path traversal 방어 (Storage 경로 검증)
+- ✅ SSRF 방어 (링크 프리뷰 URL 화이트리스트 + private IP 차단)
+- ✅ MIME 위장 방어 (Storage 업로드 magic number 검증)
+- ✅ `invitations` 민감 컬럼(계좌·전화) anon revoke + 안전 컬럼 grant
+- ✅ `invitation_guestbook` anon SELECT 차단 — service role API로만 조회
+- ✅ `delete-account` 파트너 보호 — 본인 행만 detach, 단독일 때만 couple CASCADE
+- ✅ Sentry server/edge — DSN 미설정 환경에서 init skip 가드
+
+### 정합성 / 안정성
+- ✅ Realtime stale-closure 수정 — `notes` / `decisions` 채널 핸들러가 옛 state 참조하던 버그
+- ✅ Cleanup cron 확장 — `guest_photos` 행 + `note-images`·`guest-photos`·`invitation-covers` Storage orphan 객체 일괄 정리
+- ✅ `rsvp_responses.message` 컬럼 DROP (실 사용 안 함)
+- ✅ BottomNav 더보기 시트 Escape 키 닫기
+
+### 정책 / 컴플라이언스
+- ✅ Privacy 페이지 PIPA 정합 — 만 14세 이상 가입, 수집 항목 전체 명시, 처리위탁 5개사(Supabase/Vercel/Sentry/Google/Kakao), 파트너 데이터 보호 조항, `/account-deletion` 링크
+- ✅ a11y form labels — 모든 input·textarea에 label/aria-label 점검·보강
+
+### 도큐먼트 동기화 (이 커밋)
+- ✅ SUPABASE.md — `reports` 신설, `rsvp_responses.message` 제거, `couple_notes.image_url` 추가, RLS·Storage 섹션 갱신
+- ✅ MANUAL_TASKS.md — MT-006/007/017/018 완료 처리, MT-019(리전 확인)·MT-020(Vercel Pro) 신설
+- ✅ CLAUDE.md / CHECKPOINT.md — 신규 페이지·테이블·체크리스트 반영
+
+---
+
 ## 🔴 남은 작업
 
 | 항목 | 우선순위 | 비고 |
 |------|----------|------|
-| **Sentry DSN 등록** | 🔴 출시 전 | sentry.io 프로젝트 → NEXT_PUBLIC_SENTRY_DSN |
-| **입력값 서버 검증** | 🔴 출시 전 | API Route 길이·타입 체크 |
-| **번들 사이즈 분석** | 🟠 | bundle-analyzer 측정 |
-| **Lighthouse 측정** | 🟠 | LCP/CLS/INP 프로덕션 기준 |
-| **a11y 점검** | 🟠 | aria-label, 색상 대비율 WCAG AA |
 | Google Play 개발자 계정 등록 | 🔴 출시 전 | $25 일회성 |
 | App Store 개발자 계정 등록 | 🔴 출시 전 | $99/년 |
-| Google OAuth Supabase 설정 | 🟡 | Supabase → Auth → Providers |
-| 카카오 OAuth Supabase 설정 | 🟡 | developers.kakao.com |
+| assetlinks.json 프로덕션 SHA-256 | 🔴 출시 전 | MT-001 |
+| Supabase 리전 확인 | 🟡 | MT-019 (PIPA 국외이전 표기 정확성) |
+| Vercel Pro 전환 | 🟡 | MT-020 (매출 발생 직전) |
+| `reports` INSERT 정책 SQL 1줄 추가 | 🟢 | 사용자 영향 0, 정합성 회복용 |
 | 푸시 알림 | 🟢 다음 | D-day·할일 리마인더 |
 | 오프라인 지원 | 🟢 다음 | Service Worker 캐시 |
-| `rsvp_responses.message` DROP | 🟢 | Supabase 대시보드 수동 |
 
 ---
 
@@ -182,14 +218,18 @@ npx cap sync          # 네이티브 플러그인 변경 시에만 필요
 | `decisions` | 의사결정 | ✅ |
 | `guests` | 하객 목록 + 축의금 | ✅ |
 | `vendors` | 업체 목록 | ✅ |
-| `invitations` | 모바일 청첩장 | ✅ |
-| `couple_notes` | 정보 공유 노트 | ✅ |
+| `invitations` | 모바일 청첩장 | ✅ (slug 컬럼 grant, 2026-05) |
+| `couple_notes` | 정보 공유 노트 (+ image_url) | ✅ |
 | `photo_events` | 하객 사진 이벤트 | ✅ |
 | `guest_photos` | 하객 업로드 사진 메타 | ✅ |
-| `guestbook_entries` | 청첩장 방명록 | ✅ |
+| `invitation_guestbook` | 청첩장 방명록 | ✅ (anon SELECT 차단, 2026-05) |
 | `rsvp_responses` | 참석 확인 응답 | ✅ |
+| `reports` | UGC 신고 (2026-05-11 신설) | ✅ (anon insert / service role select) |
 
 ## Storage Buckets
-| 버킷 | 용도 |
-|------|------|
-| `guest-photos` | 하객 업로드 사진 (private, signed URL) |
+| 버킷 | 공개 | 용도 |
+|------|------|------|
+| `invitation-covers` | public | 청첩장 커버 이미지 |
+| `guest-photos` | private | 하객 업로드 사진 (signed URL) |
+| `vendor-attachments` | private | 업체 영수증·계약서 |
+| `note-images` | public | 우리 노트 첨부 이미지 (2026-05-11 신설) |

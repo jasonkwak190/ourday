@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, useRef, use } from 'react';
 import { Heart, Check, X, Send, Minus, Plus, Flag } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { copyToClipboard } from '@/lib/clipboard';
@@ -215,7 +215,13 @@ export default function InvitationViewPage({ params }) {
   // 세션 내 신고 완료된 항목 id 모음 (재신고 버튼 숨김용)
   const [reportedIds,    setReportedIds]    = useState(() => new Set());
 
+  // a11y: 신고 모달용 — 이전 포커스 복원, 초기 포커스, Escape
+  const reportPrevFocusRef = useRef(null);
+  const reportReasonRef = useRef(null);
+
   function openReportModal(entryId) {
+    // 모달 열기 직전의 포커스를 기억해두고, 닫을 때 복원
+    reportPrevFocusRef.current = (typeof document !== 'undefined') ? document.activeElement : null;
     setReportTargetId(entryId);
     setReportReason('');
     setReportName('');
@@ -228,7 +234,26 @@ export default function InvitationViewPage({ params }) {
     setReportReason('');
     setReportName('');
     setReportError('');
+    // 닫은 직후 이전 포커스 복원
+    if (reportPrevFocusRef.current && typeof reportPrevFocusRef.current.focus === 'function') {
+      try { reportPrevFocusRef.current.focus(); } catch { /* ignore */ }
+    }
   }
+
+  // a11y: 신고 모달 — Escape로 닫기, 열리면 첫 입력에 포커스
+  useEffect(() => {
+    if (!reportTargetId) return;
+    const onKey = (e) => { if (e.key === 'Escape') closeReportModal(); };
+    window.addEventListener('keydown', onKey);
+    // 약간의 지연 후 textarea 포커스 (DOM 마운트 보장)
+    const t = setTimeout(() => { reportReasonRef.current?.focus(); }, 50);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      clearTimeout(t);
+    };
+    // closeReportModal은 매 렌더마다 새 참조지만 동작은 동일 — 안전하게 reportTargetId만 의존
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reportTargetId]);
 
   async function submitReport() {
     if (reportSubmitting || !reportTargetId) return;
@@ -802,7 +827,7 @@ export default function InvitationViewPage({ params }) {
             onClick={e => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
-            aria-label="메시지 신고"
+            aria-labelledby="report-modal-title"
             style={{
               width: '100%', maxWidth: 430,
               backgroundColor: 'var(--ivory, #faf8f5)',
@@ -813,7 +838,7 @@ export default function InvitationViewPage({ params }) {
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <Flag size={16} color="var(--champagne-2, #b0935a)" strokeWidth={2} />
-              <h3 style={{
+              <h3 id="report-modal-title" style={{
                 fontFamily: "'Noto Serif KR', serif", fontWeight: 500, fontSize: 17,
                 color: 'var(--ink, #1a1613)', margin: 0, letterSpacing: '-0.01em',
               }}>
@@ -828,13 +853,15 @@ export default function InvitationViewPage({ params }) {
               report this message
             </p>
 
-            <label style={{
+            <label htmlFor="report-modal-reason" style={{
               display: 'block', fontSize: 12, color: 'var(--ink-3, #6E6459)',
               marginBottom: 6,
             }}>
               왜 신고하시나요? (5~500자)
             </label>
             <textarea
+              id="report-modal-reason"
+              ref={reportReasonRef}
               value={reportReason}
               onChange={e => setReportReason(e.target.value)}
               placeholder="스팸 / 욕설 / 부적절한 내용 등 사유를 알려주세요"
@@ -856,13 +883,14 @@ export default function InvitationViewPage({ params }) {
               {reportReason.length}/500
             </p>
 
-            <label style={{
+            <label htmlFor="report-modal-name" style={{
               display: 'block', fontSize: 12, color: 'var(--ink-3, #6E6459)',
               marginBottom: 6,
             }}>
               이름 (선택)
             </label>
             <input
+              id="report-modal-name"
               type="text"
               value={reportName}
               onChange={e => setReportName(e.target.value)}

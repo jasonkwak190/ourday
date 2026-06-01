@@ -1,7 +1,7 @@
 # Ourday — Supabase 스키마 & 정책 정리
 
-> 마지막 업데이트: 2026-04-27 (v3)  
-> 총 13개 테이블 · **13개 전부 활성** · 보류 없음
+> 마지막 업데이트: 2026-05-11 (v4)  
+> 총 14개 테이블 · **14개 전부 활성** · 보류 없음 (reports 신설)
 
 ---
 
@@ -10,7 +10,8 @@
 2. [보류/검토 테이블](#보류검토-테이블)
 3. [RLS 정책 패턴](#rls-정책-패턴)
 4. [공개 접근 API 정리](#공개-접근-api)
-5. [정리 권장 사항](#정리-권장-사항)
+5. [Storage Buckets](#storage-buckets)
+6. [정리 권장 사항](#정리-권장-사항)
 
 ---
 
@@ -207,8 +208,9 @@ create policy "커플만 하객 접근" on guests
 | attending | boolean | 참석 여부 |
 | meal_count | integer | 식사 수 (default 1) |
 | phone | text | 연락처 |
-| message | text | ~~메시지~~ **더 이상 사용 안 함** — RSVP 폼에서 제거, 방명록으로 통합 (항상 null) |
 | created_at | timestamptz | |
+
+> 📝 **`message` 컬럼 DROPPED (2026-05-11)** — RSVP 폼에서 제거되어 방명록으로 통합. 마이그레이션: `alter table rsvp_responses drop column if exists message;`
 
 **RLS**: 커플은 본인 couple_id로 읽기 / anon insert는 service role로 처리
 ```sql
@@ -286,7 +288,7 @@ create policy "커플만 업체 접근" on vendors
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
-**RLS**: 커플은 수정/조회, anon은 slug로 읽기만 가능
+**RLS**: 커플은 수정/조회, anon은 slug가 있는 행만 읽기 + 민감 컬럼은 컬럼-레벨 grant로 차단 (2026-05-11 강화)
 ```sql
 alter table invitations enable row level security;
 
@@ -295,8 +297,20 @@ create policy "커플만 청첩장 수정" on invitations
     couple_id = (select couple_id from users where id = auth.uid())
   );
 
+-- 공개 select은 slug가 발급된(published) 청첩장만
 create policy "공개 청첩장 조회 (slug)" on invitations
-  for select using (true);  -- 모든 사람이 slug로 조회 가능 (공개 청첩장)
+  for select using (slug is not null);
+
+-- anon에는 안전 컬럼만 노출 (계좌·연락처는 차단)
+revoke select on invitations from anon;
+grant select (
+  id, slug, groom_name, bride_name, wedding_date, wedding_time,
+  venue_name, venue_address, venue_map_url, venue_road_address,
+  venue_jibun_address, venue_sido, venue_sigungu, venue_bname,
+  venue_zonecode, venue_lat, venue_lng, message, template,
+  cover_image_url, view_count, created_at
+) on invitations to anon;
+-- 계좌(account_groom/bride)·전화번호 등 민감 필드는 grant 대상에서 제외 → 서버 API에서 service role로만 접근
 ```
 
 **인덱스** (통계 집계용 — 인기 웨딩홀 / 평균 예산 by 지역):
@@ -324,6 +338,7 @@ create index if not exists invitations_sido_sigungu_idx
 | role | text | groom / bride |
 | content | text | 메모 내용 |
 | link_url | text | 링크 URL |
+| image_url | text | 첨부 이미지 URL (note-images 버킷, 2026-05-11 추가) |
 | created_at | timestamptz | |
 | updated_at | timestamptz | |
 
@@ -412,11 +427,54 @@ create policy "커플 사진 조회" on guest_photos
 | message | text | 방명록 메시지 (200자 이내) |
 | created_at | timestamptz | |
 
+**RLS** (2026-05-11 강화):
+```sql
+alter table invitation_guestbook enable row level security;
+
+-- anon INSERT만 허용 (공개 방명록 작성). anon SELECT는 완전 차단.
+revoke select on invitation_guestbook from anon;
+
+create policy "누구나 방명록 작성" on invitation_guestbook
+  for insert with check (true);
+
+-- 커플 본인의 방명록 조회는 service role로 처리 (/api/guestbook GET).
+-- 공개 페이지 표시도 service role API를 거쳐 가공된 응답만 노출.
+```
+
 **현재 상태**:
-- `app/api/guestbook/route.js` — GET/POST API
+- `app/api/guestbook/route.js` — GET/POST API (service role)
 - `components/InvitationTemplates.js` — 청첩장 하단 "축하 메시지" 폼
 - `app/guests/page.js` — 참석확인 탭 하단 방명록 섹션 (최신 50개)
 - `app/dashboard/page.js` — 대시보드 방명록 위젯 (최신 3개)
+
+---
+
+### 13. `reports` (2026-05-11 신설)
+UGC(공개 방명록·RSVP) 신고 접수. Google Play 정책 충족용.
+
+| 컬럼 | 타입 | 설명 |
+|------|------|------|
+| id | uuid PK | gen_random_uuid() |
+| target_type | text | 'guestbook' / 'rsvp' (check 제약) |
+| target_id | uuid | 신고 대상 레코드 id |
+| reason | text | 신고 사유 (5–500자, check 제약) |
+| reporter_name | text | 신고자 이름 (선택) |
+| reporter_ip | text | 요청자 IP (rate limit 추적용) |
+| created_at | timestamptz | 기본 now() |
+| handled_at | timestamptz | 처리 시각 |
+| handled_by | uuid | users(id) 참조 (처리자) |
+| handler_action | text | 'kept' / 'hidden' / 'deleted' |
+
+**RLS**: anon INSERT 가능, SELECT는 service role 전용
+```sql
+alter table reports enable row level security;
+
+create policy "anyone can report" on reports
+  for insert with check (true);
+-- SELECT/UPDATE 정책은 추가하지 않음 → service role로만 접근 (Supabase Table Editor)
+```
+
+**API**: `POST /api/report` (anon, IP 15분당 5건 rate limit)
 
 ---
 
@@ -449,11 +507,13 @@ RLS를 우회하지 않고 서버 API Route(`/api/rsvp`)에서 `SUPABASE_SERVICE
 |--------|------|------------|------|
 | `GET /api/rsvp?couple_id=` | anon key | invitations | 없음 |
 | `POST /api/rsvp` | service role | rsvp_responses, guests | 없음 |
-| `GET /api/guestbook?invitation_id=` | anon key | invitation_guestbook | 없음 |
+| `GET /api/guestbook?invitation_id=` | service role | invitation_guestbook | 없음 (anon SELECT 차단되어 service role 필수) |
 | `POST /api/guestbook` | service role | invitation_guestbook | 없음 |
 | `POST /api/guest/upload` | service role | guest_photos | 없음 (event_code 검증) |
-| `GET /i/[slug]` | anon key | invitations | 없음 (공개 URL) |
-| `GET /rsvp/[id]` | anon key | invitations | 없음 (public RSVP 폼) |
+| `POST /api/report` | service role | reports | 없음 (IP rate limit) |
+| `POST /api/notes/upload` | service role | note-images Storage | 인증(쿠키) + couple 매칭 |
+| `GET /i/[slug]` | anon key | invitations (slug 컬럼 grant) | 없음 (공개 URL) |
+| `GET /rsvp/[id]` | anon key | invitations (안전 컬럼 grant) | 없음 (public RSVP 폼) |
 
 ---
 
@@ -465,9 +525,13 @@ RLS를 우회하지 않고 서버 API Route(`/api/rsvp`)에서 `SUPABASE_SERVICE
 - [x] `middleware.js` → `proxy.js` 마이그레이션 (Next.js 16)
 - [x] RSVP `message` 필드 미사용 처리 (방명록으로 통합)
 - [x] 인덱스 12개 추가
+- [x] `rsvp_responses.message` 컬럼 DROP (2026-05-11)
+- [x] `couple_notes.image_url` 컬럼 추가 (2026-05-11)
+- [x] `reports` 테이블 신설 + RLS (2026-05-11)
+- [x] `invitations` / `invitation_guestbook` anon select 축소 + 컬럼 grant (2026-05-11)
 
 ### 남은 것
-- [ ] `rsvp_responses.message` 컬럼 — DB에서 DROP 해도 됨 (항상 null, 앱에서 미사용)
+- 없음 (스키마 정리 완료)
 
 ---
 
@@ -494,9 +558,19 @@ supabase.from('couples').select('id, wedding_date, groom_name, bride_name, total
 - 확신이 없으면 `select('*')` 유지 (성능 최적화보다 정확성 우선)
 - 새 컬럼 추가 시 **즉시 이 문서 업데이트**
 
-### Supabase Storage
-- `guest-photos` 버킷: 하객 업로드 사진 저장
-- Storage 정책: anon upload (event_code 검증은 API에서), 커플 download
+## Storage Buckets
+
+| 버킷 | 공개 여부 | 용량 제한 | 허용 MIME | 용도 |
+|------|----------|-----------|----------|------|
+| `invitation-covers` | public | 10MB | image/jpeg, image/png, image/webp | 청첩장 커버 이미지 (OG 카드) |
+| `guest-photos` | private | 15MB | image/* | 하객이 QR로 업로드한 사진 (signed URL로 조회) |
+| `vendor-attachments` | private | 15MB | image/*, application/pdf | 업체 영수증·계약서 첨부 |
+| `note-images` | public | 15MB | image/jpeg, image/png, image/webp, image/gif | 우리 노트 첨부 이미지 (2026-05-11 신설) |
+
+**정책 요약**
+- public 버킷: service role API 라우트(`/api/notes/upload`, `/api/invitation/cover`)에서 검증 후 업로드. 공개 URL로 즉시 표시.
+- private 버킷: 업로드는 service role API에서 처리, 조회는 signed URL(만료 시간 부여)로 제공. 직접 anon access 차단.
+- cleanup cron: `note-images`·`guest-photos`·`invitation-covers` 모두 orphan 객체 정리 대상 (2026-05-11 확장).
 
 ### 인덱스 추가 권장 (성능)
 ```sql
