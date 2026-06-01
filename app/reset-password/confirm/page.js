@@ -120,12 +120,13 @@ export default function ResetPasswordConfirmPage() {
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="reset-new-password" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>
               새 비밀번호
             </label>
             <div className="relative">
               <input
+                id="reset-new-password"
                 className="input-field"
                 type={showPw ? 'text' : 'password'}
                 placeholder="8자 이상 입력"
@@ -136,6 +137,8 @@ export default function ResetPasswordConfirmPage() {
               />
               <button type="button"
                 onClick={() => setShowPw(v => !v)}
+                aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보이기'}
+                aria-pressed={showPw}
                 style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                   background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 {showPw
@@ -146,12 +149,13 @@ export default function ResetPasswordConfirmPage() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="reset-new-password-confirm" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>
               새 비밀번호 확인
             </label>
             <div className="relative">
               <input
+                id="reset-new-password-confirm"
                 className="input-field"
                 type={showPw2 ? 'text' : 'password'}
                 placeholder="동일하게 다시 입력"
@@ -165,6 +169,8 @@ export default function ResetPasswordConfirmPage() {
               />
               <button type="button"
                 onClick={() => setShowPw2(v => !v)}
+                aria-label={showPw2 ? '비밀번호 숨기기' : '비밀번호 보이기'}
+                aria-pressed={showPw2}
                 style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                   background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 {showPw2

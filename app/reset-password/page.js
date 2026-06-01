@@ -78,11 +78,12 @@ export default function ResetPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="reset-email" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>
               이메일
             </label>
             <input
+              id="reset-email"
               className="input-field"
               type="email"
               placeholder="가입한 이메일 주소"

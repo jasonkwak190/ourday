@@ -172,7 +172,7 @@ export default function LoginPage() {
         ) : (
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             <div style={{ marginBottom: 16 }}>
-              <label style={{
+              <label htmlFor="login-email" style={{
                 fontSize: 12,
                 fontWeight: 600,
                 letterSpacing: '0.12em',
@@ -184,6 +184,7 @@ export default function LoginPage() {
                 이메일
               </label>
               <input
+                id="login-email"
                 className="input-field"
                 type="email"
                 placeholder="your@email.com"
@@ -197,7 +198,7 @@ export default function LoginPage() {
 
             <div style={{ marginBottom: 20 }}>
               <div className="flex items-center justify-between" style={{ marginBottom: 6 }}>
-                <label style={{
+                <label htmlFor="login-password" style={{
                   fontSize: 11,
                   fontWeight: 600,
                   letterSpacing: '0.12em',
@@ -220,6 +221,7 @@ export default function LoginPage() {
               </div>
               <div style={{ position: 'relative' }}>
                 <input
+                  id="login-password"
                   className="input-field"
                   type={showPw ? 'text' : 'password'}
                   placeholder="password"
@@ -232,6 +234,8 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPw(v => !v)}
+                  aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보이기'}
+                  aria-pressed={showPw}
                   style={{
                     position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)',
                     background: 'none', border: 'none', cursor: 'pointer',

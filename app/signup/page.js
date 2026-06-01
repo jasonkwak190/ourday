@@ -193,26 +193,27 @@ export default function SignupPage() {
         <form onSubmit={handleSignup} className="flex flex-col gap-4">
           {/* 이름 */}
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="signup-name" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>이름</label>
-            <input className="input-field" type="text" placeholder="홍길동"
+            <input id="signup-name" className="input-field" type="text" placeholder="홍길동"
               value={name} onChange={e => setName(e.target.value)} autoComplete="name" required />
           </div>
 
           {/* 이메일 */}
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="signup-email" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>이메일</label>
-            <input className="input-field" type="email" placeholder="example@email.com"
+            <input id="signup-email" className="input-field" type="email" placeholder="example@email.com"
               value={email} onChange={e => setEmail(e.target.value)} autoComplete="email" required />
           </div>
 
           {/* 비밀번호 */}
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="signup-password" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>비밀번호</label>
             <div style={{ position: 'relative' }}>
               <input
+                id="signup-password"
                 className="input-field"
                 type={showPw ? 'text' : 'password'}
                 placeholder="6자 이상"
@@ -225,6 +226,8 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowPw(v => !v)}
+                aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보이기'}
+                aria-pressed={showPw}
                 style={{
                   position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                   background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)',
@@ -238,10 +241,11 @@ export default function SignupPage() {
 
           {/* 비밀번호 확인 */}
           <div>
-            <label className="text-xs font-semibold block mb-1.5"
+            <label htmlFor="signup-password-confirm" className="text-xs font-semibold block mb-1.5"
               style={{ color: 'var(--toss-text-secondary)' }}>비밀번호 확인</label>
             <div style={{ position: 'relative' }}>
               <input
+                id="signup-password-confirm"
                 className="input-field"
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="비밀번호를 다시 입력해주세요"
@@ -257,6 +261,8 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={() => setShowConfirm(v => !v)}
+                aria-label={showConfirm ? '비밀번호 숨기기' : '비밀번호 보이기'}
+                aria-pressed={showConfirm}
                 style={{
                   position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
                   background: 'none', border: 'none', cursor: 'pointer', color: 'var(--toss-text-tertiary)',

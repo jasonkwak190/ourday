@@ -250,10 +250,11 @@ export default function SetupPage() {
       <div className="flex flex-col gap-5">
         {/* 결혼식 날짜 */}
         <div>
-          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
+          <label htmlFor="setup-wedding-date" className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             결혼식 날짜
           </label>
           <input
+            id="setup-wedding-date"
             className="input-field"
             type="date"
             value={weddingDate}
@@ -288,10 +289,11 @@ export default function SetupPage() {
 
         {/* 총 예산 */}
         <div>
-          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
+          <label htmlFor="setup-budget" className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             총 예산 (만원)
           </label>
           <input
+            id="setup-budget"
             className="input-field"
             type="number"
             placeholder="예: 5000"
@@ -302,10 +304,11 @@ export default function SetupPage() {
 
         {/* 예식 지역 */}
         <div>
-          <label className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
+          <label htmlFor="setup-region" className="text-sm font-semibold block mb-2" style={{ color: 'var(--toss-text-secondary)' }}>
             예식 지역
           </label>
           <input
+            id="setup-region"
             className="input-field"
             type="text"
             placeholder="예: 서울 강남"

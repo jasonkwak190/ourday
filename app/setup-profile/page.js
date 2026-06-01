@@ -68,11 +68,12 @@ export default function SetupProfilePage() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
         {/* 이름 */}
         <div>
-          <label className="text-sm font-semibold block mb-2"
+          <label htmlFor="setup-profile-name" className="text-sm font-semibold block mb-2"
             style={{ color: 'var(--toss-text-secondary)' }}>
             이름
           </label>
           <input
+            id="setup-profile-name"
             className="input-field"
             type="text"
             placeholder="홍길동"
